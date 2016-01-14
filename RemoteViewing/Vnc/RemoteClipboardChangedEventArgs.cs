@@ -45,7 +45,7 @@ namespace RemoteViewing.Vnc
         }
 
         /// <summary>
-        /// The contents of the remote clipboard.
+        /// Gets the contents of the remote clipboard.
         /// </summary>
         public string Contents
         {

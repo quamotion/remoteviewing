@@ -35,10 +35,10 @@ using System.Text;
 namespace RemoteViewing.Vnc
 {
     /// <summary>
-    /// Called when a password is required and <see cref="VncClientConnectOptions.Password"/> is <c>null</c>.
+    /// Called when a password is required and <see cref="VncClientConnectOptions.Password"/> is <see langword="null"/>.
     /// </summary>
     /// <param name="client">The client needing a password.</param>
-    /// <returns>The password, or <c>null</c> to not supply one.</returns>
+    /// <returns>The password, or <see langword="null"/> to not supply one.</returns>
     public delegate char[] PasswordRequiredCallback(VncClient client);
 
     /// <summary>
@@ -55,14 +55,18 @@ namespace RemoteViewing.Vnc
         }
 
         /// <summary>
-        /// The password to authenticate with, if the server requires one.
-        ///
-        /// If this is <c>null</c> and a password is required, the connection will fail.
-        /// <c>null</c> is different from a zero-character password.
-        ///
+        /// Gets or sets the password to authenticate with, if the server requires one.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// If this is <see langword="null"/> and a password is required, the connection will fail.
+        /// <see langword="null"/> is different from a zero-character password.
+        /// </para>
+        /// <para>
         /// Only the first eight characters of a password are meaningful in
         /// traditional VNC authentication.
-        /// </summary>
+        /// </para>
+        /// </remarks>
         public char[] Password
         {
             get;
@@ -70,7 +74,8 @@ namespace RemoteViewing.Vnc
         }
 
         /// <summary>
-        /// Called when a password is required and <see cref="VncClientConnectOptions.Password"/> is <c>null</c>.
+        /// Gets or sets a callback which is called when a password is required and 
+        /// <see cref="VncClientConnectOptions.Password"/> is <see langword="null"/>.
         /// </summary>
         public PasswordRequiredCallback PasswordRequiredCallback
         {
@@ -78,12 +83,17 @@ namespace RemoteViewing.Vnc
             set;
         }
 
-        /// <summary>
+        /// <value>
+        /// Gets a value indicating whether the session can be shared with
+        /// any currently-connected clients.
+        /// </value>
+        /// <value>
         /// <c>true</c> to share the desktop with any currently-connected clients.
         /// <c>false</c> to get exclusive access to the desktop.
-        ///
+        /// </value>
+        /// <remarks>
         /// This is set to <c>true</c> by default.
-        /// </summary>
+        /// </remarks>
         public bool ShareDesktop
         {
             get;

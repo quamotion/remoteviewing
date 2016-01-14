@@ -576,7 +576,7 @@ namespace RemoteViewing.Vnc
         }
 
         /// <summary>
-        /// The framebuffer for the VNC session.
+        /// Gets the framebuffer for the VNC session.
         /// </summary>
         public VncFramebuffer Framebuffer
         {
@@ -585,8 +585,11 @@ namespace RemoteViewing.Vnc
         }
 
         /// <summary>
-        /// <c>true</c> if the client is connected to a server.
+        /// Gets a value indicating whether the client is connected to a server.
         /// </summary>
+        /// <value>
+        /// <c>true</c> if the client is connected to a server.
+        /// </value>
         public bool IsConnected
         {
             get;
@@ -594,10 +597,11 @@ namespace RemoteViewing.Vnc
         }
 
         /// <summary>
-        /// The max rate to request framebuffer updates at, in frames per second.
-        ///
-        /// The default is 15.
+        /// Gets or sets the max rate to request framebuffer updates at, in frames per second.
         /// </summary>
+        /// <remarks>
+        /// The default is 15.
+        /// </remarks>
         public double MaxUpdateRate
         {
             get
@@ -619,7 +623,7 @@ namespace RemoteViewing.Vnc
         }
 
         /// <summary>
-        /// The protocol version of the server.
+        /// Gets the protocol version of the server.
         /// </summary>
         public Version ServerVersion
         {
@@ -627,8 +631,11 @@ namespace RemoteViewing.Vnc
         }
 
         /// <summary>
-        /// Store anything you want here.
+        /// Gets or sets user-specific data.
         /// </summary>
+        /// <remarks>
+        /// Store anything you want here.
+        /// </remarks>
         public object UserData
         {
             get;

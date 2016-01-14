@@ -45,7 +45,7 @@ namespace RemoteViewing.Vnc.Server
         }
 
         /// <summary>
-        /// Whether an incremental update is desired.
+        /// Gets a value indicating whether an incremental update is desired.
         /// </summary>
         public bool Incremental
         {
@@ -54,7 +54,7 @@ namespace RemoteViewing.Vnc.Server
         }
 
         /// <summary>
-        /// The region to update.
+        /// Gets the region to update.
         /// </summary>
         public VncRectangle Region
         {

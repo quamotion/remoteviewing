@@ -62,7 +62,7 @@ namespace RemoteViewing.Vnc
         }
 
         /// <summary>
-        /// The number of changed regions.
+        /// Gets the number of changed regions.
         /// </summary>
         public int RectangleCount
         {

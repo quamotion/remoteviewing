@@ -449,7 +449,7 @@ namespace RemoteViewing.Vnc.Server
         /// <summary>
         /// Sets the framebuffer source.
         /// </summary>
-        /// <param name="source">The framebuffer source, or <c>null</c> if you intend to handle the framebuffer manually.</param>
+        /// <param name="source">The framebuffer source, or <see langword="null"/> if you intend to handle the framebuffer manually.</param>
         public void SetFramebufferSource(IVncFramebufferSource source)
         {
             this._fbSource = source;
@@ -819,7 +819,7 @@ namespace RemoteViewing.Vnc.Server
         }
 
         /// <summary>
-        /// The protocol version of the client.
+        /// Gets the protocol version of the client.
         /// </summary>
         public Version ClientVersion
         {
@@ -827,7 +827,7 @@ namespace RemoteViewing.Vnc.Server
         }
 
         /// <summary>
-        /// The framebuffer for the VNC session.
+        /// Gets the framebuffer for the VNC session.
         /// </summary>
         public VncFramebuffer Framebuffer
         {
@@ -836,8 +836,8 @@ namespace RemoteViewing.Vnc.Server
         }
 
         /// <summary>
-        /// Information about the client's most recent framebuffer update request.
-        /// This may be <c>null</c> if the client has no framebuffer request queued.
+        /// Gets information about the client's most recent framebuffer update request.
+        /// This may be <see langword="null"/> if the client has no framebuffer request queued.
         /// </summary>
         public FramebufferUpdateRequest FramebufferUpdateRequest
         {
@@ -846,7 +846,7 @@ namespace RemoteViewing.Vnc.Server
         }
 
         /// <summary>
-        /// Lock this before performing any framebuffer updates.
+        /// Gets a lock which should be used before performing any framebuffer updates.
         /// </summary>
         public object FramebufferUpdateRequestLock
         {
@@ -854,8 +854,11 @@ namespace RemoteViewing.Vnc.Server
         }
 
         /// <summary>
-        /// <c>true</c> if the server is connected to a client.
+        /// Gets a value indicating whether the server is connected to a client.
         /// </summary>
+        /// <value>
+        /// <c>true</c> if the server is connected to a client.
+        /// </value>
         public bool IsConnected
         {
             get;
@@ -863,10 +866,11 @@ namespace RemoteViewing.Vnc.Server
         }
 
         /// <summary>
-        /// The max rate to send framebuffer updates at, in frames per second.
-        ///
-        /// The default is 15.
+        /// Gets or sets the max rate to send framebuffer updates at, in frames per second.
         /// </summary>
+        /// <remarks>
+        /// The default is 15.
+        /// </remarks>
         public double MaxUpdateRate
         {
             get
@@ -888,8 +892,11 @@ namespace RemoteViewing.Vnc.Server
         }
 
         /// <summary>
-        /// Store anything you want here.
+        /// Gets or sets user-specific data.
         /// </summary>
+        /// <remarks>
+        /// Store anything you want here.
+        /// </remarks>
         public object UserData
         {
             get;

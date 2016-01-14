@@ -45,7 +45,7 @@ namespace RemoteViewing.Utility
         /// Initializes a new instance of the <see cref="SynchronizedCall"/> class.
         /// </summary>
         /// <param name="callback">The call to marshal.</param>
-        /// <param name="state">The state to provide to the call. <c>null</c> is fine if you don't need to include any state.</param>
+        /// <param name="state">The state to provide to the call. <see langword="null"/> is fine if you don't need to include any state.</param>
         public SynchronizedCall(SendOrPostCallback callback, object state)
         {
             Throw.If.Null(callback, "callback");

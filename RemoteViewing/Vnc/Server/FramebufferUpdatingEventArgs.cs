@@ -43,8 +43,11 @@ namespace RemoteViewing.Vnc.Server
         }
 
         /// <summary>
-        /// Set this to <c>true</c> if you send an update in response to this event.
+        /// Gets or sets a value indicating whether you send an update in response to this event.
         /// </summary>
+        /// <value>
+        /// Set this to <c>true</c> if you send an update in response to this event.
+        /// </value>
         public bool SentChanges
         {
             get;

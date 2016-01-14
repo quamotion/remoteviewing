@@ -48,7 +48,7 @@ namespace RemoteViewing.Vnc
         /// </summary>
         /// <param name="message">The error message.</param>
         /// <param name="reason">The reason the exception was thrown.</param>
-        /// <param name="innerException">The exception that caused this exception to be thrown, or <c>null</c>.</param>
+        /// <param name="innerException">The exception that caused this exception to be thrown, or <see langword="null"/>.</param>
         public VncException(string message, VncFailureReason reason = VncFailureReason.Unknown,
                             Exception innerException = null)
             : base(message, innerException)
@@ -57,7 +57,7 @@ namespace RemoteViewing.Vnc
         }
 
         /// <summary>
-        /// The reason the exception was thrown.
+        /// Gets the reason the exception was thrown.
         /// </summary>
         public VncFailureReason Reason
         {

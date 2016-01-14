@@ -82,7 +82,7 @@ namespace RemoteViewing.Vnc
         }
 
         /// <summary>
-        /// The number of pixels.
+        /// Gets the number of pixels.
         /// </summary>
         public int Area
         {
@@ -90,28 +90,31 @@ namespace RemoteViewing.Vnc
         }
 
         /// <summary>
-        /// The X coordinate of the leftmost changed pixel.
+        /// Gets or sets the X coordinate of the leftmost changed pixel.
         /// </summary>
         public int X { get; set; }
 
         /// <summary>
-        /// The Y coordinate of the topmost changed pixel.
+        /// Gets or sets the Y coordinate of the topmost changed pixel.
         /// </summary>
         public int Y { get; set; }
 
         /// <summary>
-        /// The width of the changed region.
+        /// Gets or sets the width of the changed region.
         /// </summary>
         public int Width { get; set; }
 
         /// <summary>
-        /// The height of the changed region.
+        /// Gets or sets the height of the changed region.
         /// </summary>
         public int Height { get; set; }
 
         /// <summary>
-        /// <c>true</c> if the region contains no pixels.
+        /// Gets a value indicating whether the region is empty.
         /// </summary>
+        /// <value>
+        /// <c>true</c> if the region contains no pixels.
+        /// </value>
         public bool IsEmpty
         {
             get { return this.Width == 0 || this.Height == 0; }

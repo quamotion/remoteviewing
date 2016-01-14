@@ -250,7 +250,7 @@ namespace RemoteViewing.Vnc
         }
 
         /// <summary>
-        /// The number of bits used to store a pixel.
+        /// Gets the number of bits used to store a pixel.
         /// </summary>
         public int BitsPerPixel
         {
@@ -258,7 +258,7 @@ namespace RemoteViewing.Vnc
         }
 
         /// <summary>
-        /// The number of bytes used to store a pixel.
+        /// Gets the number of bytes used to store a pixel.
         /// </summary>
         public int BytesPerPixel
         {
@@ -266,7 +266,7 @@ namespace RemoteViewing.Vnc
         }
 
         /// <summary>
-        /// The bit depth of the pixel.
+        /// Gets the bit depth of the pixel.
         /// </summary>
         public int BitDepth
         {
@@ -274,7 +274,7 @@ namespace RemoteViewing.Vnc
         }
 
         /// <summary>
-        /// The number of bits used to represent red.
+        /// Gets the number of bits used to represent red.
         /// </summary>
         public int RedBits
         {
@@ -282,7 +282,7 @@ namespace RemoteViewing.Vnc
         }
 
         /// <summary>
-        /// The number of bits left the red value is shifted.
+        /// Gets the number of bits left the red value is shifted.
         /// </summary>
         public int RedShift
         {
@@ -290,7 +290,7 @@ namespace RemoteViewing.Vnc
         }
 
         /// <summary>
-        /// The number of bits used to represent green.
+        /// Gets the number of bits used to represent green.
         /// </summary>
         public int GreenBits
         {
@@ -298,7 +298,7 @@ namespace RemoteViewing.Vnc
         }
 
         /// <summary>
-        /// The number of bits left the green value is shifted.
+        /// Gets the number of bits left the green value is shifted.
         /// </summary>
         public int GreenShift
         {
@@ -306,7 +306,7 @@ namespace RemoteViewing.Vnc
         }
 
         /// <summary>
-        /// The number of bits used to represent blue.
+        /// Gets the number of bits used to represent blue.
         /// </summary>
         public int BlueBits
         {
@@ -314,7 +314,7 @@ namespace RemoteViewing.Vnc
         }
 
         /// <summary>
-        /// The number of bits left the blue value is shifted.
+        /// Gets the number of bits left the blue value is shifted.
         /// </summary>
         public int BlueShift
         {
@@ -322,16 +322,22 @@ namespace RemoteViewing.Vnc
         }
 
         /// <summary>
-        /// <c>true</c> if the pixel is little-endian, or <c>false</c> if it is big-endian.
+        /// Gets a value indicating whether the pixel is little-endian.
         /// </summary>
+        /// <value>
+        /// <c>true</c> if the pixel is little-endian, or <c>false</c> if it is big-endian.
+        /// </value>
         public bool IsLittleEndian
         {
             get { return this._isLittleEndian; }
         }
 
         /// <summary>
-        /// <c>true</c> if the framebuffer stores palette indices, or <c>false</c> if it stores colors.
+        /// Gets a value indicating whether the framebuffer stores palette indices.
         /// </summary>
+        /// <value>
+        /// <c>true</c> if the framebuffer stores palette indices, or <c>false</c> if it stores colors.
+        /// </value>
         public bool IsPalettized
         {
             get { return this._isPalettized; }

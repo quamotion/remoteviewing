@@ -34,7 +34,7 @@ namespace RemoteViewing.Vnc.Server
     public class VncServerSessionOptions
     {
         /// <summary>
-        /// The desired authentication method.
+        /// Gets or sets the desired authentication method.
         /// </summary>
         public AuthenticationMethod AuthenticationMethod
         {

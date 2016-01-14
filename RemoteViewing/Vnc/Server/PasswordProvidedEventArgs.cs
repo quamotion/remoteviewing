@@ -106,8 +106,11 @@ namespace RemoteViewing.Vnc.Server
         }
 
         /// <summary>
-        /// <c>true</c> if the client has successfully authenticated.
+        /// Gets a value indicating whether the client has successfully authenticated.
         /// </summary>
+        /// <value>
+        /// <c>true</c> if the client has successfully authenticated.
+        /// </value>
         public bool IsAuthenticated
         {
             get;

@@ -93,7 +93,7 @@ namespace RemoteViewing.Vnc
         }
 
         /// <summary>
-        /// The framebuffer name. Many VNC clients set their titlebar to this name.
+        /// Gets the framebuffer name. Many VNC clients set their titlebar to this name.
         /// </summary>
         public string Name
         {
@@ -102,10 +102,11 @@ namespace RemoteViewing.Vnc
         }
 
         /// <summary>
-        /// The framebuffer synchronization object.
-        ///
-        /// Lock this before reading the framebuffer to avoid tearing artifacts.
+        /// Gets the framebuffer synchronization object.
         /// </summary>
+        /// <remarks>
+        /// Lock this before reading the framebuffer to avoid tearing artifacts.
+        /// </remarks>
         public object SyncRoot
         {
             get;
@@ -113,7 +114,7 @@ namespace RemoteViewing.Vnc
         }
 
         /// <summary>
-        /// The framebuffer width.
+        /// Gets the framebuffer width.
         /// </summary>
         public int Width
         {
@@ -122,7 +123,7 @@ namespace RemoteViewing.Vnc
         }
 
         /// <summary>
-        /// The framebuffer height.
+        /// Gets the framebuffer height.
         /// </summary>
         public int Height
         {
@@ -131,7 +132,7 @@ namespace RemoteViewing.Vnc
         }
 
         /// <summary>
-        /// The framebuffer stride. This is the number of bytes between one Y coordinate and the next.
+        /// Gets the framebuffer stride. This is the number of bytes between one Y coordinate and the next.
         /// </summary>
         public int Stride
         {
@@ -140,7 +141,7 @@ namespace RemoteViewing.Vnc
         }
 
         /// <summary>
-        /// The framebuffer pixel format.
+        /// Gets the framebuffer pixel format.
         /// </summary>
         public VncPixelFormat PixelFormat
         {

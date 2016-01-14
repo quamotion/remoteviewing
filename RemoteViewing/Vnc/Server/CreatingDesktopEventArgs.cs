@@ -48,9 +48,13 @@ namespace RemoteViewing.Vnc.Server
         }
 
         /// <summary>
+        /// Gets a value indicating whether the client will share the desktop with other currently-connected
+        /// clients.
+        /// </summary>
+        /// <value>
         /// <c>true</c> if the client will share the desktop with other currently-connected clients.
         /// <c>false</c> if the client is asking for exclusive access to the desktop.
-        /// </summary>
+        /// </value>
         public bool ShareDesktop
         {
             get;

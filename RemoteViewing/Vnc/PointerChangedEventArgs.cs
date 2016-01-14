@@ -52,7 +52,7 @@ namespace RemoteViewing.Vnc
         }
 
         /// <summary>
-        /// The X coordinate of the mouse.
+        /// Gets the X coordinate of the mouse.
         /// </summary>
         public int X
         {
@@ -61,7 +61,7 @@ namespace RemoteViewing.Vnc
         }
 
         /// <summary>
-        /// The Y coordinate of the mouse.
+        /// Gets the Y coordinate of the mouse.
         /// </summary>
         public int Y
         {
@@ -70,7 +70,7 @@ namespace RemoteViewing.Vnc
         }
 
         /// <summary>
-        /// A bit mask of pressed mouse buttons, in X11 convention: 1 is left, 2 is middle, and 4 is right.
+        /// Gets aA bit mask of pressed mouse buttons, in X11 convention: 1 is left, 2 is middle, and 4 is right.
         /// Mouse wheel scrolling is treated as a button event: 8 for up and 16 for down.
         /// </summary>
         public int PressedButtons

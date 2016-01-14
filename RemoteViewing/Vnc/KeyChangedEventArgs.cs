@@ -47,7 +47,7 @@ namespace RemoteViewing.Vnc
         }
 
         /// <summary>
-        /// The X11 keysym of the key. For many keys this is the ASCII value.
+        /// Gets the X11 keysym of the key. For many keys this is the ASCII value.
         /// </summary>
         public int Keysym
         {
@@ -56,8 +56,11 @@ namespace RemoteViewing.Vnc
         }
 
         /// <summary>
-        /// <c>true</c> for a key press event, or <c>false</c> for a key release event.
+        /// Gets a value indicating whether a key was pressed.
         /// </summary>
+        /// <value>
+        /// <c>true</c> for a key press event, or <c>false</c> for a key release event.
+        /// </value>
         public bool Pressed
         {
             get;
