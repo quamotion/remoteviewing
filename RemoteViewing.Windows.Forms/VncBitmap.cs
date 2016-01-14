@@ -1,7 +1,7 @@
 ﻿#region License
 /*
-RemoteViewing VNC Client Library for .NET
-Copyright (c) 2013 James F. Bellinger <http://www.zer7.com>
+RemoteViewing VNC Client/Server Library for .NET
+Copyright (c) 2013 James F. Bellinger <http://www.zer7.com/software/remoteviewing>
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -39,31 +39,62 @@ namespace RemoteViewing.Windows.Forms
     public static class VncBitmap
     {
         /// <summary>
-        /// Decodes a region of the framebuffer into a bitmap.
+        /// Copies a region of a bitmap into the framebuffer.
         /// </summary>
-        /// <param name="framebuffer">The framebuffer to read.</param>
-        /// <param name="rect">The region to decode.</param>
-        /// <param name="bitmap">The bitmap to decode into.</param>
-        public unsafe static void DecodeFramebufferRegion(VncFramebuffer framebuffer, VncRectangle rect,
-                                                 Bitmap bitmap)
+        /// <param name="source">The bitmap to read.</param>
+        /// <param name="sourceRectangle">The bitmap region to copy.</param>
+        /// <param name="target">The framebuffer to copy into.</param>
+        /// <param name="targetX">The leftmost X coordinate of the framebuffer to draw to.</param>
+        /// <param name="targetY">The topmost Y coordinate of the framebuffer to draw to.</param>
+        public unsafe static void CopyToFramebuffer(Bitmap source, VncRectangle sourceRectangle,
+                                                    VncFramebuffer target, int targetX, int targetY)
         {
-            if (bitmap == null) { throw new ArgumentNullException("bitmap"); }
-            if (framebuffer == null) { throw new ArgumentNullException("framebuffer"); }
-            if (rect.IsEmpty) { return; }
+            Throw.If.Null(source, "source").Null(target, "target");
+            if (sourceRectangle.IsEmpty) { return; }
 
-            var winformsRect = new Rectangle(rect.X, rect.Y, rect.Width, rect.Height);
-            var data = bitmap.LockBits(winformsRect, ImageLockMode.WriteOnly, PixelFormat.Format32bppRgb);
+            var winformsRect = new Rectangle(sourceRectangle.X, sourceRectangle.Y, sourceRectangle.Width, sourceRectangle.Height);
+            var data = source.LockBits(winformsRect, ImageLockMode.ReadOnly, PixelFormat.Format32bppRgb);
             try
             {
-                fixed (byte* framebufferData = framebuffer.GetBuffer())
+                fixed (byte* framebufferData = target.GetBuffer())
                 {
-                    framebuffer.PixelFormat.DecodeTo32bpp((IntPtr)framebufferData, framebuffer.Stride, rect,
-                                                          data.Scan0, data.Stride);
+                    VncPixelFormat.Copy(data.Scan0, data.Stride, new VncPixelFormat(), sourceRectangle,
+                                        (IntPtr)framebufferData, target.Stride, target.PixelFormat, targetX, targetY);
                 }
             }
             finally
             {
-                bitmap.UnlockBits(data);
+                source.UnlockBits(data);
+            }
+        }
+
+        /// <summary>
+        /// Copies a region of the framebuffer into a bitmap.
+        /// </summary>
+        /// <param name="source">The framebuffer to read.</param>
+        /// <param name="sourceRectangle">The framebuffer region to copy.</param>
+        /// <param name="target">The bitmap to copy into.</param>
+        /// <param name="targetX">The leftmost X coordinate of the bitmap to draw to.</param>
+        /// <param name="targetY">The topmost Y coordinate of the bitmap to draw to.</param>
+        public unsafe static void CopyFromFramebuffer(VncFramebuffer source, VncRectangle sourceRectangle,
+                                                      Bitmap target, int targetX, int targetY)
+        {
+            Throw.If.Null(source, "source").Null(target, "target");
+            if (sourceRectangle.IsEmpty) { return; }
+
+            var winformsRect = new Rectangle(targetX, targetY, sourceRectangle.Width, sourceRectangle.Height);
+            var data = target.LockBits(winformsRect, ImageLockMode.WriteOnly, PixelFormat.Format32bppRgb);
+            try
+            {
+                fixed (byte* framebufferData = source.GetBuffer())
+                {
+                    VncPixelFormat.Copy((IntPtr)framebufferData, source.Stride, source.PixelFormat, sourceRectangle,
+                                        data.Scan0, data.Stride, new VncPixelFormat());
+                }
+            }
+            finally
+            {
+                target.UnlockBits(data);
             }
         }
     }

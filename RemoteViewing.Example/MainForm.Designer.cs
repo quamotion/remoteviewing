@@ -29,7 +29,6 @@
         private void InitializeComponent()
         {
             RemoteViewing.Vnc.VncClient vncClient1 = new RemoteViewing.Vnc.VncClient();
-            System.Windows.Threading.DispatcherSynchronizationContext dispatcherSynchronizationContext1 = new System.Windows.Threading.DispatcherSynchronizationContext();
             this.mainTableLayoutPanel = new System.Windows.Forms.TableLayoutPanel();
             this.topTableLayoutPanel = new System.Windows.Forms.TableLayoutPanel();
             this.txtPassword = new System.Windows.Forms.TextBox();
@@ -163,17 +162,22 @@
             // 
             // vncControl
             // 
+            this.vncControl.AllowClipboardSharingFromServer = true;
+            this.vncControl.AllowClipboardSharingToServer = true;
             this.vncControl.AllowInput = true;
             this.vncControl.AllowRemoteCursor = true;
             this.vncControl.Anchor = System.Windows.Forms.AnchorStyles.None;
             this.vncControl.BackColor = System.Drawing.Color.Black;
             vncClient1.MaxUpdateRate = 15D;
-            vncClient1.SynchronizationContext = dispatcherSynchronizationContext1;
+            vncClient1.UserData = null;
             this.vncControl.Client = vncClient1;
-            this.vncControl.Location = new System.Drawing.Point(119, 90);
+            this.vncControl.Location = new System.Drawing.Point(201, 154);
             this.vncControl.Name = "vncControl";
             this.vncControl.Size = new System.Drawing.Size(234, 173);
             this.vncControl.TabIndex = 4;
+            this.vncControl.Connected += new System.EventHandler(this.vncControl_Connected);
+            this.vncControl.ConnectionFailed += new System.EventHandler(this.vncControl_ConnectionFailed);
+            this.vncControl.Closed += new System.EventHandler(this.vncControl_Closed);
             // 
             // MainForm
             // 

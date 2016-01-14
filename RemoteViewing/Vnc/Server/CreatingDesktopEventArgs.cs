@@ -26,15 +26,35 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 #endregion
 
-namespace RemoteViewing.Vnc
+using System;
+
+namespace RemoteViewing.Vnc.Server
 {
-    enum VncEncoding
+    /// <summary>
+    /// Provides data for the <see cref="VncServerSession.CreatingDesktop"/> event.
+    /// </summary>
+    public class CreatingDesktopEventArgs : EventArgs
     {
-        Raw = 0,
-        CopyRect = 1,
-        Hextile = 5,
-        Zlib = 6,
-        PseudoCursor = -239, // TODO: KVM doesn't use this one for me... Find some way to test it...
-        PseudoDesktopSize = -223
+        /// <summary>
+        /// Initializes a new instance of the <see cref="CreatingDesktopEventArgs"/> class.
+        /// </summary>
+        /// <param name="shareDesktop">
+        ///     <c>true</c> if the client will share the desktop with other currently-connected clients.
+        ///     <c>false</c> if the client is asking for exclusive access to the desktop.
+        /// </param>
+        public CreatingDesktopEventArgs(bool shareDesktop)
+        {
+            ShareDesktop = shareDesktop;
+        }
+
+        /// <summary>
+        /// <c>true</c> if the client will share the desktop with other currently-connected clients.
+        /// <c>false</c> if the client is asking for exclusive access to the desktop.
+        /// </summary>
+        public bool ShareDesktop
+        {
+            get;
+            private set;
+        }
     }
 }

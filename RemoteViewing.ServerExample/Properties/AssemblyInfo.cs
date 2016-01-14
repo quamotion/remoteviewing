@@ -26,15 +26,13 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 #endregion
 
-namespace RemoteViewing.Vnc
-{
-    enum VncEncoding
-    {
-        Raw = 0,
-        CopyRect = 1,
-        Hextile = 5,
-        Zlib = 6,
-        PseudoCursor = -239, // TODO: KVM doesn't use this one for me... Find some way to test it...
-        PseudoDesktopSize = -223
-    }
-}
+using System.Reflection;
+using System.Runtime.InteropServices;
+
+[assembly: AssemblyCopyright("Copyright © 2013 James F. Bellinger <http://www.zer7.com/software/remoteviewing>")]
+[assembly: AssemblyDescription("C# VNC server example")]
+[assembly: AssemblyProduct("RemoteViewing")]
+[assembly: AssemblyTitle("RemoteViewing.ServerExample")]
+
+[assembly: ComVisible(false)]
+[assembly: Guid("030506a8-328e-47fd-b9b5-b0e7207c2ac9")]

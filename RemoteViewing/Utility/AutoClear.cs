@@ -26,15 +26,24 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 #endregion
 
-namespace RemoteViewing.Vnc
+using System;
+
+namespace RemoteViewing.Utility
 {
-    enum VncEncoding
+    struct AutoClear : IDisposable
     {
-        Raw = 0,
-        CopyRect = 1,
-        Hextile = 5,
-        Zlib = 6,
-        PseudoCursor = -239, // TODO: KVM doesn't use this one for me... Find some way to test it...
-        PseudoDesktopSize = -223
+        Array _array;
+
+        public AutoClear(Array array)
+        {
+            _array = array;
+        }
+
+        public void Dispose()
+        {
+            if (_array == null) { return; }
+            Array.Clear(_array, 0, _array.Length);
+            _array = null;
+        }
     }
 }

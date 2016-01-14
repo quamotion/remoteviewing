@@ -26,52 +26,61 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 #endregion
 
-namespace RemoteViewing.Vnc
+using System;
+using System.Threading;
+
+namespace RemoteViewing.Utility
 {
-    static class VncUtility
+    /// <summary>
+    /// Marshals a single call from one thread to another.
+    /// </summary>
+    public class SynchronizedCall
     {
-        public static byte[] AllocateScratch(int bytes, ref byte[] scratch)
+        SendOrPostCallback _callback; object _state;
+
+        ManualResetEvent _event = new ManualResetEvent(false);
+        Exception _ex;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SynchronizedCall"/> class.
+        /// </summary>
+        /// <param name="callback">The call to marshal.</param>
+        /// <param name="state">The state to provide to the call. <c>null</c> is fine if you don't need to include any state.</param>
+        public SynchronizedCall(SendOrPostCallback callback, object state)
         {
-            if (scratch.Length < bytes) { scratch = new byte[bytes]; }
-            return scratch;
+            Throw.If.Null(callback, "callback");
+
+            _callback = callback; _state = state;
         }
 
-        public static ushort DecodeUInt16BE(byte[] buffer, int offset)
+        /// <summary>
+        /// Runs the call in the current thread, and marshals the exception back if one occurs.
+        /// </summary>
+        public void Run()
         {
-            return (ushort)(buffer[offset + 0] << 8 | buffer[offset + 1]);
+            try
+            {
+                _callback(_state);
+            }
+            catch (Exception ex)
+            {
+                _ex = ex;
+            }
+            finally
+            {
+                _event.Set();
+            }
         }
 
-        public static byte[] EncodeUInt16BE(ushort value)
+        /// <summary>
+        /// Waits for <see cref="SynchronizedCall.Run"/> to complete.
+        /// </summary>
+        public void Wait()
         {
-            var buffer = new byte[2];
-            EncodeUInt16BE(buffer, 0, value);
-            return buffer;
-        }
+            _event.WaitOne();
 
-        public static void EncodeUInt16BE(byte[] buffer, int offset, ushort value)
-        {
-            buffer[offset + 0] = (byte)(value >> 8);
-            buffer[offset + 1] = (byte)value;
-        }
-
-        public static uint DecodeUInt32BE(byte[] buffer, int offset)
-        {
-            return (uint)(buffer[offset + 0] << 24 | buffer[offset + 1] << 16 | buffer[offset + 2] << 8 | buffer[offset + 3]);
-        }
-
-        public static byte[] EncodeUInt32BE(uint value)
-        {
-            var buffer = new byte[4];
-            EncodeUInt32BE(buffer, 0, value);
-            return buffer;
-        }
-
-        public static void EncodeUInt32BE(byte[] buffer, int offset, uint value)
-        {
-            buffer[offset + 0] = (byte)(value >> 24);
-            buffer[offset + 1] = (byte)(value >> 16);
-            buffer[offset + 2] = (byte)(value >> 8);
-            buffer[offset + 3] = (byte)value;
+            var ex = _ex;
+            if (ex != null) { throw ex; }
         }
     }
 }

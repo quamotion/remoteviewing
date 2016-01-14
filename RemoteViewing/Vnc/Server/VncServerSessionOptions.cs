@@ -26,15 +26,20 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 #endregion
 
-namespace RemoteViewing.Vnc
+namespace RemoteViewing.Vnc.Server
 {
-    enum VncEncoding
+    /// <summary>
+    /// Specifies options for interacting with a VNC client.
+    /// </summary>
+    public class VncServerSessionOptions
     {
-        Raw = 0,
-        CopyRect = 1,
-        Hextile = 5,
-        Zlib = 6,
-        PseudoCursor = -239, // TODO: KVM doesn't use this one for me... Find some way to test it...
-        PseudoDesktopSize = -223
+        /// <summary>
+        /// The desired authentication method.
+        /// </summary>
+        public AuthenticationMethod AuthenticationMethod
+        {
+            get;
+            set;
+        }
     }
 }

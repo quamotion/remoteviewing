@@ -1,2 +1,8 @@
+0.9.1 (May 11, 2013);
+Added a preliminary VNC server implementation.
+Added clipboard sharing support.
+The underlying client is now free-threaded, and the Windows Forms control handles marshaling.
+The download at http://www.zer7.com/software/remoteviewing includes samples if you need them.
+
 0.9.0 (April 22, 2013):
 Test version. Still needs cleanup and better keyboard handling.

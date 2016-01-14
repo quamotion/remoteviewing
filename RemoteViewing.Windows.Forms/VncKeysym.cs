@@ -1,7 +1,7 @@
 ﻿#region License
 /*
-RemoteViewing VNC Client Library for .NET
-Copyright (c) 2013 James F. Bellinger <http://www.zer7.com>
+RemoteViewing VNC Client/Server Library for .NET
+Copyright (c) 2013 James F. Bellinger <http://www.zer7.com/software/remoteviewing>
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -26,6 +26,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 #endregion
 
+using System;
 using System.Windows.Forms;
 
 namespace RemoteViewing.Windows.Forms
@@ -83,9 +84,9 @@ namespace RemoteViewing.Windows.Forms
                 case Keys.F22: return 0xffd3;
                 case Keys.F23: return 0xffd4;
                 case Keys.F24: return 0xffd5;
-                case Keys.ShiftKey: return 0xffe1;
-                case Keys.ControlKey: return 0xffe3;
-                case Keys.Menu: return 0xffe9;
+                case Keys.ShiftKey: return 0xffe2;
+                case Keys.ControlKey: return 0xffe4;
+                case Keys.Menu: return 0xffea;
                 /* <-- It appears Windows Forms doesn't send LShiftKey and RShiftKey. Instead it only sends ShiftKey...
                 case Keys.LShiftKey: return 0xffe1;
                 case Keys.RShiftKey: return 0xffe2;
@@ -107,6 +108,19 @@ namespace RemoteViewing.Windows.Forms
                 case Keys.Add: return 0x002b;
                 case Keys.OemQuotes: return 0x0027;
                 case Keys.Oemtilde: return 0x0060;
+                case Keys.Pause: return 0xff13;
+                case Keys.Scroll: return 0xff14;
+                case Keys.PrintScreen: return 0xff15;
+                case Keys.NumPad0: return 0xffb0;
+                case Keys.NumPad1: return 0xffb1;
+                case Keys.NumPad2: return 0xffb2;
+                case Keys.NumPad3: return 0xffb3;
+                case Keys.NumPad4: return 0xffb4;
+                case Keys.NumPad5: return 0xffb5;
+                case Keys.NumPad6: return 0xffb6;
+                case Keys.NumPad7: return 0xffb7;
+                case Keys.NumPad8: return 0xffb8;
+                case Keys.NumPad9: return 0xffb9;
                 default:
                     // TODO: This is wildly incomplete.
                     return (int)key;

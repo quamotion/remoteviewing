@@ -26,52 +26,55 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 #endregion
 
+using System;
+
 namespace RemoteViewing.Vnc
 {
-    static class VncUtility
+    /// <summary>
+    /// Provides data for the <see cref="Server.VncServerSession.PointerChanged"/> event.
+    /// </summary>
+    public class PointerChangedEventArgs : EventArgs
     {
-        public static byte[] AllocateScratch(int bytes, ref byte[] scratch)
+        /// <summary>
+        /// Initializes a new instance of the <see cref="PointerChangedEventArgs"/> class.
+        /// </summary>
+        /// <param name="x">The X coordinate of the mouse.</param>
+        /// <param name="y">The Y coordinate of the mouse.</param>
+        /// <param name="pressedButtons">
+        ///     A bit mask of pressed mouse buttons, in X11 convention: 1 is left, 2 is middle, and 4 is right.
+        ///     Mouse wheel scrolling is treated as a button event: 8 for up and 16 for down.
+        /// </param>
+        public PointerChangedEventArgs(int x, int y, int pressedButtons)
         {
-            if (scratch.Length < bytes) { scratch = new byte[bytes]; }
-            return scratch;
+            X = x; Y = y; PressedButtons = pressedButtons;
         }
 
-        public static ushort DecodeUInt16BE(byte[] buffer, int offset)
+        /// <summary>
+        /// The X coordinate of the mouse.
+        /// </summary>
+        public int X
         {
-            return (ushort)(buffer[offset + 0] << 8 | buffer[offset + 1]);
+            get;
+            private set;
         }
 
-        public static byte[] EncodeUInt16BE(ushort value)
+        /// <summary>
+        /// The Y coordinate of the mouse.
+        /// </summary>
+        public int Y
         {
-            var buffer = new byte[2];
-            EncodeUInt16BE(buffer, 0, value);
-            return buffer;
+            get;
+            private set;
         }
 
-        public static void EncodeUInt16BE(byte[] buffer, int offset, ushort value)
+        /// <summary>
+        /// A bit mask of pressed mouse buttons, in X11 convention: 1 is left, 2 is middle, and 4 is right.
+        /// Mouse wheel scrolling is treated as a button event: 8 for up and 16 for down.
+        /// </summary>
+        public int PressedButtons
         {
-            buffer[offset + 0] = (byte)(value >> 8);
-            buffer[offset + 1] = (byte)value;
-        }
-
-        public static uint DecodeUInt32BE(byte[] buffer, int offset)
-        {
-            return (uint)(buffer[offset + 0] << 24 | buffer[offset + 1] << 16 | buffer[offset + 2] << 8 | buffer[offset + 3]);
-        }
-
-        public static byte[] EncodeUInt32BE(uint value)
-        {
-            var buffer = new byte[4];
-            EncodeUInt32BE(buffer, 0, value);
-            return buffer;
-        }
-
-        public static void EncodeUInt32BE(byte[] buffer, int offset, uint value)
-        {
-            buffer[offset + 0] = (byte)(value >> 24);
-            buffer[offset + 1] = (byte)(value >> 16);
-            buffer[offset + 2] = (byte)(value >> 8);
-            buffer[offset + 3] = (byte)value;
+            get;
+            private set;
         }
     }
 }

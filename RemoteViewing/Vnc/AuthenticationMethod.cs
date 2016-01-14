@@ -28,13 +28,19 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace RemoteViewing.Vnc
 {
-    enum VncEncoding
+    /// <summary>
+    /// Supported authentication methods.
+    /// </summary>
+    public enum AuthenticationMethod
     {
-        Raw = 0,
-        CopyRect = 1,
-        Hextile = 5,
-        Zlib = 6,
-        PseudoCursor = -239, // TODO: KVM doesn't use this one for me... Find some way to test it...
-        PseudoDesktopSize = -223
+        /// <summary>
+        /// No authentication is performed.
+        /// </summary>
+        None = 1,
+
+        /// <summary>
+        /// A password is used.
+        /// </summary>
+        Password = 2
     }
 }

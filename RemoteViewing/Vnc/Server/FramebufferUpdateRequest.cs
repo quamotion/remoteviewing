@@ -26,15 +26,39 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 #endregion
 
-namespace RemoteViewing.Vnc
+namespace RemoteViewing.Vnc.Server
 {
-    enum VncEncoding
+    /// <summary>
+    /// Stores information about an update request from the client.
+    /// </summary>
+    public sealed class FramebufferUpdateRequest
     {
-        Raw = 0,
-        CopyRect = 1,
-        Hextile = 5,
-        Zlib = 6,
-        PseudoCursor = -239, // TODO: KVM doesn't use this one for me... Find some way to test it...
-        PseudoDesktopSize = -223
+        /// <summary>
+        /// Initializes a new instance of the <see cref="FramebufferUpdateRequest"/> class.
+        /// </summary>
+        /// <param name="incremental">Whether an incremental update is desired.</param>
+        /// <param name="region">The region to update.</param>
+        public FramebufferUpdateRequest(bool incremental, VncRectangle region)
+        {
+            Incremental = incremental; Region = region;
+        }
+
+        /// <summary>
+        /// Whether an incremental update is desired.
+        /// </summary>
+        public bool Incremental
+        {
+            get;
+            private set;
+        }
+
+        /// <summary>
+        /// The region to update.
+        /// </summary>
+        public VncRectangle Region
+        {
+            get;
+            private set;
+        }
     }
 }

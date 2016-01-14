@@ -1,7 +1,7 @@
 ﻿#region License
 /*
-RemoteViewing VNC Client Library for .NET
-Copyright (c) 2013 James F. Bellinger <http://www.zer7.com>
+RemoteViewing VNC Client/Server Library for .NET
+Copyright (c) 2013 James F. Bellinger <http://www.zer7.com/software/remoteviewing>
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -37,13 +37,6 @@ namespace RemoteViewing.Example
         public MainForm()
         {
             InitializeComponent();
-            vncControl.Client.Connected += (sender, e) => UpdateConnectState();
-            vncControl.Client.Closed += (sender, e) => UpdateConnectState();
-        }
-
-        void UpdateConnectState()
-        {
-            btnConnect.Text = vncControl.Client.IsConnected ? "Close" : "Connect";
         }
 
         private void btnConnect_Click(object sender, EventArgs e)
@@ -106,6 +99,21 @@ namespace RemoteViewing.Example
                     }
                 }
             }
+        }
+
+        private void vncControl_Connected(object sender, EventArgs e)
+        {
+            btnConnect.Text = "Close";
+        }
+
+        private void vncControl_Closed(object sender, EventArgs e)
+        {
+            btnConnect.Text = "Connect";
+        }
+
+        private void vncControl_ConnectionFailed(object sender, EventArgs e)
+        {
+
         }
     }
 }

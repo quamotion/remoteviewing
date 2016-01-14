@@ -28,13 +28,16 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace RemoteViewing.Vnc
 {
-    enum VncEncoding
+    /// <summary>
+    /// Provides a framebuffer.
+    /// </summary>
+    public interface IVncFramebufferSource
     {
-        Raw = 0,
-        CopyRect = 1,
-        Hextile = 5,
-        Zlib = 6,
-        PseudoCursor = -239, // TODO: KVM doesn't use this one for me... Find some way to test it...
-        PseudoDesktopSize = -223
+        /// <summary>
+        /// Called when a framebuffer update is needed.
+        /// You can use this opportunity to switch framebuffers if desired.
+        /// </summary>
+        /// <returns>A framebuffer.</returns>
+        VncFramebuffer Capture();
     }
 }

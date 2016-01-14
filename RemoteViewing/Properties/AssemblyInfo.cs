@@ -1,7 +1,7 @@
 ﻿#region License
 /*
-RemoteViewing VNC Client Library for .NET
-Copyright (c) 2013 James F. Bellinger <http://www.zer7.com>
+RemoteViewing VNC Client/Server Library for .NET
+Copyright (c) 2013 James F. Bellinger <http://www.zer7.com/software/remoteviewing>
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -28,16 +28,19 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 using System;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
-[assembly: AssemblyCopyright("Copyright © 2013 James F. Bellinger <http://www.zer7.com>")]
-[assembly: AssemblyDescription("C# VNC client")]
+[assembly: AssemblyCopyright("Copyright © 2013 James F. Bellinger <http://www.zer7.com/software/remoteviewing>")]
+[assembly: AssemblyDescription("C# VNC client/server")]
 [assembly: AssemblyProduct("RemoteViewing")]
 [assembly: AssemblyTitle("RemoteViewing")]
-[assembly: AssemblyFileVersion("0.9.0.0")]
-[assembly: AssemblyVersion("0.9.0.0")]
+[assembly: AssemblyFileVersion("0.9.1.0")]
+[assembly: AssemblyVersion("0.9.1.0")]
 
 [assembly: CLSCompliant(true)]
 [assembly: ComVisible(false)]
 [assembly: Guid("bd19082b-d2a8-46fd-b50f-a7fe0379ed3c")]
+
+[assembly: InternalsVisibleTo("RemoteViewing.Windows.Forms")]
 

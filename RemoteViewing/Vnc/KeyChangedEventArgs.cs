@@ -26,15 +26,41 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 #endregion
 
+using System;
+
 namespace RemoteViewing.Vnc
 {
-    enum VncEncoding
+    /// <summary>
+    /// Provides data for the <see cref="Server.VncServerSession.KeyChanged"/> event.
+    /// </summary>
+    public class KeyChangedEventArgs : EventArgs
     {
-        Raw = 0,
-        CopyRect = 1,
-        Hextile = 5,
-        Zlib = 6,
-        PseudoCursor = -239, // TODO: KVM doesn't use this one for me... Find some way to test it...
-        PseudoDesktopSize = -223
+        /// <summary>
+        /// Initializes a new instance of the <see cref="PointerChangedEventArgs"/> class.
+        /// </summary>
+        /// <param name="keysym">The X11 keysym of the key. For many keys this is the ASCII value.</param>
+        /// <param name="pressed"><c>true</c> for a key press event, or <c>false</c> for a key release event.</param>
+        public KeyChangedEventArgs(int keysym, bool pressed)
+        {
+            Keysym = keysym; Pressed = pressed;
+        }
+
+        /// <summary>
+        /// The X11 keysym of the key. For many keys this is the ASCII value.
+        /// </summary>
+        public int Keysym
+        {
+            get;
+            private set;
+        }
+
+        /// <summary>
+        /// <c>true</c> for a key press event, or <c>false</c> for a key release event.
+        /// </summary>
+        public bool Pressed
+        {
+            get;
+            private set;
+        }
     }
 }

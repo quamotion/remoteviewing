@@ -1,7 +1,7 @@
 ﻿#region License
 /*
-RemoteViewing VNC Client Library for .NET
-Copyright (c) 2013 James F. Bellinger <http://www.zer7.com>
+RemoteViewing VNC Client/Server Library for .NET
+Copyright (c) 2013 James F. Bellinger <http://www.zer7.com/software/remoteviewing>
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -31,7 +31,7 @@ using System.Collections.Generic;
 
 namespace RemoteViewing
 {
-    sealed class Throw
+    internal sealed class Throw
     {
         Throw()
         {
@@ -44,7 +44,7 @@ namespace RemoteViewing
         }
     }
 
-    static class ThrowExtensions
+    internal static class ThrowExtensions
     {
         public static Throw True(this Throw self, bool condition, string paramName)
         {
@@ -64,6 +64,12 @@ namespace RemoteViewing
             return null;
         }
 
+        public static Throw Null<T>(this Throw self, T value)
+        {
+            if (value == null) { throw new ArgumentNullException(); }
+            return null;
+        }
+
         public static Throw Null<T>(this Throw self, T value, string paramName)
         {
             if (value == null) { throw new ArgumentNullException(paramName); }
@@ -75,6 +81,18 @@ namespace RemoteViewing
             Throw.If.Null(buffer, "buffer");
             if (offset < 0 || offset > buffer.Count) { throw new ArgumentOutOfRangeException("offset"); }
             if (count < 0 || count > buffer.Count - offset) { throw new ArgumentOutOfRangeException("count"); }
+            return null;
+        }
+
+        public static Throw VncRequires(this Throw self, bool condition, string message, Vnc.VncFailureReason reason)
+        {
+            if (!condition) { throw new Vnc.VncException(message, reason); }
+            return null;
+        }
+
+        public static Throw VncSanityCheck(bool condition)
+        {
+            Throw.If.VncRequires(condition, "Sanity check failed.", Vnc.VncFailureReason.SanityCheckFailed);
             return null;
         }
     }

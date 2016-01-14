@@ -1,7 +1,7 @@
 ﻿#region License
 /*
-RemoteViewing VNC Client Library for .NET
-Copyright (c) 2013 James F. Bellinger <http://www.zer7.com>
+RemoteViewing VNC Client/Server Library for .NET
+Copyright (c) 2013 James F. Bellinger <http://www.zer7.com/software/remoteviewing>
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -28,9 +28,11 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.Media;
+using System.Runtime.InteropServices;
 using System.Windows.Forms;
 using RemoteViewing.Vnc;
 
@@ -39,12 +41,32 @@ namespace RemoteViewing.Windows.Forms
     /// <summary>
     /// Displays the framebuffer sent from a VNC server, and allows input to be sent back.
     /// </summary>
+    [Category("Network")]
+    [Description("Displays the framebuffer sent from a VNC server, and allows input to be sent back.")]
     public partial class VncControl : UserControl
     {
+        /// <summary>
+        /// Occurs when the VNC client has successfully connected to the remote server.
+        /// </summary>
+        public event EventHandler Connected;
+
+        /// <summary>
+        /// Occurs when the VNC client has failed to connect to the remote server.
+        /// </summary>
+        public event EventHandler ConnectionFailed;
+
+        /// <summary>
+        /// Occurs when the VNC client is disconnected.
+        /// </summary>
+        public event EventHandler Closed;
+
+        const int WM_CLIPBOARDUPDATE = 0x31d;
+
         int _buttons, _x, _y;
 
         Bitmap _bitmap;
         VncClient _client;
+        string _expectedClipboard = "";
         HashSet<int> _keysyms = new HashSet<int>();
 
         /// <summary>
@@ -57,6 +79,58 @@ namespace RemoteViewing.Windows.Forms
             Client = new VncClient();
 
             InitializeComponent();
+        }
+
+        protected override void OnLoad(EventArgs e)
+        {
+            base.OnLoad(e);
+
+            if (!DesignMode)
+            {
+                try { AddClipboardFormatListener(Handle); }
+                catch { }
+            }
+        }
+
+        protected override void OnHandleDestroyed(EventArgs e)
+        {
+            if (!DesignMode)
+            {
+                try { RemoveClipboardFormatListener(Handle); }
+                catch { }
+            }
+
+            base.OnHandleDestroyed(e);
+        }
+
+        protected override void WndProc(ref Message m)
+        {
+            if (AllowClipboardSharingToServer && m.Msg == WM_CLIPBOARDUPDATE)
+            {
+                string clipboard = "";
+                try
+                {
+                    if (Clipboard.ContainsText())
+                    {
+                        clipboard = Clipboard.GetText();
+                    }
+                }
+                catch (ExternalException)
+                {
+
+                }
+
+                if (clipboard.Length != 0)
+                {
+                    if (_client != null && clipboard != _expectedClipboard)
+                    {
+                        _expectedClipboard = clipboard;
+                        _client.SendLocalClipboardChange(clipboard);
+                    }
+                }
+            }
+
+            base.WndProc(ref m);
         }
 
         void ClearInputState()
@@ -74,7 +148,7 @@ namespace RemoteViewing.Windows.Forms
             if (_bitmap == null || _bitmap.Width != w || _bitmap.Height != h || force)
             {
                 _bitmap = new Bitmap(w, h, PixelFormat.Format32bppRgb);
-                VncBitmap.DecodeFramebufferRegion(framebuffer, new VncRectangle(0, 0, w, h), _bitmap);
+                VncBitmap.CopyFromFramebuffer(framebuffer, new VncRectangle(0, 0, w, h), _bitmap, 0, 0);
                 ClientSize = new Size(w, h); Invalidate();
             }
         }
@@ -92,38 +166,89 @@ namespace RemoteViewing.Windows.Forms
             SystemSounds.Beep.Play();
         }
 
-        void HandleConnectionStateChanged(object sender, EventArgs e)
+        void HandleConnected(object sender, EventArgs e)
         {
-            ClearInputState();
+            BeginInvoke(new Action(() =>
+                {
+                    _expectedClipboard = "";
+                    ClearInputState();
+
+                    var ev = Connected;
+                    if (ev != null) { ev(this, EventArgs.Empty); }
+                }));
+        }
+
+        void HandleConnectionFailed(object sender, EventArgs e)
+        {
+            BeginInvoke(new Action(() =>
+            {
+                ClearInputState();
+
+                var ev = ConnectionFailed;
+                if (ev != null) { ev(this, EventArgs.Empty); }
+            }));
+        }
+
+        void HandleClosed(object sender, EventArgs e)
+        {
+            BeginInvoke(new Action(() =>
+                {
+                    ClearInputState();
+
+                    var ev = Closed;
+                    if (ev != null) { ev(this, EventArgs.Empty); }
+                }));
         }
 
         void HandleFramebufferChanged(object sender, FramebufferChangedEventArgs e)
         {
-            if (DesignMode) { return; }
-
-            if (_client == null) { return; }
-
-            var framebuffer = _client.Framebuffer;
-            if (framebuffer == null) { return; }
-
-            lock (framebuffer.SyncLock)
-            {
-                UpdateFramebuffer(false, framebuffer);
-
-                if (_bitmap != null)
+            BeginInvoke(new Action(() =>
                 {
+                    if (DesignMode) { return; }
+
+                    if (_client == null) { return; }
+
+                    var framebuffer = _client.Framebuffer;
+                    if (framebuffer == null) { return; }
+
+                    lock (framebuffer.SyncRoot)
+                    {
+                        UpdateFramebuffer(false, framebuffer);
+
+                        if (_bitmap != null)
+                        {
+                            for (int i = 0; i < e.RectangleCount; i++)
+                            {
+                                var rect = e.GetRectangle(i);
+                                VncBitmap.CopyFromFramebuffer(framebuffer, rect, _bitmap, rect.X, rect.Y);
+                            }
+                        }
+                    }
+
                     for (int i = 0; i < e.RectangleCount; i++)
                     {
                         var rect = e.GetRectangle(i);
-                        VncBitmap.DecodeFramebufferRegion(framebuffer, rect, _bitmap);
+                        Invalidate(new Rectangle(rect.X, rect.Y, rect.Width, rect.Height));
+                    }
+                }));
+        }
+
+        void HandleRemoteClipboardChanged(object sender, RemoteClipboardChangedEventArgs e)
+        {
+            if (AllowClipboardSharingFromServer)
+            {
+                if (e.Contents.Length != 0 && _expectedClipboard != e.Contents)
+                {
+                    try
+                    {
+                        Clipboard.SetText(e.Contents);
+                        _expectedClipboard = e.Contents;
+                    }
+                    catch (ExternalException)
+                    {
+
                     }
                 }
-            }
-
-            for (int i = 0; i < e.RectangleCount; i++)
-            {
-                var rect = e.GetRectangle(i);
-                Invalidate(new Rectangle(rect.X, rect.Y, rect.Width, rect.Height));
             }
         }
 
@@ -221,6 +346,14 @@ namespace RemoteViewing.Windows.Forms
             e.Graphics.DrawImageUnscaled(_bitmap, 0, 0);
         }
 
+        [DllImport("user32", EntryPoint = "AddClipboardFormatListener", SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        static extern bool AddClipboardFormatListener(IntPtr handle);
+
+        [DllImport("user32", EntryPoint = "RemoveClipboardFormatListener", SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        static extern bool RemoveClipboardFormatListener(IntPtr handle);
+
         /// <summary>
         /// The <see cref="VncClient"/> being interacted with.
         /// 
@@ -238,17 +371,23 @@ namespace RemoteViewing.Windows.Forms
                 if (_client != null)
                 {
                     _client.Bell -= HandleBell;
-                    _client.Connected -= HandleConnectionStateChanged;
-                    _client.Closed -= HandleConnectionStateChanged;
+                    _client.Connected -= HandleConnected;
+                    _client.ConnectionFailed -= HandleConnectionFailed;
+                    _client.Closed -= HandleClosed;
                     _client.FramebufferChanged -= HandleFramebufferChanged;
+                    _client.RemoteClipboardChanged -= HandleRemoteClipboardChanged;
                 }
+
                 _client = value;
+
                 if (_client != null)
                 {
                     _client.Bell += HandleBell;
-                    _client.Connected += HandleConnectionStateChanged;
-                    _client.Closed += HandleConnectionStateChanged;
+                    _client.Connected += HandleConnected;
+                    _client.ConnectionFailed += HandleConnectionFailed;
+                    _client.Closed += HandleClosed;
                     _client.FramebufferChanged += HandleFramebufferChanged;
+                    _client.RemoteClipboardChanged += HandleRemoteClipboardChanged;
                 }
 
                 ClearInputState();
@@ -273,6 +412,24 @@ namespace RemoteViewing.Windows.Forms
         /// By default, this is <c>true</c>.
         /// </summary>
         public bool AllowRemoteCursor
+        {
+            get;
+            set;
+        }
+
+        /// <summary>
+        /// If enabled, clipboard changes on the remote VNC server will alter the local clipboard.
+        /// </summary>
+        public bool AllowClipboardSharingFromServer
+        {
+            get;
+            set;
+        }
+
+        /// <summary>
+        /// If enabled, local clipboard changes will be sent to the remote VNC server.
+        /// </summary>
+        public bool AllowClipboardSharingToServer
         {
             get;
             set;

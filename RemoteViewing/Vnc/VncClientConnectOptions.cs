@@ -1,7 +1,7 @@
 ﻿#region License
 /*
-RemoteViewing VNC Client Library for .NET
-Copyright (c) 2013 James F. Bellinger <http://www.zer7.com>
+RemoteViewing VNC Client/Server Library for .NET
+Copyright (c) 2013 James F. Bellinger <http://www.zer7.com/software/remoteviewing>
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -35,6 +35,13 @@ using System.Text;
 namespace RemoteViewing.Vnc
 {
     /// <summary>
+    /// Called when a password is required and <see cref="VncClientConnectOptions.Password"/> is <c>null</c>.
+    /// </summary>
+    /// <param name="client">The client needing a password.</param>
+    /// <returns>The password, or <c>null</c> to not supply one.</returns>
+    public delegate char[] PasswordRequiredCallback(VncClient client);
+
+    /// <summary>
     /// Specifies options for connecting to a VNC server.
     /// </summary>
     public sealed class VncClientConnectOptions
@@ -57,6 +64,15 @@ namespace RemoteViewing.Vnc
         /// traditional VNC authentication.
         /// </summary>
         public char[] Password
+        {
+            get;
+            set;
+        }
+
+        /// <summary>
+        /// Called when a password is required and <see cref="VncClientConnectOptions.Password"/> is <c>null</c>.
+        /// </summary>
+        public PasswordRequiredCallback PasswordRequiredCallback
         {
             get;
             set;

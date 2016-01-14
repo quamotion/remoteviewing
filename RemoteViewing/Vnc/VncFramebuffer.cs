@@ -1,7 +1,7 @@
 ﻿#region License
 /*
-RemoteViewing VNC Client Library for .NET
-Copyright (c) 2013 James F. Bellinger <http://www.zer7.com>
+RemoteViewing VNC Client/Server Library for .NET
+Copyright (c) 2013 James F. Bellinger <http://www.zer7.com/software/remoteviewing>
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -36,7 +36,7 @@ namespace RemoteViewing.Vnc
     /// <summary>
     /// Stores pixel data for a VNC session.
     /// </summary>
-    public class VncFramebuffer
+    public class VncFramebuffer : IVncFramebufferSource
     {
         byte[] _buffer;
 
@@ -54,9 +54,30 @@ namespace RemoteViewing.Vnc
             Throw.If.Null(pixelFormat, "pixelFormat");
 
             Name = name; Width = width; Height = height; PixelFormat = pixelFormat;
-            SyncLock = new object();
+            Stride = PixelFormat.BytesPerPixel * Width;
+            SyncRoot = new object();
 
             _buffer = new byte[Width * Height * PixelFormat.BytesPerPixel];
+        }
+
+        /// <summary>
+        /// Sets the color of a single pixel.
+        /// </summary>
+        /// <param name="x">The X coordinate of the pixel.</param>
+        /// <param name="y">The Y coordinate of the pixel.</param>
+        /// <param name="color">The RGB color of the pixel.</param>
+        public void SetPixel(int x, int y, int color)
+        {
+            lock (SyncRoot)
+            {
+                Throw.If.False((uint)x < (uint)Width, "x");
+                Throw.If.False((uint)y < (uint)Height, "y");
+
+                if (PixelFormat.BytesPerPixel == 4)
+                {
+                    Array.Copy(BitConverter.GetBytes(color), 0, GetBuffer(), y * Stride + x * 4, 4);
+                }
+            }
         }
 
         /// <summary>
@@ -82,11 +103,12 @@ namespace RemoteViewing.Vnc
         /// 
         /// Lock this before reading the framebuffer to avoid tearing artifacts.
         /// </summary>
-        public object SyncLock
+        public object SyncRoot
         {
             get;
             private set;
         }
+
         /// <summary>
         /// The framebuffer width.
         /// </summary>
@@ -110,7 +132,8 @@ namespace RemoteViewing.Vnc
         /// </summary>
         public int Stride
         {
-            get { return PixelFormat.BytesPerPixel * Width; }
+            get;
+            private set;
         }
 
         /// <summary>
@@ -120,6 +143,11 @@ namespace RemoteViewing.Vnc
         {
             get;
             private set;
+        }
+
+        VncFramebuffer IVncFramebufferSource.Capture()
+        {
+            return this;
         }
     }
 }

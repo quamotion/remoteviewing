@@ -1,7 +1,7 @@
 ﻿#region License
 /*
-RemoteViewing VNC Client Library for .NET
-Copyright (c) 2013 James F. Bellinger <http://www.zer7.com>
+RemoteViewing VNC Client/Server Library for .NET
+Copyright (c) 2013 James F. Bellinger <http://www.zer7.com/software/remoteviewing>
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -39,44 +39,38 @@ namespace RemoteViewing.Vnc
     {
         byte[] _framebufferScratch = new byte[0];
         byte[] _zlibScratch = new byte[0];
-        Stream _zlibMemoryStream = new MemoryStream();
-        DeflateStream _zlibDeflater;
+        Stream _zlibMemoryStream;
+        DeflateStream _zlibInflater;
 
         void InitFramebufferDecoder()
         {
             _zlibMemoryStream = new MemoryStream();
-            _zlibDeflater = null; // Don't reuse the dictionary between sessions.
+            _zlibInflater = null; // Don't reuse the dictionary between sessions.
         }
 
         byte[] AllocateFramebufferScratch(int bytes)
         {
-            return AllocateFramebufferScratch(bytes, ref _framebufferScratch);
-        }
-
-        static byte[] AllocateFramebufferScratch(int bytes, ref byte[] scratch)
-        {
-            if (scratch.Length < bytes) { scratch = new byte[bytes]; }
-            return scratch;
+            return VncUtility.AllocateScratch(bytes, ref _framebufferScratch);
         }
 
         void HandleFramebufferUpdate()
         {
-            ReceiveByte(); // padding
+            _c.ReceiveByte(); // padding
 
-            var numRects = VncUtility.DecodeUInt16BE(Receive(2), 0);
+            var numRects = _c.ReceiveUInt16BE();
             var rects = new List<VncRectangle>();
 
             for (int i = 0; i < numRects; i++)
             {
-                var x = (int)VncUtility.DecodeUInt16BE(Receive(2), 0);
-                var y = (int)VncUtility.DecodeUInt16BE(Receive(2), 0);
-                var w = (int)VncUtility.DecodeUInt16BE(Receive(2), 0); SanityCheck(w > 0 && w < 0x8000);
-                var h = (int)VncUtility.DecodeUInt16BE(Receive(2), 0); SanityCheck(h > 0 && h < 0x8000);
+                var r = _c.ReceiveRectangle();
+                int x = r.X, y = r.Y, w = r.Width, h = r.Height;
+                VncStream.SanityCheck(w > 0 && w < 0x8000);
+                VncStream.SanityCheck(h > 0 && h < 0x8000);
 
                 int fbW = Framebuffer.Width, fbH = Framebuffer.Height, bpp = Framebuffer.PixelFormat.BytesPerPixel;
                 var inRange = w <= fbW && h <= fbH && x <= fbW - w && y <= fbH - h; byte[] pixels;
 
-                var encoding = (VncEncoding)VncUtility.DecodeUInt32BE(Receive(4), 0);
+                var encoding = (VncEncoding)_c.ReceiveUInt32BE();
                 switch (encoding)
                 {
                     case VncEncoding.Hextile: // KVM seems to avoid this now that I support Zlib.
@@ -90,23 +84,23 @@ namespace RemoteViewing.Vnc
                             {
                                 int tw = Math.Min(16, w - tx);
 
-                                var subencoding = ReceiveByte();
+                                var subencoding = _c.ReceiveByte();
                                 pixels = AllocateFramebufferScratch(tw * th * bpp);
 
                                 if (0 != (subencoding & 1)) // raw
                                 {
-                                    Receive(pixels, 0, tw * th * bpp);
+                                    _c.Receive(pixels, 0, tw * th * bpp);
 
                                     if (inRange)
                                     {
-                                        lock (Framebuffer.SyncLock) { CopyToFramebuffer(x + tx, y + ty, tw, th, pixels); }
+                                        lock (Framebuffer.SyncRoot) { CopyToFramebuffer(x + tx, y + ty, tw, th, pixels); }
                                     }
                                 }
                                 else
                                 {
                                     pixels = AllocateFramebufferScratch(tw * th * bpp);
-                                    if (0 != (subencoding & 2)) { background = Receive(bpp); }
-                                    if (0 != (subencoding & 4)) { foreground = Receive(bpp); }
+                                    if (0 != (subencoding & 2)) { background = _c.Receive(bpp); }
+                                    if (0 != (subencoding & 4)) { foreground = _c.Receive(bpp); }
 
                                     int ptr = 0;
                                     for (int pp = 0; pp < tw * th; pp++)
@@ -114,14 +108,14 @@ namespace RemoteViewing.Vnc
                                         for (int pe = 0; pe < bpp; pe++) { pixels[ptr++] = background[pe]; }
                                     }
 
-                                    int nsubrects = 0 != (subencoding & 8) ? ReceiveByte() : 0;
+                                    int nsubrects = 0 != (subencoding & 8) ? _c.ReceiveByte() : 0;
                                     if (nsubrects > 0)
                                     {
                                         var subrectsColored = 0 != (subencoding & 16);
                                         for (int subrect = 0; subrect < nsubrects; subrect++)
                                         {
-                                            var color = subrectsColored ? Receive(bpp) : foreground;
-                                            var srxy = ReceiveByte(); var srwh = ReceiveByte();
+                                            var color = subrectsColored ? _c.Receive(bpp) : foreground;
+                                            var srxy = _c.ReceiveByte(); var srwh = _c.ReceiveByte();
                                             int srx = (srxy >> 4) & 0xf, srw = ((srwh >> 4) & 0xf) + 1;
                                             int sry = (srxy >> 0) & 0xf, srh = ((srwh >> 0) & 0xf) + 1;
                                             if (srx + srw > tw || sry + srh > th) { continue; }
@@ -140,21 +134,21 @@ namespace RemoteViewing.Vnc
                                         }
                                     }
 
-                                    lock (Framebuffer.SyncLock) { CopyToFramebuffer(x + tx, y + ty, tw, th, pixels); }
+                                    lock (Framebuffer.SyncRoot) { CopyToFramebuffer(x + tx, y + ty, tw, th, pixels); }
                                 }
                             }
                         }
                         break;
 
-                    case VncEncoding.Copyrect:
-                        var srcx = (int)VncUtility.DecodeUInt16BE(Receive(2), 0);
-                        var srcy = (int)VncUtility.DecodeUInt16BE(Receive(2), 0);
+                    case VncEncoding.CopyRect:
+                        var srcx = (int)_c.ReceiveUInt16BE();
+                        var srcy = (int)_c.ReceiveUInt16BE();
                         if (srcx + w > fbW) { w = fbW - srcx; }
                         if (srcy + h > fbH) { h = fbH - srcy; }
                         if (w < 1 || h < 1) { continue; }
 
                         pixels = AllocateFramebufferScratch(w * h * bpp);
-                        lock (Framebuffer.SyncLock)
+                        lock (Framebuffer.SyncRoot)
                         {
                             CopyToGeneral(0, 0, w, h, pixels, srcx, srcy, fbW, fbH, Framebuffer.GetBuffer(), w, h);
                             CopyToFramebuffer(x, y, w, h, pixels);
@@ -163,30 +157,30 @@ namespace RemoteViewing.Vnc
 
                     case VncEncoding.Raw:
                         pixels = AllocateFramebufferScratch(w * h * bpp);
-                        Receive(pixels, 0, w * h * bpp);
+                        _c.Receive(pixels, 0, w * h * bpp);
 
                         if (inRange)
                         {
-                            lock (Framebuffer.SyncLock) { CopyToFramebuffer(x, y, w, h, pixels); }
+                            lock (Framebuffer.SyncRoot) { CopyToFramebuffer(x, y, w, h, pixels); }
                         }
                         break;
 
                     case VncEncoding.Zlib:
                         int bytesDesired = w * h * bpp;
 
-                        int size = (int)VncUtility.DecodeUInt32BE(Receive(4), 0); SanityCheck(size < 0x10000000);
-                        AllocateFramebufferScratch(size, ref _zlibScratch);
-                        Receive(_zlibScratch, 0, size);
+                        int size = (int)_c.ReceiveUInt32BE(); VncStream.SanityCheck(size >= 0 && size < 0x10000000);
+                        VncUtility.AllocateScratch(size, ref _zlibScratch);
+                        _c.Receive(_zlibScratch, 0, size);
 
                         _zlibMemoryStream.Position = 0;
                         _zlibMemoryStream.Write(_zlibScratch, 0, size);
                         _zlibMemoryStream.SetLength(size);
                         _zlibMemoryStream.Position = 0;
 
-                        if (_zlibDeflater == null) // Zlib has a two-byte header.
+                        if (_zlibInflater == null) // Zlib has a two-byte header.
                         {
-                            SanityCheck(size >= 2); _zlibMemoryStream.Position = 2;
-                            _zlibDeflater = new DeflateStream(_zlibMemoryStream, CompressionMode.Decompress, false);
+                            VncStream.SanityCheck(size >= 2); _zlibMemoryStream.Position = 2;
+                            _zlibInflater = new DeflateStream(_zlibMemoryStream, CompressionMode.Decompress, false);
                         }
 
                         pixels = AllocateFramebufferScratch(bytesDesired);
@@ -196,20 +190,24 @@ namespace RemoteViewing.Vnc
 
                             try
                             {
-                                count = _zlibDeflater.Read(pixels, j, bytesDesired - j);
+                                count = _zlibInflater.Read(pixels, j, bytesDesired - j);
                             }
                             catch (InvalidDataException)
                             {
-                                Require(false, "Bad data compressed.", VncFailureReason.UnrecognizedProtocolElement);
+                                VncStream.Require(false,
+                                                      "Bad data compressed.",
+                                                      VncFailureReason.UnrecognizedProtocolElement);
                             }
 
-                            Require(count > 0, "No data compressed.", VncFailureReason.UnrecognizedProtocolElement);
+                            VncStream.Require(count > 0,
+                                                  "No data compressed.",
+                                                  VncFailureReason.UnrecognizedProtocolElement);
                             j += count;
                         }
 
                         if (inRange)
                         {
-                            lock (Framebuffer.SyncLock) { CopyToFramebuffer(x, y, w, h, pixels); }
+                            lock (Framebuffer.SyncRoot) { CopyToFramebuffer(x, y, w, h, pixels); }
                         }
                         break;
 
@@ -218,8 +216,9 @@ namespace RemoteViewing.Vnc
                         continue; // Don't call OnFramebufferChanged for this one.
 
                     default:
-                        Require(false, "Unsupported encoding.",
-                                VncFailureReason.UnrecognizedProtocolElement);
+                        VncStream.Require(false,
+                                              "Unsupported encoding.",
+                                              VncFailureReason.UnrecognizedProtocolElement);
                         break;
                 }
 

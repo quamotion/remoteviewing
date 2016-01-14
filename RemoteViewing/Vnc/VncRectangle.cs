@@ -1,7 +1,7 @@
 ﻿#region License
 /*
-RemoteViewing VNC Client Library for .NET
-Copyright (c) 2013 James F. Bellinger <http://www.zer7.com>
+RemoteViewing VNC Client/Server Library for .NET
+Copyright (c) 2013 James F. Bellinger <http://www.zer7.com/software/remoteviewing>
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -79,6 +79,14 @@ namespace RemoteViewing.Vnc
         }
 
         /// <summary>
+        /// The number of pixels.
+        /// </summary>
+        public int Area
+        {
+            get { return Width * Height; }
+        }
+
+        /// <summary>
         /// The X coordinate of the leftmost changed pixel.
         /// </summary>
         public int X { get; set; }
@@ -104,6 +112,38 @@ namespace RemoteViewing.Vnc
         public bool IsEmpty
         {
             get { return Width == 0 || Height == 0; }
+        }
+
+        /// <summary>
+        /// Intersects two rectangles.
+        /// </summary>
+        /// <param name="rect1">The first rectangle.</param>
+        /// <param name="rect2">The second rectangle.</param>
+        /// <returns>The intersection of the two.</returns>
+        public static VncRectangle Intersect(VncRectangle rect1, VncRectangle rect2)
+        {
+            if (rect1.IsEmpty) { return rect1; } else if (rect2.IsEmpty) { return rect2; }
+
+            int x = Math.Max(rect1.X, rect2.X), y = Math.Max(rect1.Y, rect2.Y);
+            int w = Math.Min(rect1.X + rect1.Width, rect2.X + rect2.Width) - x;
+            int h = Math.Min(rect1.Y + rect1.Height, rect2.Y + rect2.Height) - y;
+            return w > 0 && h > 0 ? new VncRectangle(x, y, w, h) : new VncRectangle();
+        }
+
+        /// <summary>
+        /// Finds a region that contains both rectangles.
+        /// </summary>
+        /// <param name="rect1">The first rectangle.</param>
+        /// <param name="rect2">The second rectangle.</param>
+        /// <returns>The union of the two.</returns>
+        public static VncRectangle Union(VncRectangle rect1, VncRectangle rect2)
+        {
+            if (rect1.IsEmpty) { return rect2; } else if (rect2.IsEmpty) { return rect1; }
+
+            int x = Math.Min(rect1.X, rect2.X), y = Math.Min(rect1.Y, rect2.Y);
+            int w = Math.Max(rect1.X + rect1.Width, rect2.X + rect2.Width) - x;
+            int h = Math.Max(rect1.Y + rect1.Height, rect2.Y + rect2.Height) - y;
+            return new VncRectangle(x, y, w, h);
         }
 
         /// <summary>

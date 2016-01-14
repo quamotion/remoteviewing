@@ -40,15 +40,29 @@
     <Reference Include="System.Core" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Utility\AutoClear.cs" />
+    <Compile Include="Utility\PeriodicThread.cs" />
+    <Compile Include="Vnc\IVncFramebufferSource.cs" />
+    <Compile Include="Vnc\Server\CreatingDesktopEventArgs.cs" />
+    <Compile Include="Vnc\Server\FramebufferUpdateRequest.cs" />
+    <Compile Include="Vnc\Server\FramebufferUpdatingEventArgs.cs" />
+    <Compile Include="Vnc\Server\PasswordProvidedEventArgs.cs" />
+    <Compile Include="Vnc\Server\VncFramebufferCache.cs" />
+    <Compile Include="Vnc\VncPasswordChallenge.cs" />
+    <Compile Include="Vnc\Server\VncServerSessionOptions.cs" />
+    <Compile Include="Vnc\VncStream.cs" />
+    <Compile Include="Utility\PollingSynchronizationContext.cs" />
     <Compile Include="Throw.cs" />
+    <Compile Include="Utility\SynchronizedCall.cs" />
+    <Compile Include="Vnc\KeyChangedEventArgs.cs" />
+    <Compile Include="Vnc\PointerChangedEventArgs.cs" />
+    <Compile Include="Vnc\Server\VncServerSession.cs" />
     <Compile Include="Vnc\VncRectangle.cs" />
     <Compile Include="Vnc\FramebufferChangedEventArgs.cs" />
-    <Compile Include="Vnc\PasswordRequiredEventArgs.cs" />
     <Compile Include="Vnc\RemoteClipboardChangedEventArgs.cs" />
     <Compile Include="Vnc\VncClient.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Vnc\VncClient.Framebuffer.cs" />
-    <Compile Include="Vnc\VncClient.Security.cs" />
     <Compile Include="Vnc\VncClientConnectOptions.cs" />
     <Compile Include="Vnc\VncFramebuffer.cs" />
     <Compile Include="Vnc\VncFailureReason.cs" />
@@ -56,8 +70,9 @@
     <Compile Include="Vnc\VncUtility.cs" />
     <Compile Include="Vnc\VncEncoding.cs" />
     <Compile Include="Vnc\VncPixelFormat.cs" />
-    <Compile Include="Vnc\VncSecurityType.cs" />
+    <Compile Include="Vnc\AuthenticationMethod.cs" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
