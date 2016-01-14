@@ -34,19 +34,19 @@ namespace RemoteViewing.Utility
 {
     internal sealed class PeriodicThread
     {
-        private ManualResetEvent _requestExit;
-        private AutoResetEvent _requestUpdate;
-        private Thread _requestThread;
+        private ManualResetEvent requestExit;
+        private AutoResetEvent requestUpdate;
+        private Thread requestThread;
 
         public void Start(Func<bool> action, Func<double> getUpdateRateFunc, bool useSignal)
         {
             Throw.If.Null(action, "action").Null(getUpdateRateFunc, "getUpdateRateFunc");
 
-            this._requestExit = new ManualResetEvent(false);
-            this._requestUpdate = new AutoResetEvent(false);
-            this._requestThread = new Thread(() =>
+            this.requestExit = new ManualResetEvent(false);
+            this.requestUpdate = new AutoResetEvent(false);
+            this.requestThread = new Thread(() =>
             {
-                var waitHandles = new WaitHandle[] { this._requestUpdate, this._requestExit };
+                var waitHandles = new WaitHandle[] { this.requestUpdate, this.requestExit };
 
                 while (true)
                 {
@@ -73,7 +73,7 @@ namespace RemoteViewing.Utility
                     {
                         if (didAction) // Rate limit if true.
                         {
-                            if (this._requestExit.WaitOne(timeout))
+                            if (this.requestExit.WaitOne(timeout))
                             {
                                 return;
                             }
@@ -88,27 +88,27 @@ namespace RemoteViewing.Utility
                     }
                 }
             });
-            this._requestThread.IsBackground = true;
-            this._requestThread.Start();
+            this.requestThread.IsBackground = true;
+            this.requestThread.Start();
         }
 
         public void Signal()
         {
-            if (this._requestUpdate != null)
+            if (this.requestUpdate != null)
             {
-                this._requestUpdate.Set();
+                this.requestUpdate.Set();
             }
         }
 
         public void Stop()
         {
-            if (this._requestThread == null)
+            if (this.requestThread == null)
             {
                 return;
             }
 
-            this._requestExit.Set();
-            this._requestThread.Join();
+            this.requestExit.Set();
+            this.requestThread.Join();
         }
     }
 }

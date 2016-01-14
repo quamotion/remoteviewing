@@ -36,19 +36,19 @@ namespace RemoteViewing.Vnc.Server
     {
         private const int TileSize = 32;
 
-        private SHA1Managed _hash = new SHA1Managed();
-        private byte[,][] _hashes; // [y,x][hash]
-        private byte[] _pixelBuffer;
+        private SHA1Managed hash = new SHA1Managed();
+        private byte[,][] hashes; // [y,x][hash]
+        private byte[] pixelBuffer;
 
         public VncFramebufferCache(VncFramebuffer framebuffer)
         {
             Throw.If.Null(framebuffer, "framebuffer");
             this.Framebuffer = framebuffer;
 
-            this._hashes = new byte[
+            this.hashes = new byte[
                 (framebuffer.Height + TileSize - 1) / TileSize,
                                (framebuffer.Width + TileSize - 1) / TileSize][];
-            this._pixelBuffer = new byte[TileSize * TileSize * this.Framebuffer.PixelFormat.BytesPerPixel];
+            this.pixelBuffer = new byte[TileSize * TileSize * this.Framebuffer.PixelFormat.BytesPerPixel];
         }
 
         public bool RespondToUpdateRequest(VncServerSession session)
@@ -81,14 +81,14 @@ namespace RemoteViewing.Vnc.Server
                         var subregion = new VncRectangle(x, y, w, h);
 
                         VncPixelFormat.Copy(buffer, fb.Stride, fb.PixelFormat, subregion,
-                                            this._pixelBuffer, w * bpp, this.Framebuffer.PixelFormat);
+                                            this.pixelBuffer, w * bpp, this.Framebuffer.PixelFormat);
 
                         int ix = x / TileSize, iy = y / TileSize;
-                        var tileHash = this._hash.ComputeHash(this._pixelBuffer, 0, w * h * bpp);
+                        var tileHash = this.hash.ComputeHash(this.pixelBuffer, 0, w * h * bpp);
 
-                        if (this._hashes[iy, ix] == null || !this._hashes[iy, ix].SequenceEqual(tileHash))
+                        if (this.hashes[iy, ix] == null || !this.hashes[iy, ix].SequenceEqual(tileHash))
                         {
-                            this._hashes[iy, ix] = tileHash;
+                            this.hashes[iy, ix] = tileHash;
                             if (incremental)
                             {
                                 session.FramebufferManualInvalidate(subregion);

@@ -35,17 +35,17 @@ namespace RemoteViewing.Vnc
     /// </summary>
     public sealed class VncPixelFormat
     {
-        private int _bitsPerPixel;
-        private int _bytesPerPixel;
-        private int _bitDepth;
-        private int _redBits;
-        private int _redShift;
-        private int _greenBits;
-        private int _greenShift;
-        private int _blueBits;
-        private int _blueShift;
-        private bool _isLittleEndian;
-        private bool _isPalettized;
+        private int bitsPerPixel;
+        private int bytesPerPixel;
+        private int bitDepth;
+        private int redBits;
+        private int redShift;
+        private int greenBits;
+        private int greenShift;
+        private int blueBits;
+        private int blueShift;
+        private bool isLittleEndian;
+        private bool isPalettized;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="VncPixelFormat"/> class,
@@ -79,17 +79,17 @@ namespace RemoteViewing.Vnc
             Throw.If.False(greenBits >= 0 && greenShift >= 0 && greenBits <= bitDepth && greenShift <= bitDepth, "greenBits");
             Throw.If.False(blueBits >= 0 && blueShift >= 0 && blueBits <= bitDepth && blueShift <= bitDepth, "blueBits");
 
-            this._bitsPerPixel = bitsPerPixel;
-            this._bytesPerPixel = bitsPerPixel / 8;
-            this._bitDepth = bitDepth;
-            this._redBits = redBits;
-            this._redShift = redShift;
-            this._greenBits = greenBits;
-            this._greenShift = greenShift;
-            this._blueBits = blueBits;
-            this._blueShift = blueShift;
-            this._isLittleEndian = isLittleEndian;
-            this._isPalettized = isPalettized;
+            this.bitsPerPixel = bitsPerPixel;
+            this.bytesPerPixel = bitsPerPixel / 8;
+            this.bitDepth = bitDepth;
+            this.redBits = redBits;
+            this.redShift = redShift;
+            this.greenBits = greenBits;
+            this.greenShift = greenShift;
+            this.blueBits = blueBits;
+            this.blueShift = blueShift;
+            this.isLittleEndian = isLittleEndian;
+            this.isPalettized = isPalettized;
         }
 
         /// <inheritdoc />
@@ -115,7 +115,7 @@ namespace RemoteViewing.Vnc
         /// <inheritdoc />
         public override int GetHashCode()
         {
-            return this._bitsPerPixel ^ this._redBits;
+            return this.bitsPerPixel ^ this.redBits;
         }
 
         /// <summary>
@@ -254,7 +254,7 @@ namespace RemoteViewing.Vnc
         /// </summary>
         public int BitsPerPixel
         {
-            get { return this._bitsPerPixel; }
+            get { return this.bitsPerPixel; }
         }
 
         /// <summary>
@@ -262,7 +262,7 @@ namespace RemoteViewing.Vnc
         /// </summary>
         public int BytesPerPixel
         {
-            get { return this._bytesPerPixel; }
+            get { return this.bytesPerPixel; }
         }
 
         /// <summary>
@@ -270,7 +270,7 @@ namespace RemoteViewing.Vnc
         /// </summary>
         public int BitDepth
         {
-            get { return this._bitDepth; }
+            get { return this.bitDepth; }
         }
 
         /// <summary>
@@ -278,7 +278,7 @@ namespace RemoteViewing.Vnc
         /// </summary>
         public int RedBits
         {
-            get { return this._redBits; }
+            get { return this.redBits; }
         }
 
         /// <summary>
@@ -286,7 +286,7 @@ namespace RemoteViewing.Vnc
         /// </summary>
         public int RedShift
         {
-            get { return this._redShift; }
+            get { return this.redShift; }
         }
 
         /// <summary>
@@ -294,7 +294,7 @@ namespace RemoteViewing.Vnc
         /// </summary>
         public int GreenBits
         {
-            get { return this._greenBits; }
+            get { return this.greenBits; }
         }
 
         /// <summary>
@@ -302,7 +302,7 @@ namespace RemoteViewing.Vnc
         /// </summary>
         public int GreenShift
         {
-            get { return this._greenShift; }
+            get { return this.greenShift; }
         }
 
         /// <summary>
@@ -310,7 +310,7 @@ namespace RemoteViewing.Vnc
         /// </summary>
         public int BlueBits
         {
-            get { return this._blueBits; }
+            get { return this.blueBits; }
         }
 
         /// <summary>
@@ -318,7 +318,7 @@ namespace RemoteViewing.Vnc
         /// </summary>
         public int BlueShift
         {
-            get { return this._blueShift; }
+            get { return this.blueShift; }
         }
 
         /// <summary>
@@ -329,7 +329,7 @@ namespace RemoteViewing.Vnc
         /// </value>
         public bool IsLittleEndian
         {
-            get { return this._isLittleEndian; }
+            get { return this.isLittleEndian; }
         }
 
         /// <summary>
@@ -340,7 +340,7 @@ namespace RemoteViewing.Vnc
         /// </value>
         public bool IsPalettized
         {
-            get { return this._isPalettized; }
+            get { return this.isPalettized; }
         }
 
         internal static int Size

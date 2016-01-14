@@ -37,32 +37,32 @@ namespace RemoteViewing.Vnc
 {
     partial class VncClient
     {
-        private byte[] _framebufferScratch = new byte[0];
-        private byte[] _zlibScratch = new byte[0];
-        private Stream _zlibMemoryStream;
-        private DeflateStream _zlibInflater;
+        private byte[] framebufferScratch = new byte[0];
+        private byte[] zlibScratch = new byte[0];
+        private Stream zlibMemoryStream;
+        private DeflateStream zlibInflater;
 
         private void InitFramebufferDecoder()
         {
-            this._zlibMemoryStream = new MemoryStream();
-            this._zlibInflater = null; // Don't reuse the dictionary between sessions.
+            this.zlibMemoryStream = new MemoryStream();
+            this.zlibInflater = null; // Don't reuse the dictionary between sessions.
         }
 
         private byte[] AllocateFramebufferScratch(int bytes)
         {
-            return VncUtility.AllocateScratch(bytes, ref this._framebufferScratch);
+            return VncUtility.AllocateScratch(bytes, ref this.framebufferScratch);
         }
 
         private void HandleFramebufferUpdate()
         {
-            this._c.ReceiveByte(); // padding
+            this.c.ReceiveByte(); // padding
 
-            var numRects = this._c.ReceiveUInt16BE();
+            var numRects = this.c.ReceiveUInt16BE();
             var rects = new List<VncRectangle>();
 
             for (int i = 0; i < numRects; i++)
             {
-                var r = this._c.ReceiveRectangle();
+                var r = this.c.ReceiveRectangle();
                 int x = r.X, y = r.Y, w = r.Width, h = r.Height;
                 VncStream.SanityCheck(w > 0 && w < 0x8000);
                 VncStream.SanityCheck(h > 0 && h < 0x8000);
@@ -71,7 +71,7 @@ namespace RemoteViewing.Vnc
                 var inRange = w <= fbW && h <= fbH && x <= fbW - w && y <= fbH - h;
                 byte[] pixels;
 
-                var encoding = (VncEncoding)this._c.ReceiveUInt32BE();
+                var encoding = (VncEncoding)this.c.ReceiveUInt32BE();
                 switch (encoding)
                 {
                     case VncEncoding.Hextile: // KVM seems to avoid this now that I support Zlib.
@@ -85,12 +85,12 @@ namespace RemoteViewing.Vnc
                             {
                                 int tw = Math.Min(16, w - tx);
 
-                                var subencoding = this._c.ReceiveByte();
+                                var subencoding = this.c.ReceiveByte();
                                 pixels = this.AllocateFramebufferScratch(tw * th * bpp);
 
                                 if ((subencoding & 1) != 0) // raw
                                 {
-                                    this._c.Receive(pixels, 0, tw * th * bpp);
+                                    this.c.Receive(pixels, 0, tw * th * bpp);
 
                                     if (inRange)
                                     {
@@ -105,12 +105,12 @@ namespace RemoteViewing.Vnc
                                     pixels = this.AllocateFramebufferScratch(tw * th * bpp);
                                     if ((subencoding & 2) != 0)
                                     {
-                                        background = this._c.Receive(bpp);
+                                        background = this.c.Receive(bpp);
                                     }
 
                                     if ((subencoding & 4) != 0)
                                     {
-                                        foreground = this._c.Receive(bpp);
+                                        foreground = this.c.Receive(bpp);
                                     }
 
                                     int ptr = 0;
@@ -122,15 +122,15 @@ namespace RemoteViewing.Vnc
                                         }
                                     }
 
-                                    int nsubrects = (subencoding & 8) != 0 ? this._c.ReceiveByte() : 0;
+                                    int nsubrects = (subencoding & 8) != 0 ? this.c.ReceiveByte() : 0;
                                     if (nsubrects > 0)
                                     {
                                         var subrectsColored = (subencoding & 16) != 0;
                                         for (int subrect = 0; subrect < nsubrects; subrect++)
                                         {
-                                            var color = subrectsColored ? this._c.Receive(bpp) : foreground;
-                                            var srxy = this._c.ReceiveByte();
-                                            var srwh = this._c.ReceiveByte();
+                                            var color = subrectsColored ? this.c.Receive(bpp) : foreground;
+                                            var srxy = this.c.ReceiveByte();
+                                            var srwh = this.c.ReceiveByte();
                                             int srx = (srxy >> 4) & 0xf, srw = ((srwh >> 4) & 0xf) + 1;
                                             int sry = (srxy >> 0) & 0xf, srh = ((srwh >> 0) & 0xf) + 1;
                                             if (srx + srw > tw || sry + srh > th)
@@ -163,8 +163,8 @@ namespace RemoteViewing.Vnc
                         break;
 
                     case VncEncoding.CopyRect:
-                        var srcx = (int)this._c.ReceiveUInt16BE();
-                        var srcy = (int)this._c.ReceiveUInt16BE();
+                        var srcx = (int)this.c.ReceiveUInt16BE();
+                        var srcy = (int)this.c.ReceiveUInt16BE();
                         if (srcx + w > fbW)
                         {
                             w = fbW - srcx;
@@ -191,7 +191,7 @@ namespace RemoteViewing.Vnc
 
                     case VncEncoding.Raw:
                         pixels = this.AllocateFramebufferScratch(w * h * bpp);
-                        this._c.Receive(pixels, 0, w * h * bpp);
+                        this.c.Receive(pixels, 0, w * h * bpp);
 
                         if (inRange)
                         {
@@ -206,20 +206,20 @@ namespace RemoteViewing.Vnc
                     case VncEncoding.Zlib:
                         int bytesDesired = w * h * bpp;
 
-                        int size = (int)this._c.ReceiveUInt32BE(); VncStream.SanityCheck(size >= 0 && size < 0x10000000);
-                        VncUtility.AllocateScratch(size, ref this._zlibScratch);
-                        this._c.Receive(this._zlibScratch, 0, size);
+                        int size = (int)this.c.ReceiveUInt32BE(); VncStream.SanityCheck(size >= 0 && size < 0x10000000);
+                        VncUtility.AllocateScratch(size, ref this.zlibScratch);
+                        this.c.Receive(this.zlibScratch, 0, size);
 
-                        this._zlibMemoryStream.Position = 0;
-                        this._zlibMemoryStream.Write(this._zlibScratch, 0, size);
-                        this._zlibMemoryStream.SetLength(size);
-                        this._zlibMemoryStream.Position = 0;
+                        this.zlibMemoryStream.Position = 0;
+                        this.zlibMemoryStream.Write(this.zlibScratch, 0, size);
+                        this.zlibMemoryStream.SetLength(size);
+                        this.zlibMemoryStream.Position = 0;
 
-                        if (this._zlibInflater == null) // Zlib has a two-byte header.
+                        if (this.zlibInflater == null) // Zlib has a two-byte header.
                         {
                             VncStream.SanityCheck(size >= 2);
-                            this._zlibMemoryStream.Position = 2;
-                            this._zlibInflater = new DeflateStream(this._zlibMemoryStream, CompressionMode.Decompress, false);
+                            this.zlibMemoryStream.Position = 2;
+                            this.zlibInflater = new DeflateStream(this.zlibMemoryStream, CompressionMode.Decompress, false);
                         }
 
                         pixels = this.AllocateFramebufferScratch(bytesDesired);
@@ -229,7 +229,7 @@ namespace RemoteViewing.Vnc
 
                             try
                             {
-                                count = this._zlibInflater.Read(pixels, j, bytesDesired - j);
+                                count = this.zlibInflater.Read(pixels, j, bytesDesired - j);
                             }
                             catch (InvalidDataException)
                             {

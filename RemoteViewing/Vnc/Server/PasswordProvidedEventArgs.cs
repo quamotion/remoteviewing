@@ -36,8 +36,8 @@ namespace RemoteViewing.Vnc.Server
     /// </summary>
     public sealed class PasswordProvidedEventArgs : EventArgs
     {
-        private byte[] _challenge;
-        private byte[] _response;
+        private byte[] challenge;
+        private byte[] response;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="PasswordProvidedEventArgs"/> class.
@@ -50,8 +50,8 @@ namespace RemoteViewing.Vnc.Server
             Throw.If.False(challenge.Length == 16, "Challenge must be 16 bytes.");
             Throw.If.False(response.Length == 16, "Response must be 16 bytes.");
 
-            this._challenge = challenge;
-            this._response = response;
+            this.challenge = challenge;
+            this.response = response;
         }
 
         /// <summary>
@@ -74,7 +74,7 @@ namespace RemoteViewing.Vnc.Server
             Throw.If.Null(password, "password");
 
             var response = new byte[16];
-            VncPasswordChallenge.GetChallengeResponse(this._challenge, password, response);
+            VncPasswordChallenge.GetChallengeResponse(this.challenge, password, response);
             return this.Test(response);
         }
 
@@ -88,7 +88,7 @@ namespace RemoteViewing.Vnc.Server
             Throw.If.Null(password, "password");
 
             var response = new byte[16];
-            VncPasswordChallenge.GetChallengeResponse(this._challenge, password, response);
+            VncPasswordChallenge.GetChallengeResponse(this.challenge, password, response);
             return this.Test(response);
         }
 
@@ -96,7 +96,7 @@ namespace RemoteViewing.Vnc.Server
         {
             using (new Utility.AutoClear(response))
             {
-                if (!this._response.SequenceEqual(response))
+                if (!this.response.SequenceEqual(response))
                 {
                     return false;
                 }

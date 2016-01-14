@@ -74,7 +74,7 @@ namespace RemoteViewing.Vnc
         }
 
         /// <summary>
-        /// Gets or sets a callback which is called when a password is required and 
+        /// Gets or sets a callback which is called when a password is required and
         /// <see cref="VncClientConnectOptions.Password"/> is <see langword="null"/>.
         /// </summary>
         public PasswordRequiredCallback PasswordRequiredCallback

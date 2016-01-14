@@ -32,22 +32,22 @@ namespace RemoteViewing.Utility
 {
     internal struct AutoClear : IDisposable
     {
-        private Array _array;
+        private Array array;
 
         public AutoClear(Array array)
         {
-            this._array = array;
+            this.array = array;
         }
 
         public void Dispose()
         {
-            if (this._array == null)
+            if (this.array == null)
             {
                 return;
             }
 
-            Array.Clear(this._array, 0, this._array.Length);
-            this._array = null;
+            Array.Clear(this.array, 0, this.array.Length);
+            this.array = null;
         }
     }
 }

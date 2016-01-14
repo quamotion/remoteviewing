@@ -9,7 +9,7 @@ namespace RemoteViewing.Utility
     /// </summary>
     public class PollingSynchronizationContext : SynchronizationContext
     {
-        private Queue<Action> _posts = new Queue<Action>();
+        private Queue<Action> posts = new Queue<Action>();
 
         /// <summary>
         /// Dequeues and runs an action, if one is queued.
@@ -20,17 +20,17 @@ namespace RemoteViewing.Utility
         {
             Action action;
 
-            lock (this._posts)
+            lock (this.posts)
             {
-                if (this._posts.Count == 0)
+                if (this.posts.Count == 0)
                 {
-                    if (timeout == 0 || !Monitor.Wait(this._posts, timeout))
+                    if (timeout == 0 || !Monitor.Wait(this.posts, timeout))
                     {
                         return false;
                     }
                 }
 
-                action = this._posts.Dequeue();
+                action = this.posts.Dequeue();
             }
 
             action();
@@ -44,10 +44,10 @@ namespace RemoteViewing.Utility
         /// <param name="action">The action to run.</param>
         private void Post(Action action)
         {
-            lock (this._posts)
+            lock (this.posts)
             {
-                this._posts.Enqueue(action);
-                Monitor.Pulse(this._posts);
+                this.posts.Enqueue(action);
+                Monitor.Pulse(this.posts);
             }
         }
 

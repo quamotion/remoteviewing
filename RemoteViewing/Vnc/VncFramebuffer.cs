@@ -38,7 +38,7 @@ namespace RemoteViewing.Vnc
     /// </summary>
     public class VncFramebuffer : IVncFramebufferSource
     {
-        private byte[] _buffer;
+        private byte[] buffer;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="VncFramebuffer"/> class.
@@ -60,7 +60,7 @@ namespace RemoteViewing.Vnc
             this.Stride = this.PixelFormat.BytesPerPixel * this.Width;
             this.SyncRoot = new object();
 
-            this._buffer = new byte[this.Width * this.Height * this.PixelFormat.BytesPerPixel];
+            this.buffer = new byte[this.Width * this.Height * this.PixelFormat.BytesPerPixel];
         }
 
         /// <summary>
@@ -89,7 +89,7 @@ namespace RemoteViewing.Vnc
         /// <returns>The framebuffer bytes.</returns>
         public byte[] GetBuffer()
         {
-            return this._buffer;
+            return this.buffer;
         }
 
         /// <summary>

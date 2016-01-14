@@ -38,7 +38,7 @@ namespace RemoteViewing.Vnc
     /// </summary>
     public class FramebufferChangedEventArgs : EventArgs
     {
-        private List<VncRectangle> _rectangles;
+        private List<VncRectangle> rectangles;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="FramebufferChangedEventArgs"/> class.
@@ -48,7 +48,7 @@ namespace RemoteViewing.Vnc
         {
             Throw.If.Null(rectangles, "rectangles");
 
-            this._rectangles = rectangles.ToList();
+            this.rectangles = rectangles.ToList();
         }
 
         /// <summary>
@@ -58,7 +58,7 @@ namespace RemoteViewing.Vnc
         /// <returns>A rectangle describing the changed region.</returns>
         public VncRectangle GetRectangle(int index)
         {
-            return this._rectangles[index];
+            return this.rectangles[index];
         }
 
         /// <summary>
@@ -66,7 +66,7 @@ namespace RemoteViewing.Vnc
         /// </summary>
         public int RectangleCount
         {
-            get { return this._rectangles.Count; }
+            get { return this.rectangles.Count; }
         }
     }
 }

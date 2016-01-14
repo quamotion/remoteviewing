@@ -36,10 +36,10 @@ namespace RemoteViewing.Utility
     /// </summary>
     public class SynchronizedCall
     {
-        private SendOrPostCallback _callback; private object _state;
+        private SendOrPostCallback callback; private object state;
 
-        private ManualResetEvent _event = new ManualResetEvent(false);
-        private Exception _ex;
+        private ManualResetEvent @event = new ManualResetEvent(false);
+        private Exception ex;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SynchronizedCall"/> class.
@@ -50,8 +50,8 @@ namespace RemoteViewing.Utility
         {
             Throw.If.Null(callback, "callback");
 
-            this._callback = callback;
-            this._state = state;
+            this.callback = callback;
+            this.state = state;
         }
 
         /// <summary>
@@ -61,15 +61,15 @@ namespace RemoteViewing.Utility
         {
             try
             {
-                this._callback(this._state);
+                this.callback(this.state);
             }
             catch (Exception ex)
             {
-                this._ex = ex;
+                this.ex = ex;
             }
             finally
             {
-                this._event.Set();
+                this.@event.Set();
             }
         }
 
@@ -78,9 +78,9 @@ namespace RemoteViewing.Utility
         /// </summary>
         public void Wait()
         {
-            this._event.WaitOne();
+            this.@event.WaitOne();
 
-            var ex = this._ex;
+            var ex = this.ex;
             if (ex != null)
             {
                 throw ex;
