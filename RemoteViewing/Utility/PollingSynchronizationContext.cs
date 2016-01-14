@@ -9,7 +9,7 @@ namespace RemoteViewing.Utility
     /// </summary>
     public class PollingSynchronizationContext : SynchronizationContext
     {
-        Queue<Action> _posts = new Queue<Action>();
+        private Queue<Action> _posts = new Queue<Action>();
 
         /// <summary>
         /// Dequeues and runs an action, if one is queued.
@@ -20,17 +20,21 @@ namespace RemoteViewing.Utility
         {
             Action action;
 
-            lock (_posts)
+            lock (this._posts)
             {
-                if (_posts.Count == 0)
+                if (this._posts.Count == 0)
                 {
-                    if (timeout == 0 || !Monitor.Wait(_posts, timeout)) { return false; }
+                    if (timeout == 0 || !Monitor.Wait(this._posts, timeout))
+                    {
+                        return false;
+                    }
                 }
 
-                action = _posts.Dequeue();
+                action = this._posts.Dequeue();
             }
 
-            action(); return true;
+            action();
+            return true;
         }
 
         /// <summary>
@@ -38,12 +42,12 @@ namespace RemoteViewing.Utility
         /// This will not block.
         /// </summary>
         /// <param name="action">The action to run.</param>
-        void Post(Action action)
+        private void Post(Action action)
         {
-            lock (_posts)
+            lock (this._posts)
             {
-                _posts.Enqueue(action);
-                Monitor.Pulse(_posts);
+                this._posts.Enqueue(action);
+                Monitor.Pulse(this._posts);
             }
         }
 
@@ -55,7 +59,7 @@ namespace RemoteViewing.Utility
         /// <param name="state">State to pass to the callback.</param>
         public override void Post(SendOrPostCallback d, object state)
         {
-            Post(() => d(state));
+            this.Post(() => d(state));
         }
 
         /// <summary>
@@ -69,7 +73,7 @@ namespace RemoteViewing.Utility
         {
             var call = new SynchronizedCall(d, state);
 
-            Post(call_ => ((SynchronizedCall)call_).Run(), call);
+            this.Post(call_ => ((SynchronizedCall)call_).Run(), call);
 
             call.Wait();
         }

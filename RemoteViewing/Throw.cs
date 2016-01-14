@@ -5,13 +5,13 @@ Copyright (c) 2013 James F. Bellinger <http://www.zer7.com/software/remoteviewin
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions are met: 
+modification, are permitted provided that the following conditions are met:
 
 1. Redistributions of source code must retain the above copyright notice, this
-   list of conditions and the following disclaimer. 
+   list of conditions and the following disclaimer.
 2. Redistributions in binary form must reproduce the above copyright notice,
    this list of conditions and the following disclaimer in the documentation
-   and/or other materials provided with the distribution. 
+   and/or other materials provided with the distribution.
 
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
 ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
@@ -33,9 +33,8 @@ namespace RemoteViewing
 {
     internal sealed class Throw
     {
-        Throw()
+        private Throw()
         {
-
         }
 
         public static Throw If
@@ -48,45 +47,77 @@ namespace RemoteViewing
     {
         public static Throw True(this Throw self, bool condition, string paramName)
         {
-            if (condition) { throw new ArgumentException(paramName); }
+            if (condition)
+            {
+                throw new ArgumentException(paramName);
+            }
+
             return null;
         }
 
         public static Throw False(this Throw self, bool condition, string paramName)
         {
-            if (!condition) { throw new ArgumentException(paramName); }
+            if (!condition)
+            {
+                throw new ArgumentException(paramName);
+            }
+
             return null;
         }
 
         public static Throw Negative(this Throw self, int value, string paramName)
         {
-            if (value < 0) { throw new ArgumentOutOfRangeException("paramName"); }
+            if (value < 0)
+            {
+                throw new ArgumentOutOfRangeException("paramName");
+            }
+
             return null;
         }
 
         public static Throw Null<T>(this Throw self, T value)
         {
-            if (value == null) { throw new ArgumentNullException(); }
+            if (value == null)
+            {
+                throw new ArgumentNullException();
+            }
+
             return null;
         }
 
         public static Throw Null<T>(this Throw self, T value, string paramName)
         {
-            if (value == null) { throw new ArgumentNullException(paramName); }
+            if (value == null)
+            {
+                throw new ArgumentNullException(paramName);
+            }
+
             return null;
         }
 
         public static Throw OutOfRange<T>(this Throw self, IList<T> buffer, int offset, int count)
         {
             Throw.If.Null(buffer, "buffer");
-            if (offset < 0 || offset > buffer.Count) { throw new ArgumentOutOfRangeException("offset"); }
-            if (count < 0 || count > buffer.Count - offset) { throw new ArgumentOutOfRangeException("count"); }
+            if (offset < 0 || offset > buffer.Count)
+            {
+                throw new ArgumentOutOfRangeException("offset");
+            }
+
+            if (count < 0 || count > buffer.Count - offset)
+            {
+                throw new ArgumentOutOfRangeException("count");
+            }
+
             return null;
         }
 
         public static Throw VncRequires(this Throw self, bool condition, string message, Vnc.VncFailureReason reason)
         {
-            if (!condition) { throw new Vnc.VncException(message, reason); }
+            if (!condition)
+            {
+                throw new Vnc.VncException(message, reason);
+            }
+
             return null;
         }
 

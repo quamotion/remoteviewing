@@ -5,13 +5,13 @@ Copyright (c) 2013 James F. Bellinger <http://www.zer7.com/software/remoteviewin
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions are met: 
+modification, are permitted provided that the following conditions are met:
 
 1. Redistributions of source code must retain the above copyright notice, this
-   list of conditions and the following disclaimer. 
+   list of conditions and the following disclaimer.
 2. Redistributions in binary form must reproduce the above copyright notice,
    this list of conditions and the following disclaimer in the documentation
-   and/or other materials provided with the distribution. 
+   and/or other materials provided with the distribution.
 
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
 ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
@@ -32,30 +32,36 @@ using System.Security.Cryptography;
 
 namespace RemoteViewing.Vnc.Server
 {
-    sealed class VncFramebufferCache
+    internal sealed class VncFramebufferCache
     {
-        const int TileSize = 32;
+        private const int TileSize = 32;
 
-        SHA1Managed _hash = new SHA1Managed();
-        byte[,][] _hashes; // [y,x][hash]
-        byte[] _pixelBuffer;
+        private SHA1Managed _hash = new SHA1Managed();
+        private byte[,][] _hashes; // [y,x][hash]
+        private byte[] _pixelBuffer;
 
         public VncFramebufferCache(VncFramebuffer framebuffer)
         {
             Throw.If.Null(framebuffer, "framebuffer");
-            Framebuffer = framebuffer;
+            this.Framebuffer = framebuffer;
 
-            _hashes = new byte[(framebuffer.Height + TileSize - 1) / TileSize,
-                               (framebuffer.Width  + TileSize - 1) / TileSize][];
-            _pixelBuffer = new byte[TileSize * TileSize * Framebuffer.PixelFormat.BytesPerPixel];
+            this._hashes = new byte[
+                (framebuffer.Height + TileSize - 1) / TileSize,
+                               (framebuffer.Width + TileSize - 1) / TileSize][];
+            this._pixelBuffer = new byte[TileSize * TileSize * this.Framebuffer.PixelFormat.BytesPerPixel];
         }
 
         public bool RespondToUpdateRequest(VncServerSession session)
         {
-            var fb = Framebuffer; var fbr = session.FramebufferUpdateRequest;
-            if (fb == null || fbr == null) { return false; }
+            var fb = this.Framebuffer;
+            var fbr = session.FramebufferUpdateRequest;
+            if (fb == null || fbr == null)
+            {
+                return false;
+            }
 
-            var incremental = fbr.Incremental; var region = fbr.Region;
+            var incremental = fbr.Incremental;
+            var region = fbr.Region;
             session.FramebufferManualBeginUpdate();
 
             var buffer = fb.GetBuffer();
@@ -75,15 +81,18 @@ namespace RemoteViewing.Vnc.Server
                         var subregion = new VncRectangle(x, y, w, h);
 
                         VncPixelFormat.Copy(buffer, fb.Stride, fb.PixelFormat, subregion,
-                                            _pixelBuffer, w * bpp, Framebuffer.PixelFormat);
+                                            this._pixelBuffer, w * bpp, this.Framebuffer.PixelFormat);
 
                         int ix = x / TileSize, iy = y / TileSize;
-                        var tileHash = _hash.ComputeHash(_pixelBuffer, 0, w * h * bpp);
+                        var tileHash = this._hash.ComputeHash(this._pixelBuffer, 0, w * h * bpp);
 
-                        if (_hashes[iy, ix] == null || !_hashes[iy, ix].SequenceEqual(tileHash))
+                        if (this._hashes[iy, ix] == null || !this._hashes[iy, ix].SequenceEqual(tileHash))
                         {
-                            _hashes[iy, ix] = tileHash;
-                            if (incremental) { session.FramebufferManualInvalidate(subregion); }
+                            this._hashes[iy, ix] = tileHash;
+                            if (incremental)
+                            {
+                                session.FramebufferManualInvalidate(subregion);
+                            }
                         }
                     }
                 }

@@ -5,13 +5,13 @@ Copyright (c) 2013 James F. Bellinger <http://www.zer7.com/software/remoteviewin
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions are met: 
+modification, are permitted provided that the following conditions are met:
 
 1. Redistributions of source code must retain the above copyright notice, this
-   list of conditions and the following disclaimer. 
+   list of conditions and the following disclaimer.
 2. Redistributions in binary form must reproduce the above copyright notice,
    this list of conditions and the following disclaimer in the documentation
-   and/or other materials provided with the distribution. 
+   and/or other materials provided with the distribution.
 
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
 ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
@@ -51,15 +51,15 @@ namespace RemoteViewing.Vnc
         /// </summary>
         public VncClientConnectOptions()
         {
-            ShareDesktop = true;
+            this.ShareDesktop = true;
         }
 
         /// <summary>
         /// The password to authenticate with, if the server requires one.
-        /// 
+        ///
         /// If this is <c>null</c> and a password is required, the connection will fail.
         /// <c>null</c> is different from a zero-character password.
-        /// 
+        ///
         /// Only the first eight characters of a password are meaningful in
         /// traditional VNC authentication.
         /// </summary>
@@ -81,7 +81,7 @@ namespace RemoteViewing.Vnc
         /// <summary>
         /// <c>true</c> to share the desktop with any currently-connected clients.
         /// <c>false</c> to get exclusive access to the desktop.
-        /// 
+        ///
         /// This is set to <c>true</c> by default.
         /// </summary>
         public bool ShareDesktop

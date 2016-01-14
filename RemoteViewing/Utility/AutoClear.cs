@@ -5,13 +5,13 @@ Copyright (c) 2013 James F. Bellinger <http://www.zer7.com/software/remoteviewin
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions are met: 
+modification, are permitted provided that the following conditions are met:
 
 1. Redistributions of source code must retain the above copyright notice, this
-   list of conditions and the following disclaimer. 
+   list of conditions and the following disclaimer.
 2. Redistributions in binary form must reproduce the above copyright notice,
    this list of conditions and the following disclaimer in the documentation
-   and/or other materials provided with the distribution. 
+   and/or other materials provided with the distribution.
 
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
 ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
@@ -30,20 +30,24 @@ using System;
 
 namespace RemoteViewing.Utility
 {
-    struct AutoClear : IDisposable
+    internal struct AutoClear : IDisposable
     {
-        Array _array;
+        private Array _array;
 
         public AutoClear(Array array)
         {
-            _array = array;
+            this._array = array;
         }
 
         public void Dispose()
         {
-            if (_array == null) { return; }
-            Array.Clear(_array, 0, _array.Length);
-            _array = null;
+            if (this._array == null)
+            {
+                return;
+            }
+
+            Array.Clear(this._array, 0, this._array.Length);
+            this._array = null;
         }
     }
 }

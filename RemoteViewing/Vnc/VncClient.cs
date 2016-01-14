@@ -5,13 +5,13 @@ Copyright (c) 2013 James F. Bellinger <http://www.zer7.com/software/remoteviewin
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions are met: 
+modification, are permitted provided that the following conditions are met:
 
 1. Redistributions of source code must retain the above copyright notice, this
-   list of conditions and the following disclaimer. 
+   list of conditions and the following disclaimer.
 2. Redistributions in binary form must reproduce the above copyright notice,
    this list of conditions and the following disclaimer in the documentation
-   and/or other materials provided with the distribution. 
+   and/or other materials provided with the distribution.
 
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
 ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
@@ -70,18 +70,18 @@ namespace RemoteViewing.Vnc
         /// </summary>
         public event EventHandler<RemoteClipboardChangedEventArgs> RemoteClipboardChanged;
 
-        VncStream _c = new VncStream();
-        VncClientConnectOptions _options;
-        double _maxUpdateRate;
-        Version _serverVersion = new Version();
-        Thread _threadMain;
+        private VncStream _c = new VncStream();
+        private VncClientConnectOptions _options;
+        private double _maxUpdateRate;
+        private Version _serverVersion = new Version();
+        private Thread _threadMain;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="VncClient"/> class.
         /// </summary>
         public VncClient()
         {
-            MaxUpdateRate = 15;
+            this.MaxUpdateRate = 15;
         }
 
         /// <summary>
@@ -89,8 +89,12 @@ namespace RemoteViewing.Vnc
         /// </summary>
         public void Close()
         {
-            var thread = _threadMain; _c.Close();
-            if (thread != null) { thread.Join(); }
+            var thread = this._threadMain;
+            this._c.Close();
+            if (thread != null)
+            {
+                thread.Join();
+            }
         }
 
         /// <summary>
@@ -103,7 +107,7 @@ namespace RemoteViewing.Vnc
         {
             Throw.If.Null(hostname, "hostname").Negative(port, "port");
 
-            lock (_c.SyncRoot)
+            lock (this._c.SyncRoot)
             {
                 var client = new TcpClient();
 
@@ -113,20 +117,22 @@ namespace RemoteViewing.Vnc
                 }
                 catch (Exception)
                 {
-                    OnConnectionFailed(); throw;
+                    this.OnConnectionFailed();
+                    throw;
                 }
 
                 try
                 {
-                    Connect(client.GetStream(), options);
+                    this.Connect(client.GetStream(), options);
                 }
                 catch (Exception)
                 {
-                    client.Close(); throw;
+                    client.Close();
+                    throw;
                 }
             }
         }
-        
+
         /// <summary>
         /// Connects to a VNC server.
         /// </summary>
@@ -136,78 +142,80 @@ namespace RemoteViewing.Vnc
         {
             Throw.If.Null(stream, "stream");
 
-            lock (_c.SyncRoot)
+            lock (this._c.SyncRoot)
             {
-                Close();
+                this.Close();
 
-                _options = options ?? new VncClientConnectOptions();
-                _c.Stream = stream;
+                this._options = options ?? new VncClientConnectOptions();
+                this._c.Stream = stream;
 
                 try
                 {
-                    NegotiateVersion();
-                    NegotiateSecurity();
-                    NegotiateDesktop();
-                    NegotiateEncodings();
-                    InitFramebufferDecoder();
-                    SendFramebufferUpdateRequest(false);
+                    this.NegotiateVersion();
+                    this.NegotiateSecurity();
+                    this.NegotiateDesktop();
+                    this.NegotiateEncodings();
+                    this.InitFramebufferDecoder();
+                    this.SendFramebufferUpdateRequest(false);
                 }
                 catch (IOException e)
                 {
-                    OnConnectionFailed();
+                    this.OnConnectionFailed();
                     throw new VncException("IO error.", VncFailureReason.NetworkError, e);
                 }
                 catch (ObjectDisposedException e)
                 {
-                    OnConnectionFailed();
+                    this.OnConnectionFailed();
                     throw new VncException("Connection closed.", VncFailureReason.NetworkError, e);
                 }
                 catch (SocketException e)
                 {
-                    OnConnectionFailed();
+                    this.OnConnectionFailed();
                     throw new VncException("Connection failed.", VncFailureReason.NetworkError, e);
                 }
 
-                _threadMain = new Thread(ThreadMain);
-                _threadMain.IsBackground = true;
-                _threadMain.Start();
+                this._threadMain = new Thread(this.ThreadMain);
+                this._threadMain.IsBackground = true;
+                this._threadMain.Start();
             }
         }
 
-        void ThreadMain()
+        private void ThreadMain()
         {
             var requester = new Utility.PeriodicThread();
-            IsConnected = true; OnConnected();
+            this.IsConnected = true;
+            this.OnConnected();
 
             try
             {
-                requester.Start(() =>
+                requester.Start(
+                    () =>
                     {
-                        SendFramebufferUpdateRequest(true);
+                        this.SendFramebufferUpdateRequest(true);
                         return true;
-                    }, () => MaxUpdateRate, true);
+                    }, () => this.MaxUpdateRate, true);
 
                 while (true)
                 {
-                    var command = _c.ReceiveByte();
+                    var command = this._c.ReceiveByte();
 
                     switch (command)
                     {
                         case 0:
                             requester.Signal();
-                            HandleFramebufferUpdate();
+                            this.HandleFramebufferUpdate();
                             break;
 
                         case 1:
-                            HandleSetColorMapEntries();
+                            this.HandleSetColorMapEntries();
                             break;
 
                         case 2:
-                            HandleBell();
+                            this.HandleBell();
                             break;
 
                         case 3:
-                            HandleReceiveClipboardData();
+                            this.HandleReceiveClipboardData();
                             break;
 
                         default:
@@ -219,112 +227,122 @@ namespace RemoteViewing.Vnc
             }
             catch (ObjectDisposedException)
             {
-
             }
             catch (IOException)
             {
-
             }
             catch (VncException)
             {
-
             }
 
             requester.Stop();
 
-            _c.Stream = null;
-            IsConnected = false; OnClosed();
+            this._c.Stream = null;
+            this.IsConnected = false;
+            this.OnClosed();
         }
 
-        void NegotiateVersion()
+        private void NegotiateVersion()
         {
-            _serverVersion = _c.ReceiveVersion();
-            VncStream.Require(_serverVersion >= new Version(3, 8),
+            this._serverVersion = this._c.ReceiveVersion();
+            VncStream.Require(
+                this._serverVersion >= new Version(3, 8),
                                   "RFB 3.8 not supported by server.",
                                   VncFailureReason.UnsupportedProtocolVersion);
 
-            _c.SendVersion(new Version(3, 8));
+            this._c.SendVersion(new Version(3, 8));
         }
 
-        void NegotiateSecurity()
+        private void NegotiateSecurity()
         {
-            int count = _c.ReceiveByte();
+            int count = this._c.ReceiveByte();
             if (count == 0)
             {
-                string message = _c.ReceiveString().Trim('\0');
+                string message = this._c.ReceiveString().Trim('\0');
                 VncStream.Require(false, message, VncFailureReason.ServerOfferedNoAuthenticationMethods);
             }
 
             var types = new List<AuthenticationMethod>();
-            for (int i = 0; i < count; i++) { types.Add((AuthenticationMethod)_c.ReceiveByte()); }
+            for (int i = 0; i < count; i++)
+            {
+                types.Add((AuthenticationMethod)this._c.ReceiveByte());
+            }
 
             if (types.Contains(AuthenticationMethod.None))
             {
-                _c.SendByte((byte)AuthenticationMethod.None);
+                this._c.SendByte((byte)AuthenticationMethod.None);
             }
             else if (types.Contains(AuthenticationMethod.Password))
             {
-                if (_options.Password == null)
+                if (this._options.Password == null)
                 {
-                    var callback = _options.PasswordRequiredCallback;
-                    if (callback != null) { _options.Password = callback(this); }
+                    var callback = this._options.PasswordRequiredCallback;
+                    if (callback != null)
+                    {
+                        this._options.Password = callback(this);
+                    }
 
-                    VncStream.Require(_options.Password != null,
+                    VncStream.Require(
+                        this._options.Password != null,
                                           "Password required.",
                                           VncFailureReason.PasswordRequired);
                 }
 
-                _c.SendByte((byte)AuthenticationMethod.Password);
+                this._c.SendByte((byte)AuthenticationMethod.Password);
 
-                var challenge = _c.Receive(16);
-                var password = _options.Password;
+                var challenge = this._c.Receive(16);
+                var password = this._options.Password;
                 var response = new byte[16];
 
                 using (new Utility.AutoClear(challenge))
                 using (new Utility.AutoClear(response))
                 {
-                    VncPasswordChallenge.GetChallengeResponse(challenge, _options.Password, response);
-                    _c.Send(response);
+                    VncPasswordChallenge.GetChallengeResponse(challenge, this._options.Password, response);
+                    this._c.Send(response);
                 }
             }
             else
             {
-                VncStream.Require(false,
+                VncStream.Require(
+                    false,
                                       "No supported authentication methods.",
                                       VncFailureReason.NoSupportedAuthenticationMethods);
             }
 
-            uint status = _c.ReceiveUInt32BE();
+            uint status = this._c.ReceiveUInt32BE();
             if (status != 0)
             {
-                string message = _c.ReceiveString().Trim('\0');
+                string message = this._c.ReceiveString().Trim('\0');
                 VncStream.Require(false, message, VncFailureReason.AuthenticationFailed);
             }
         }
 
-        void NegotiateDesktop()
+        private void NegotiateDesktop()
         {
-            _c.SendByte((byte)(_options.ShareDesktop ? 1 : 0));
+            this._c.SendByte((byte)(this._options.ShareDesktop ? 1 : 0));
 
-            var width = _c.ReceiveUInt16BE(); VncStream.SanityCheck(width > 0 && width < 0x8000);
-            var height = _c.ReceiveUInt16BE(); VncStream.SanityCheck(height > 0 && height < 0x8000);
+            var width = this._c.ReceiveUInt16BE();
+            VncStream.SanityCheck(width > 0 && width < 0x8000);
+            var height = this._c.ReceiveUInt16BE();
+            VncStream.SanityCheck(height > 0 && height < 0x8000);
 
             VncPixelFormat pixelFormat;
             try
             {
-                pixelFormat = VncPixelFormat.Decode(_c.Receive(VncPixelFormat.Size), 0);
+                pixelFormat = VncPixelFormat.Decode(this._c.Receive(VncPixelFormat.Size), 0);
             }
             catch (ArgumentException e)
             {
-                throw new VncException("Unsupported pixel format.",
+                throw new VncException(
+                    "Unsupported pixel format.",
                                                VncFailureReason.UnsupportedPixelFormat, e);
             }
 
-            var name = _c.ReceiveString();
-            Framebuffer = new VncFramebuffer(name, width, height, pixelFormat);
+            var name = this._c.ReceiveString();
+            this.Framebuffer = new VncFramebuffer(name, width, height, pixelFormat);
         }
 
-        void NegotiateEncodings()
+        private void NegotiateEncodings()
         {
             var encodings = new VncEncoding[]
             {
@@ -335,22 +353,26 @@ namespace RemoteViewing.Vnc
                 VncEncoding.PseudoDesktopSize
             };
 
-            _c.Send(new[] { (byte)2, (byte)0 });
-            _c.SendUInt16BE((ushort)encodings.Length);
-            foreach (var encoding in encodings) { _c.SendUInt32BE((uint)encoding); }
+            this._c.Send(new[] { (byte)2, (byte)0 });
+            this._c.SendUInt16BE((ushort)encodings.Length);
+            foreach (var encoding in encodings)
+            {
+                this._c.SendUInt32BE((uint)encoding);
+            }
         }
 
-        void SendFramebufferUpdateRequest(bool incremental)
+        private void SendFramebufferUpdateRequest(bool incremental)
         {
             var p = new byte[10];
 
-            p[0] = (byte)3; p[1] = (byte)(incremental ? 1 : 0);
+            p[0] = (byte)3;
+            p[1] = (byte)(incremental ? 1 : 0);
             VncUtility.EncodeUInt16BE(p, 2, (ushort)0);
             VncUtility.EncodeUInt16BE(p, 4, (ushort)0);
-            VncUtility.EncodeUInt16BE(p, 6, (ushort)Framebuffer.Width);
-            VncUtility.EncodeUInt16BE(p, 8, (ushort)Framebuffer.Height);
+            VncUtility.EncodeUInt16BE(p, 6, (ushort)this.Framebuffer.Width);
+            VncUtility.EncodeUInt16BE(p, 8, (ushort)this.Framebuffer.Height);
 
-            _c.Send(p);
+            this._c.Send(p);
         }
 
         /// <summary>
@@ -370,7 +392,10 @@ namespace RemoteViewing.Vnc
             VncUtility.EncodeUInt32BE(p, 4, (uint)bytes.Length);
             Array.Copy(bytes, 0, p, 8, bytes.Length);
 
-            if (IsConnected) { _c.Send(p); }
+            if (this.IsConnected)
+            {
+                this._c.Send(p);
+            }
         }
 
         /// <summary>
@@ -382,10 +407,14 @@ namespace RemoteViewing.Vnc
         {
             var p = new byte[8];
 
-            p[0] = (byte)4; p[1] = (byte)(pressed ? 1 : 0);
+            p[0] = (byte)4;
+            p[1] = (byte)(pressed ? 1 : 0);
             VncUtility.EncodeUInt32BE(p, 4, (uint)keysym);
 
-            if (IsConnected) { _c.Send(p); }
+            if (this.IsConnected)
+            {
+                this._c.Send(p);
+            }
         }
 
         /// <summary>
@@ -401,127 +430,149 @@ namespace RemoteViewing.Vnc
         {
             var p = new byte[6];
 
-            p[0] = (byte)5; p[1] = (byte)pressedButtons;
+            p[0] = (byte)5;
+            p[1] = (byte)pressedButtons;
             VncUtility.EncodeUInt16BE(p, 2, (ushort)x);
             VncUtility.EncodeUInt16BE(p, 4, (ushort)y);
 
-            if (IsConnected) { _c.Send(p); }
+            if (this.IsConnected)
+            {
+                this._c.Send(p);
+            }
         }
 
         // Assumes we are already locked.
-        void CopyToFramebuffer(int tx, int ty, int w, int h, byte[] pixels)
+        private void CopyToFramebuffer(int tx, int ty, int w, int h, byte[] pixels)
         {
-            var fb = Framebuffer;
-            CopyToGeneral(tx, ty, fb.Width, fb.Height, fb.GetBuffer(), 0, 0, w, h, pixels, w, h);
+            var fb = this.Framebuffer;
+            this.CopyToGeneral(tx, ty, fb.Width, fb.Height, fb.GetBuffer(), 0, 0, w, h, pixels, w, h);
         }
 
-        void CopyToGeneral(int tx, int ty, int tw, int th, byte[] outPixels,
+        private void CopyToGeneral(int tx, int ty, int tw, int th, byte[] outPixels,
                            int sx, int sy, int sw, int sh, byte[] inPixels,
                            int w, int h)
         {
-            int bpp = Framebuffer.PixelFormat.BytesPerPixel;
+            int bpp = this.Framebuffer.PixelFormat.BytesPerPixel;
 
             for (int iy = 0; iy < h; iy++)
             {
-                int inOffset = bpp * ((iy + sy) * sw + sx);
-                int outOffset = bpp * ((iy + ty) * tw + tx);
+                int inOffset = bpp * (((iy + sy) * sw) + sx);
+                int outOffset = bpp * (((iy + ty) * tw) + tx);
                 Array.Copy(inPixels, inOffset, outPixels, outOffset, w * bpp);
             }
         }
 
-        void HandleSetColorMapEntries()
+        private void HandleSetColorMapEntries()
         {
-            _c.ReceiveByte(); // padding
+            this._c.ReceiveByte(); // padding
 
-            var firstColor = _c.ReceiveUInt16BE();
-            var numColors = _c.ReceiveUInt16BE();
+            var firstColor = this._c.ReceiveUInt16BE();
+            var numColors = this._c.ReceiveUInt16BE();
 
             for (int i = 0; i < numColors; i++)
             {
-                var r = _c.ReceiveUInt16BE();
-                var g = _c.ReceiveUInt16BE();
-                var b = _c.ReceiveUInt16BE();
+                var r = this._c.ReceiveUInt16BE();
+                var g = this._c.ReceiveUInt16BE();
+                var b = this._c.ReceiveUInt16BE();
             }
         }
 
-        void HandleBell()
+        private void HandleBell()
         {
-            OnBell();
+            this.OnBell();
         }
 
-        void HandleReceiveClipboardData()
+        private void HandleReceiveClipboardData()
         {
-            _c.Receive(3); // padding
+            this._c.Receive(3); // padding
 
-            var clipboard = _c.ReceiveString(0xffffff);
+            var clipboard = this._c.ReceiveString(0xffffff);
 
-            OnRemoteClipboardChanged(new RemoteClipboardChangedEventArgs(clipboard));
+            this.OnRemoteClipboardChanged(new RemoteClipboardChangedEventArgs(clipboard));
         }
 
         protected virtual void OnBell()
         {
-            RaiseBell();
+            this.RaiseBell();
         }
 
         protected void RaiseBell()
         {
-            var ev = Bell;
-            if (ev != null) { ev(this, EventArgs.Empty); }
+            var ev = this.Bell;
+            if (ev != null)
+            {
+                ev(this, EventArgs.Empty);
+            }
         }
 
         protected virtual void OnConnected()
         {
-            RaiseConnected();
+            this.RaiseConnected();
         }
 
         protected void RaiseConnected()
         {
-            var ev = Connected;
-            if (ev != null) { ev(this, EventArgs.Empty); }
+            var ev = this.Connected;
+            if (ev != null)
+            {
+                ev(this, EventArgs.Empty);
+            }
         }
 
         protected virtual void OnConnectionFailed()
         {
-            RaiseConnectionFailed();
+            this.RaiseConnectionFailed();
         }
 
         protected void RaiseConnectionFailed()
         {
-            var ev = ConnectionFailed;
-            if (ev != null) { ev(this, EventArgs.Empty); }
+            var ev = this.ConnectionFailed;
+            if (ev != null)
+            {
+                ev(this, EventArgs.Empty);
+            }
         }
 
         protected virtual void OnClosed()
         {
-            RaiseClosed();
+            this.RaiseClosed();
         }
 
         protected void RaiseClosed()
         {
-            var ev = Closed;
-            if (ev != null) { ev(this, EventArgs.Empty); }
+            var ev = this.Closed;
+            if (ev != null)
+            {
+                ev(this, EventArgs.Empty);
+            }
         }
 
         protected virtual void OnFramebufferChanged(FramebufferChangedEventArgs e)
         {
-            RaiseFramebufferChanged(e);
+            this.RaiseFramebufferChanged(e);
         }
 
         protected void RaiseFramebufferChanged(FramebufferChangedEventArgs e)
         {
-            var ev = FramebufferChanged;
-            if (ev != null) { ev(this, e); }
+            var ev = this.FramebufferChanged;
+            if (ev != null)
+            {
+                ev(this, e);
+            }
         }
 
         protected virtual void OnRemoteClipboardChanged(RemoteClipboardChangedEventArgs e)
         {
-            RaiseRemoteClipboardChanged(e);
+            this.RaiseRemoteClipboardChanged(e);
         }
 
         protected void RaiseRemoteClipboardChanged(RemoteClipboardChangedEventArgs e)
         {
-            var ev = RemoteClipboardChanged;
-            if (ev != null) { ev(this, e); }
+            var ev = this.RemoteClipboardChanged;
+            if (ev != null)
+            {
+                ev(this, e);
+            }
         }
 
         /// <summary>
@@ -544,21 +595,26 @@ namespace RemoteViewing.Vnc
 
         /// <summary>
         /// The max rate to request framebuffer updates at, in frames per second.
-        /// 
+        ///
         /// The default is 15.
         /// </summary>
         public double MaxUpdateRate
         {
-            get { return _maxUpdateRate; }
+            get
+            {
+                return this._maxUpdateRate;
+            }
+
             set
             {
                 if (value <= 0)
                 {
-                    throw new ArgumentOutOfRangeException("Max update rate must be positive.",
+                    throw new ArgumentOutOfRangeException(
+                        "Max update rate must be positive.",
                                                           (Exception)null);
                 }
 
-                _maxUpdateRate = value;
+                this._maxUpdateRate = value;
             }
         }
 
@@ -567,7 +623,7 @@ namespace RemoteViewing.Vnc
         /// </summary>
         public Version ServerVersion
         {
-            get { return _serverVersion; }
+            get { return this._serverVersion; }
         }
 
         /// <summary>

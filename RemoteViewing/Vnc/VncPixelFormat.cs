@@ -5,13 +5,13 @@ Copyright (c) 2013 James F. Bellinger <http://www.zer7.com/software/remoteviewin
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions are met: 
+modification, are permitted provided that the following conditions are met:
 
 1. Redistributions of source code must retain the above copyright notice, this
-   list of conditions and the following disclaimer. 
+   list of conditions and the following disclaimer.
 2. Redistributions in binary form must reproduce the above copyright notice,
    this list of conditions and the following disclaimer in the documentation
-   and/or other materials provided with the distribution. 
+   and/or other materials provided with the distribution.
 
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
 ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
@@ -35,9 +35,17 @@ namespace RemoteViewing.Vnc
     /// </summary>
     public sealed class VncPixelFormat
     {
-        int _bitsPerPixel, _bytesPerPixel, _bitDepth;
-        int _redBits, _redShift, _greenBits, _greenShift, _blueBits, _blueShift;
-        bool _isLittleEndian, _isPalettized;
+        private int _bitsPerPixel;
+        private int _bytesPerPixel;
+        private int _bitDepth;
+        private int _redBits;
+        private int _redShift;
+        private int _greenBits;
+        private int _greenShift;
+        private int _blueBits;
+        private int _blueShift;
+        private bool _isLittleEndian;
+        private bool _isPalettized;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="VncPixelFormat"/> class,
@@ -46,7 +54,6 @@ namespace RemoteViewing.Vnc
         public VncPixelFormat()
             : this(32, 24, 8, 16, 8, 8, 8, 0)
         {
-
         }
 
         /// <summary>
@@ -72,11 +79,17 @@ namespace RemoteViewing.Vnc
             Throw.If.False(greenBits >= 0 && greenShift >= 0 && greenBits <= bitDepth && greenShift <= bitDepth, "greenBits");
             Throw.If.False(blueBits >= 0 && blueShift >= 0 && blueBits <= bitDepth && blueShift <= bitDepth, "blueBits");
 
-            _bitsPerPixel = bitsPerPixel; _bytesPerPixel = bitsPerPixel / 8; _bitDepth = bitDepth;
-            _redBits = redBits; _redShift = redShift;
-            _greenBits = greenBits; _greenShift = greenShift;
-            _blueBits = blueBits; _blueShift = blueShift;
-            _isLittleEndian = isLittleEndian; _isPalettized = isPalettized;
+            this._bitsPerPixel = bitsPerPixel;
+            this._bytesPerPixel = bitsPerPixel / 8;
+            this._bitDepth = bitDepth;
+            this._redBits = redBits;
+            this._redShift = redShift;
+            this._greenBits = greenBits;
+            this._greenShift = greenShift;
+            this._blueBits = blueBits;
+            this._blueShift = blueShift;
+            this._isLittleEndian = isLittleEndian;
+            this._isPalettized = isPalettized;
         }
 
         /// <inheritdoc />
@@ -86,11 +99,11 @@ namespace RemoteViewing.Vnc
 
             if (format != null)
             {
-                if (BitsPerPixel == format.BitsPerPixel && BitDepth == format.BitDepth &&
-                    RedBits == format.RedBits && RedShift == format.RedShift &&
-                    GreenBits == format.GreenBits && GreenShift == format.GreenShift &&
-                    BlueBits == format.BlueBits && BlueShift == format.BlueShift &&
-                    IsLittleEndian == format.IsLittleEndian && IsPalettized == format.IsPalettized)
+                if (this.BitsPerPixel == format.BitsPerPixel && this.BitDepth == format.BitDepth &&
+                    this.RedBits == format.RedBits && this.RedShift == format.RedShift &&
+                    this.GreenBits == format.GreenBits && this.GreenShift == format.GreenShift &&
+                    this.BlueBits == format.BlueBits && this.BlueShift == format.BlueShift &&
+                    this.IsLittleEndian == format.IsLittleEndian && this.IsPalettized == format.IsPalettized)
                 {
                     return true;
                 }
@@ -102,12 +115,12 @@ namespace RemoteViewing.Vnc
         /// <inheritdoc />
         public override int GetHashCode()
         {
-            return _bitsPerPixel ^ _redBits;
+            return this._bitsPerPixel ^ this._redBits;
         }
 
         /// <summary>
         /// Copies pixels between two byte arrays. A format conversion is performed if necessary.
-        /// 
+        ///
         /// Be sure to lock <see cref="VncFramebuffer.SyncRoot"/> first to avoid tearing,
         /// if the connection is active.
         /// </summary>
@@ -136,7 +149,7 @@ namespace RemoteViewing.Vnc
         // TODO: Support more (any? :-) pixel formats.
         /// <summary>
         /// Copies pixels. A format conversion is performed if necessary.
-        /// 
+        ///
         /// Be sure to lock <see cref="VncFramebuffer.SyncRoot"/> first to avoid tearing,
         /// if the connection is active.
         /// </summary>
@@ -155,13 +168,16 @@ namespace RemoteViewing.Vnc
             Throw.If.True(source == IntPtr.Zero, "source").True(target == IntPtr.Zero, "target");
             Throw.If.Null(sourceFormat, "sourceFormat").Null(targetFormat, "targetFormat");
 
-            if (sourceRectangle.IsEmpty) { return; }
+            if (sourceRectangle.IsEmpty)
+            {
+                return;
+            }
 
             int x = sourceRectangle.X, w = sourceRectangle.Width;
             int y = sourceRectangle.Y, h = sourceRectangle.Height;
 
-            var sourceData = (byte*)(void*)source + y * sourceStride + x * sourceFormat.BytesPerPixel;
-            var targetData = (byte*)(void*)target + targetY * targetStride + targetX * targetFormat.BytesPerPixel;
+            var sourceData = (byte*)(void*)source + (y * sourceStride) + (x * sourceFormat.BytesPerPixel);
+            var targetData = (byte*)(void*)target + (targetY * targetStride) + (targetX * targetFormat.BytesPerPixel);
 
             if (sourceFormat.Equals(targetFormat))
             {
@@ -170,23 +186,34 @@ namespace RemoteViewing.Vnc
                     if (sourceFormat.BytesPerPixel == 4)
                     {
                         uint* sourceDataX0 = (uint*)sourceData, targetDataX0 = (uint*)targetData;
-                        for (int ix = 0; ix < w; ix++) { *targetDataX0++ = (*sourceDataX0++); }
+                        for (int ix = 0; ix < w; ix++)
+                        {
+                            *targetDataX0++ = (*sourceDataX0++);
+                        }
                     }
                     else
                     {
                         int bytes = w * sourceFormat.BytesPerPixel;
                         byte* sourceDataX0 = (byte*)sourceData, targetDataX0 = (byte*)targetData;
-                        for (int ib = 0; ib < bytes; ib++) { *targetDataX0++ = (*sourceDataX0++); }
+                        for (int ib = 0; ib < bytes; ib++)
+                        {
+                            *targetDataX0++ = (*sourceDataX0++);
+                        }
                     }
 
-                    sourceData += sourceStride; targetData += targetStride;
+                    sourceData += sourceStride;
+                    targetData += targetStride;
                 }
             }
         }
 
-        static int BitsFromMax(int max)
+        private static int BitsFromMax(int max)
         {
-            if (max == 0 || (max & (max + 1)) != 0) { throw new ArgumentException(); }
+            if (max == 0 || (max & (max + 1)) != 0)
+            {
+                throw new ArgumentException();
+            }
+
             return (int)Math.Round(Math.Log(max + 1) / Math.Log(2));
         }
 
@@ -210,72 +237,105 @@ namespace RemoteViewing.Vnc
 
         internal void Encode(byte[] buffer, int offset)
         {
-            buffer[offset + 0] = (byte)BitsPerPixel;
-            buffer[offset + 1] = (byte)BitDepth;
-            buffer[offset + 2] = (byte)(IsLittleEndian ? 0 : 1);
-            buffer[offset + 3] = (byte)(IsPalettized ? 0 : 1);
-            VncUtility.EncodeUInt16BE(buffer, offset + 4, (ushort)((1 << RedBits) - 1));
-            VncUtility.EncodeUInt16BE(buffer, offset + 6, (ushort)((1 << GreenBits) - 1));
-            VncUtility.EncodeUInt16BE(buffer, offset + 8, (ushort)((1 << BlueBits) - 1));
-            buffer[offset + 10] = (byte)RedShift;
-            buffer[offset + 11] = (byte)GreenShift;
-            buffer[offset + 12] = (byte)BlueShift;
+            buffer[offset + 0] = (byte)this.BitsPerPixel;
+            buffer[offset + 1] = (byte)this.BitDepth;
+            buffer[offset + 2] = (byte)(this.IsLittleEndian ? 0 : 1);
+            buffer[offset + 3] = (byte)(this.IsPalettized ? 0 : 1);
+            VncUtility.EncodeUInt16BE(buffer, offset + 4, (ushort)((1 << this.RedBits) - 1));
+            VncUtility.EncodeUInt16BE(buffer, offset + 6, (ushort)((1 << this.GreenBits) - 1));
+            VncUtility.EncodeUInt16BE(buffer, offset + 8, (ushort)((1 << this.BlueBits) - 1));
+            buffer[offset + 10] = (byte)this.RedShift;
+            buffer[offset + 11] = (byte)this.GreenShift;
+            buffer[offset + 12] = (byte)this.BlueShift;
         }
 
         /// <summary>
         /// The number of bits used to store a pixel.
         /// </summary>
-        public int BitsPerPixel { get { return _bitsPerPixel; } }
+        public int BitsPerPixel
+        {
+            get { return this._bitsPerPixel; }
+        }
 
         /// <summary>
         /// The number of bytes used to store a pixel.
         /// </summary>
-        public int BytesPerPixel { get { return _bytesPerPixel; } }
+        public int BytesPerPixel
+        {
+            get { return this._bytesPerPixel; }
+        }
 
         /// <summary>
         /// The bit depth of the pixel.
         /// </summary>
-        public int BitDepth { get { return _bitDepth; } }
+        public int BitDepth
+        {
+            get { return this._bitDepth; }
+        }
 
         /// <summary>
         /// The number of bits used to represent red.
         /// </summary>
-        public int RedBits { get { return _redBits; } }
+        public int RedBits
+        {
+            get { return this._redBits; }
+        }
 
         /// <summary>
         /// The number of bits left the red value is shifted.
         /// </summary>
-        public int RedShift { get { return _redShift; } } 
+        public int RedShift
+        {
+            get { return this._redShift; }
+        }
 
         /// <summary>
         /// The number of bits used to represent green.
         /// </summary>
-        public int GreenBits { get { return _greenBits; } }
+        public int GreenBits
+        {
+            get { return this._greenBits; }
+        }
 
         /// <summary>
         /// The number of bits left the green value is shifted.
         /// </summary>
-        public int GreenShift { get { return _greenShift; } }
+        public int GreenShift
+        {
+            get { return this._greenShift; }
+        }
 
         /// <summary>
         /// The number of bits used to represent blue.
         /// </summary>
-        public int BlueBits { get { return _blueBits; } }
+        public int BlueBits
+        {
+            get { return this._blueBits; }
+        }
 
         /// <summary>
         /// The number of bits left the blue value is shifted.
         /// </summary>
-        public int BlueShift { get { return _blueShift; } }
+        public int BlueShift
+        {
+            get { return this._blueShift; }
+        }
 
         /// <summary>
         /// <c>true</c> if the pixel is little-endian, or <c>false</c> if it is big-endian.
         /// </summary>
-        public bool IsLittleEndian { get { return _isLittleEndian; } }
+        public bool IsLittleEndian
+        {
+            get { return this._isLittleEndian; }
+        }
 
         /// <summary>
         /// <c>true</c> if the framebuffer stores palette indices, or <c>false</c> if it stores colors.
         /// </summary>
-        public bool IsPalettized { get { return _isPalettized; } }
+        public bool IsPalettized
+        {
+            get { return this._isPalettized; }
+        }
 
         internal static int Size
         {

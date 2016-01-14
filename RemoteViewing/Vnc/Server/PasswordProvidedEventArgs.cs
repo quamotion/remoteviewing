@@ -5,13 +5,13 @@ Copyright (c) 2013 James F. Bellinger <http://www.zer7.com/software/remoteviewin
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions are met: 
+modification, are permitted provided that the following conditions are met:
 
 1. Redistributions of source code must retain the above copyright notice, this
-   list of conditions and the following disclaimer. 
+   list of conditions and the following disclaimer.
 2. Redistributions in binary form must reproduce the above copyright notice,
    this list of conditions and the following disclaimer in the documentation
-   and/or other materials provided with the distribution. 
+   and/or other materials provided with the distribution.
 
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
 ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
@@ -36,7 +36,8 @@ namespace RemoteViewing.Vnc.Server
     /// </summary>
     public sealed class PasswordProvidedEventArgs : EventArgs
     {
-        byte[] _challenge, _response;
+        private byte[] _challenge;
+        private byte[] _response;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="PasswordProvidedEventArgs"/> class.
@@ -49,7 +50,8 @@ namespace RemoteViewing.Vnc.Server
             Throw.If.False(challenge.Length == 16, "Challenge must be 16 bytes.");
             Throw.If.False(response.Length == 16, "Response must be 16 bytes.");
 
-            _challenge = challenge; _response = response;
+            this._challenge = challenge;
+            this._response = response;
         }
 
         /// <summary>
@@ -58,7 +60,8 @@ namespace RemoteViewing.Vnc.Server
         /// <returns>Always <c>true</c>.</returns>
         public bool Accept()
         {
-            IsAuthenticated = true; return true;
+            this.IsAuthenticated = true;
+            return true;
         }
 
         /// <summary>
@@ -71,8 +74,8 @@ namespace RemoteViewing.Vnc.Server
             Throw.If.Null(password, "password");
 
             var response = new byte[16];
-            VncPasswordChallenge.GetChallengeResponse(_challenge, password, response);
-            return Test(response);
+            VncPasswordChallenge.GetChallengeResponse(this._challenge, password, response);
+            return this.Test(response);
         }
 
         /// <summary>
@@ -85,16 +88,20 @@ namespace RemoteViewing.Vnc.Server
             Throw.If.Null(password, "password");
 
             var response = new byte[16];
-            VncPasswordChallenge.GetChallengeResponse(_challenge, password, response);
-            return Test(response);
+            VncPasswordChallenge.GetChallengeResponse(this._challenge, password, response);
+            return this.Test(response);
         }
 
-        bool Test(byte[] response)
+        private bool Test(byte[] response)
         {
             using (new Utility.AutoClear(response))
             {
-                if (!_response.SequenceEqual(response)) { return false; }
-                return Accept();
+                if (!this._response.SequenceEqual(response))
+                {
+                    return false;
+                }
+
+                return this.Accept();
             }
         }
 

@@ -5,13 +5,13 @@ Copyright (c) 2013 James F. Bellinger <http://www.zer7.com/software/remoteviewin
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions are met: 
+modification, are permitted provided that the following conditions are met:
 
 1. Redistributions of source code must retain the above copyright notice, this
-   list of conditions and the following disclaimer. 
+   list of conditions and the following disclaimer.
 2. Redistributions in binary form must reproduce the above copyright notice,
    this list of conditions and the following disclaimer in the documentation
-   and/or other materials provided with the distribution. 
+   and/or other materials provided with the distribution.
 
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
 ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
@@ -38,7 +38,7 @@ namespace RemoteViewing.Vnc
     /// </summary>
     public class VncFramebuffer : IVncFramebufferSource
     {
-        byte[] _buffer;
+        private byte[] _buffer;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="VncFramebuffer"/> class.
@@ -53,11 +53,14 @@ namespace RemoteViewing.Vnc
             Throw.If.Negative(width, "width").Negative(height, "height");
             Throw.If.Null(pixelFormat, "pixelFormat");
 
-            Name = name; Width = width; Height = height; PixelFormat = pixelFormat;
-            Stride = PixelFormat.BytesPerPixel * Width;
-            SyncRoot = new object();
+            this.Name = name;
+            this.Width = width;
+            this.Height = height;
+            this.PixelFormat = pixelFormat;
+            this.Stride = this.PixelFormat.BytesPerPixel * this.Width;
+            this.SyncRoot = new object();
 
-            _buffer = new byte[Width * Height * PixelFormat.BytesPerPixel];
+            this._buffer = new byte[this.Width * this.Height * this.PixelFormat.BytesPerPixel];
         }
 
         /// <summary>
@@ -68,14 +71,14 @@ namespace RemoteViewing.Vnc
         /// <param name="color">The RGB color of the pixel.</param>
         public void SetPixel(int x, int y, int color)
         {
-            lock (SyncRoot)
+            lock (this.SyncRoot)
             {
-                Throw.If.False((uint)x < (uint)Width, "x");
-                Throw.If.False((uint)y < (uint)Height, "y");
+                Throw.If.False((uint)x < (uint)this.Width, "x");
+                Throw.If.False((uint)y < (uint)this.Height, "y");
 
-                if (PixelFormat.BytesPerPixel == 4)
+                if (this.PixelFormat.BytesPerPixel == 4)
                 {
-                    Array.Copy(BitConverter.GetBytes(color), 0, GetBuffer(), y * Stride + x * 4, 4);
+                    Array.Copy(BitConverter.GetBytes(color), 0, this.GetBuffer(), (y * this.Stride) + (x * 4), 4);
                 }
             }
         }
@@ -86,7 +89,7 @@ namespace RemoteViewing.Vnc
         /// <returns>The framebuffer bytes.</returns>
         public byte[] GetBuffer()
         {
-            return _buffer;
+            return this._buffer;
         }
 
         /// <summary>
@@ -100,7 +103,7 @@ namespace RemoteViewing.Vnc
 
         /// <summary>
         /// The framebuffer synchronization object.
-        /// 
+        ///
         /// Lock this before reading the framebuffer to avoid tearing artifacts.
         /// </summary>
         public object SyncRoot

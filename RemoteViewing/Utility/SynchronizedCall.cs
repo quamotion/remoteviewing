@@ -5,13 +5,13 @@ Copyright (c) 2013 James F. Bellinger <http://www.zer7.com/software/remoteviewin
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions are met: 
+modification, are permitted provided that the following conditions are met:
 
 1. Redistributions of source code must retain the above copyright notice, this
-   list of conditions and the following disclaimer. 
+   list of conditions and the following disclaimer.
 2. Redistributions in binary form must reproduce the above copyright notice,
    this list of conditions and the following disclaimer in the documentation
-   and/or other materials provided with the distribution. 
+   and/or other materials provided with the distribution.
 
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
 ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
@@ -36,10 +36,10 @@ namespace RemoteViewing.Utility
     /// </summary>
     public class SynchronizedCall
     {
-        SendOrPostCallback _callback; object _state;
+        private SendOrPostCallback _callback; private object _state;
 
-        ManualResetEvent _event = new ManualResetEvent(false);
-        Exception _ex;
+        private ManualResetEvent _event = new ManualResetEvent(false);
+        private Exception _ex;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SynchronizedCall"/> class.
@@ -50,7 +50,8 @@ namespace RemoteViewing.Utility
         {
             Throw.If.Null(callback, "callback");
 
-            _callback = callback; _state = state;
+            this._callback = callback;
+            this._state = state;
         }
 
         /// <summary>
@@ -60,15 +61,15 @@ namespace RemoteViewing.Utility
         {
             try
             {
-                _callback(_state);
+                this._callback(this._state);
             }
             catch (Exception ex)
             {
-                _ex = ex;
+                this._ex = ex;
             }
             finally
             {
-                _event.Set();
+                this._event.Set();
             }
         }
 
@@ -77,10 +78,13 @@ namespace RemoteViewing.Utility
         /// </summary>
         public void Wait()
         {
-            _event.WaitOne();
+            this._event.WaitOne();
 
-            var ex = _ex;
-            if (ex != null) { throw ex; }
+            var ex = this._ex;
+            if (ex != null)
+            {
+                throw ex;
+            }
         }
     }
 }

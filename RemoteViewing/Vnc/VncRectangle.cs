@@ -5,13 +5,13 @@ Copyright (c) 2013 James F. Bellinger <http://www.zer7.com/software/remoteviewin
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions are met: 
+modification, are permitted provided that the following conditions are met:
 
 1. Redistributions of source code must retain the above copyright notice, this
-   list of conditions and the following disclaimer. 
+   list of conditions and the following disclaimer.
 2. Redistributions in binary form must reproduce the above copyright notice,
    this list of conditions and the following disclaimer in the documentation
-   and/or other materials provided with the distribution. 
+   and/or other materials provided with the distribution.
 
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
 ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
@@ -47,13 +47,16 @@ namespace RemoteViewing.Vnc
         {
             Throw.If.Negative(x, "x").Negative(y, "y").Negative(width, "width").Negative(height, "height");
 
-            X = x; Y = y; Width = width; Height = height;
+            this.X = x;
+            this.Y = y;
+            this.Width = width;
+            this.Height = height;
         }
 
         /// <inheritdoc />
         public override bool Equals(object obj)
         {
-            return obj is VncRectangle && Equals((VncRectangle)obj);
+            return obj is VncRectangle && this.Equals((VncRectangle)obj);
         }
 
         /// <summary>
@@ -63,19 +66,19 @@ namespace RemoteViewing.Vnc
         /// <returns><c>true</c> if the rectangles are equal.</returns>
         public bool Equals(VncRectangle other)
         {
-            return X == other.X && Y == other.Y && Width == other.Width && Height == other.Height;
+            return this.X == other.X && this.Y == other.Y && this.Width == other.Width && this.Height == other.Height;
         }
 
         /// <inheritdoc />
         public override int GetHashCode()
         {
-            return X | Y << 16;
+            return this.X | this.Y << 16;
         }
 
         /// <inheritdoc />
         public override string ToString()
         {
-            return string.Format("{0}x{1} at {2}, {3}", Width, Height, X, Y);
+            return string.Format("{0}x{1} at {2}, {3}", this.Width, this.Height, this.X, this.Y);
         }
 
         /// <summary>
@@ -83,7 +86,7 @@ namespace RemoteViewing.Vnc
         /// </summary>
         public int Area
         {
-            get { return Width * Height; }
+            get { return this.Width * this.Height; }
         }
 
         /// <summary>
@@ -111,7 +114,7 @@ namespace RemoteViewing.Vnc
         /// </summary>
         public bool IsEmpty
         {
-            get { return Width == 0 || Height == 0; }
+            get { return this.Width == 0 || this.Height == 0; }
         }
 
         /// <summary>
@@ -122,7 +125,14 @@ namespace RemoteViewing.Vnc
         /// <returns>The intersection of the two.</returns>
         public static VncRectangle Intersect(VncRectangle rect1, VncRectangle rect2)
         {
-            if (rect1.IsEmpty) { return rect1; } else if (rect2.IsEmpty) { return rect2; }
+            if (rect1.IsEmpty)
+            {
+                return rect1;
+            }
+else if (rect2.IsEmpty)
+{
+    return rect2;
+}
 
             int x = Math.Max(rect1.X, rect2.X), y = Math.Max(rect1.Y, rect2.Y);
             int w = Math.Min(rect1.X + rect1.Width, rect2.X + rect2.Width) - x;
@@ -138,7 +148,14 @@ namespace RemoteViewing.Vnc
         /// <returns>The union of the two.</returns>
         public static VncRectangle Union(VncRectangle rect1, VncRectangle rect2)
         {
-            if (rect1.IsEmpty) { return rect2; } else if (rect2.IsEmpty) { return rect1; }
+            if (rect1.IsEmpty)
+            {
+                return rect2;
+            }
+else if (rect2.IsEmpty)
+{
+    return rect1;
+}
 
             int x = Math.Min(rect1.X, rect2.X), y = Math.Min(rect1.Y, rect2.Y);
             int w = Math.Max(rect1.X + rect1.Width, rect2.X + rect2.Width) - x;

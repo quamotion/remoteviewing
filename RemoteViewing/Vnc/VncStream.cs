@@ -5,13 +5,13 @@ Copyright (c) 2013 James F. Bellinger <http://www.zer7.com/software/remoteviewin
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions are met: 
+modification, are permitted provided that the following conditions are met:
 
 1. Redistributions of source code must retain the above copyright notice, this
-   list of conditions and the following disclaimer. 
+   list of conditions and the following disclaimer.
 2. Redistributions in binary form must reproduce the above copyright notice,
    this list of conditions and the following disclaimer in the documentation
-   and/or other materials provided with the distribution. 
+   and/or other materials provided with the distribution.
 
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
 ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
@@ -33,31 +33,34 @@ using System.Text.RegularExpressions;
 
 namespace RemoteViewing.Vnc
 {
-    sealed class VncStream
+    internal sealed class VncStream
     {
         public VncStream()
         {
-            SyncRoot = new object();
+            this.SyncRoot = new object();
         }
 
         public void Close()
         {
-            var stream = Stream;
-            if (stream != null) { stream.Close(); }
+            var stream = this.Stream;
+            if (stream != null)
+            {
+                stream.Close();
+            }
         }
 
         public byte[] Receive(int count)
         {
             var buffer = new byte[count];
-            Receive(buffer, 0, buffer.Length);
+            this.Receive(buffer, 0, buffer.Length);
             return buffer;
         }
 
         public void Receive(byte[] buffer, int offset, int count)
         {
-            for (int i = 0; i < count; )
+            for (int i = 0; i < count;)
             {
-                int bytes = Stream.Read(buffer, offset + i, count - i);
+                int bytes = this.Stream.Read(buffer, offset + i, count - i);
                 Require(bytes > 0, "Lost connection.", VncFailureReason.NetworkError);
                 i += bytes;
             }
@@ -65,40 +68,41 @@ namespace RemoteViewing.Vnc
 
         public byte ReceiveByte()
         {
-            int value = Stream.ReadByte();
+            int value = this.Stream.ReadByte();
             Require(value >= 0, "Lost connection.", VncFailureReason.NetworkError);
             return (byte)value;
         }
 
         public VncRectangle ReceiveRectangle()
         {
-            int x = ReceiveUInt16BE();
-            int y = ReceiveUInt16BE();
-            int w = ReceiveUInt16BE();
-            int h = ReceiveUInt16BE();
+            int x = this.ReceiveUInt16BE();
+            int y = this.ReceiveUInt16BE();
+            int w = this.ReceiveUInt16BE();
+            int h = this.ReceiveUInt16BE();
             return new VncRectangle(x, y, w, h);
         }
 
         public string ReceiveString(int maxLength = 0xfff)
         {
-            var length = (int)ReceiveUInt32BE(); SanityCheck(length >= 0 && length <= maxLength);
-            var value = DecodeString(Receive(length), 0, length);
+            var length = (int)this.ReceiveUInt32BE();
+            SanityCheck(length >= 0 && length <= maxLength);
+            var value = DecodeString(this.Receive(length), 0, length);
             return value;
         }
 
         public ushort ReceiveUInt16BE()
         {
-            return VncUtility.DecodeUInt16BE(Receive(2), 0);
+            return VncUtility.DecodeUInt16BE(this.Receive(2), 0);
         }
 
         public uint ReceiveUInt32BE()
         {
-            return VncUtility.DecodeUInt32BE(Receive(4), 0);
+            return VncUtility.DecodeUInt32BE(this.Receive(4), 0);
         }
 
         public Version ReceiveVersion()
         {
-            var version = Encoding.ASCII.GetString(Receive(12));
+            var version = Encoding.ASCII.GetString(this.Receive(12));
             var versionRegex = Regex.Match(version, @"^RFB (?<maj>[0-9]{3})\.(?<min>[0-9]{3})\n",
                                RegexOptions.Singleline | RegexOptions.CultureInvariant);
             Require(versionRegex.Success, "Not using VNC protocol.",
@@ -111,17 +115,23 @@ namespace RemoteViewing.Vnc
 
         public void Send(byte[] buffer)
         {
-            Send(buffer, 0, buffer.Length);
+            this.Send(buffer, 0, buffer.Length);
         }
 
         public void Send(byte[] buffer, int offset, int count)
         {
-            if (Stream == null) { return; }
-
-            lock (SyncRoot)
+            if (this.Stream == null)
             {
-                var stream = Stream;
-                if (stream == null) { return; }
+                return;
+            }
+
+            lock (this.SyncRoot)
+            {
+                var stream = this.Stream;
+                if (stream == null)
+                {
+                    return;
+                }
 
                 try
                 {
@@ -129,18 +139,16 @@ namespace RemoteViewing.Vnc
                 }
                 catch (ObjectDisposedException)
                 {
-
                 }
                 catch (IOException)
                 {
-
                 }
             }
         }
 
         public void SendByte(byte value)
         {
-            Send(new[] { value });
+            this.Send(new[] { value });
         }
 
         public void SendRectangle(VncRectangle region)
@@ -150,17 +158,17 @@ namespace RemoteViewing.Vnc
             VncUtility.EncodeUInt16BE(buffer, 2, (ushort)region.Y);
             VncUtility.EncodeUInt16BE(buffer, 4, (ushort)region.Width);
             VncUtility.EncodeUInt16BE(buffer, 6, (ushort)region.Height);
-            Send(buffer);
+            this.Send(buffer);
         }
 
         public void SendUInt16BE(ushort value)
         {
-            Send(VncUtility.EncodeUInt16BE(value));
+            this.Send(VncUtility.EncodeUInt16BE(value));
         }
 
         public void SendUInt32BE(uint value)
         {
-            Send(VncUtility.EncodeUInt32BE(value));
+            this.Send(VncUtility.EncodeUInt32BE(value));
         }
 
         public void SendString(string @string, bool includeLength = false)
@@ -168,14 +176,18 @@ namespace RemoteViewing.Vnc
             var encodedString = EncodeString(@string);
             using (new Utility.AutoClear(encodedString))
             {
-                if (includeLength) { SendUInt32BE((uint)encodedString.Length); }
-                Send(EncodeString(@string));
+                if (includeLength)
+                {
+                    this.SendUInt32BE((uint)encodedString.Length);
+                }
+
+                this.Send(EncodeString(@string));
             }
         }
 
         public void SendVersion(Version version)
         {
-            SendString(string.Format("RFB {0:000}.{1:000}\n", version.Major, version.Minor));
+            this.SendString(string.Format("RFB {0:000}.{1:000}\n", version.Major, version.Minor));
         }
 
         public static string DecodeString(byte[] buffer, int offset, int count)
@@ -195,7 +207,10 @@ namespace RemoteViewing.Vnc
 
         public static void Require(bool condition, string message, Vnc.VncFailureReason reason)
         {
-            if (!condition) { throw new Vnc.VncException(message, reason); }
+            if (!condition)
+            {
+                throw new Vnc.VncException(message, reason);
+            }
         }
 
         public static void SanityCheck(bool condition)
