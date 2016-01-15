@@ -193,7 +193,9 @@ namespace RemoteViewing.Vnc
                     {
                         this.SendFramebufferUpdateRequest(true);
                         return true;
-                    }, () => this.MaxUpdateRate, true);
+                    },
+                    () => this.MaxUpdateRate,
+                    true);
 
                 while (true)
                 {
@@ -219,7 +221,9 @@ namespace RemoteViewing.Vnc
                             break;
 
                         default:
-                            VncStream.Require(false, "Unsupported command.",
+                            VncStream.Require(
+                                false,
+                                "Unsupported command.",
                                 VncFailureReason.UnrecognizedProtocolElement);
                             break;
                     }
@@ -335,7 +339,8 @@ namespace RemoteViewing.Vnc
             {
                 throw new VncException(
                     "Unsupported pixel format.",
-                                               VncFailureReason.UnsupportedPixelFormat, e);
+                    VncFailureReason.UnsupportedPixelFormat,
+                    e);
             }
 
             var name = this.c.ReceiveString();
@@ -448,9 +453,19 @@ namespace RemoteViewing.Vnc
             this.CopyToGeneral(tx, ty, fb.Width, fb.Height, fb.GetBuffer(), 0, 0, w, h, pixels, w, h);
         }
 
-        private void CopyToGeneral(int tx, int ty, int tw, int th, byte[] outPixels,
-                           int sx, int sy, int sw, int sh, byte[] inPixels,
-                           int w, int h)
+        private void CopyToGeneral(
+            int tx,
+            int ty,
+            int tw,
+            int th,
+            byte[] outPixels,
+            int sx,
+            int sy,
+            int sw,
+            int sh,
+            byte[] inPixels,
+            int w,
+            int h)
         {
             int bpp = this.Framebuffer.PixelFormat.BytesPerPixel;
 
@@ -491,12 +506,10 @@ namespace RemoteViewing.Vnc
             this.OnRemoteClipboardChanged(new RemoteClipboardChangedEventArgs(clipboard));
         }
 
+        /// <summary>
+        /// Raises the <see cref="Bell"/> event
+        /// </summary>
         protected virtual void OnBell()
-        {
-            this.RaiseBell();
-        }
-
-        protected void RaiseBell()
         {
             var ev = this.Bell;
             if (ev != null)
@@ -505,12 +518,10 @@ namespace RemoteViewing.Vnc
             }
         }
 
+        /// <summary>
+        /// Raises the <see cref="Connected"/> event.
+        /// </summary>
         protected virtual void OnConnected()
-        {
-            this.RaiseConnected();
-        }
-
-        protected void RaiseConnected()
         {
             var ev = this.Connected;
             if (ev != null)
@@ -519,12 +530,10 @@ namespace RemoteViewing.Vnc
             }
         }
 
+        /// <summary>
+        /// Raises the <see cref="ConnectionFailed"/> event.
+        /// </summary>
         protected virtual void OnConnectionFailed()
-        {
-            this.RaiseConnectionFailed();
-        }
-
-        protected void RaiseConnectionFailed()
         {
             var ev = this.ConnectionFailed;
             if (ev != null)
@@ -533,12 +542,10 @@ namespace RemoteViewing.Vnc
             }
         }
 
+        /// <summary>
+        /// Raises the <see cref="Close"/> event.
+        /// </summary>
         protected virtual void OnClosed()
-        {
-            this.RaiseClosed();
-        }
-
-        protected void RaiseClosed()
         {
             var ev = this.Closed;
             if (ev != null)
@@ -547,12 +554,14 @@ namespace RemoteViewing.Vnc
             }
         }
 
+        /// <summary>
+        /// Raises the <see cref="FramebufferChanged"/> event.
+        /// </summary>
+        /// <param name="e">
+        /// A <see cref="FramebufferChangedEventArgs"/> that describes the changes
+        /// in the framebuffer.
+        /// </param>
         protected virtual void OnFramebufferChanged(FramebufferChangedEventArgs e)
-        {
-            this.RaiseFramebufferChanged(e);
-        }
-
-        protected void RaiseFramebufferChanged(FramebufferChangedEventArgs e)
         {
             var ev = this.FramebufferChanged;
             if (ev != null)
@@ -561,12 +570,14 @@ namespace RemoteViewing.Vnc
             }
         }
 
+        /// <summary>
+        /// Raises the <see cref="RemoteClipboardChanged"/> event.
+        /// </summary>
+        /// <param name="e">
+        /// A <see cref="RemoteClipboardChangedEventArgs"/> that contains information on the
+        /// clipboard changes.
+        /// </param>
         protected virtual void OnRemoteClipboardChanged(RemoteClipboardChangedEventArgs e)
-        {
-            this.RaiseRemoteClipboardChanged(e);
-        }
-
-        protected void RaiseRemoteClipboardChanged(RemoteClipboardChangedEventArgs e)
         {
             var ev = this.RemoteClipboardChanged;
             if (ev != null)

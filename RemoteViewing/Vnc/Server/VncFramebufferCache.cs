@@ -32,6 +32,10 @@ using System.Security.Cryptography;
 
 namespace RemoteViewing.Vnc.Server
 {
+    /// <summary>
+    /// Caches the <see cref="VncFramebuffer"/> pixel data and updates them as new
+    /// <see cref="VncFramebuffer"/> commands are received.
+    /// </summary>
     internal sealed class VncFramebufferCache
     {
         private const int TileSize = 32;
@@ -40,6 +44,12 @@ namespace RemoteViewing.Vnc.Server
         private byte[,][] hashes; // [y,x][hash]
         private byte[] pixelBuffer;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="VncFramebufferCache"/> class.
+        /// </summary>
+        /// <param name="framebuffer">
+        /// The <see cref="VncFramebuffer"/> to cache.
+        /// </param>
         public VncFramebufferCache(VncFramebuffer framebuffer)
         {
             Throw.If.Null(framebuffer, "framebuffer");
@@ -51,6 +61,25 @@ namespace RemoteViewing.Vnc.Server
             this.pixelBuffer = new byte[TileSize * TileSize * this.Framebuffer.PixelFormat.BytesPerPixel];
         }
 
+        /// <summary>
+        /// Gets an up-to-date and complete <see cref="VncFramebuffer"/>.
+        /// </summary>
+        public VncFramebuffer Framebuffer
+        {
+            get;
+            private set;
+        }
+
+        /// <summary>
+        /// Responds to a <see cref="VncServerSession"/> update request.
+        /// </summary>
+        /// <param name="session">
+        /// The session on which the update request was received.
+        /// </param>
+        /// <returns>
+        /// <see langword="true"/> if the operation completed successfully; otherwise,
+        /// <see langword="false"/>.
+        /// </returns>
         public bool RespondToUpdateRequest(VncServerSession session)
         {
             var fb = this.Framebuffer;
@@ -104,12 +133,6 @@ namespace RemoteViewing.Vnc.Server
             }
 
             return session.FramebufferManualEndUpdate();
-        }
-
-        public VncFramebuffer Framebuffer
-        {
-            get;
-            private set;
         }
     }
 }

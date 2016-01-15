@@ -88,8 +88,9 @@ namespace RemoteViewing.Vnc
                                 var subencoding = this.c.ReceiveByte();
                                 pixels = this.AllocateFramebufferScratch(tw * th * bpp);
 
-                                if ((subencoding & 1) != 0) // raw
+                                if ((subencoding & 1) != 0)
                                 {
+                                    // raw
                                     this.c.Receive(pixels, 0, tw * th * bpp);
 
                                     if (inRange)
@@ -215,8 +216,9 @@ namespace RemoteViewing.Vnc
                         this.zlibMemoryStream.SetLength(size);
                         this.zlibMemoryStream.Position = 0;
 
-                        if (this.zlibInflater == null) // Zlib has a two-byte header.
+                        if (this.zlibInflater == null)
                         {
+                            // Zlib has a two-byte header.
                             VncStream.SanityCheck(size >= 2);
                             this.zlibMemoryStream.Position = 2;
                             this.zlibInflater = new DeflateStream(this.zlibMemoryStream, CompressionMode.Decompress, false);

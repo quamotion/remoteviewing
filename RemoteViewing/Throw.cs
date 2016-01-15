@@ -31,100 +31,25 @@ using System.Collections.Generic;
 
 namespace RemoteViewing
 {
+    /// <summary>
+    /// Throws exceptions if certain conditions are not met.
+    /// </summary>
     internal sealed class Throw
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Throw"/> class.
+        /// </summary>
         private Throw()
         {
         }
 
+        /// <summary>
+        /// Always returns <see langword="null"/>, but extension methods for the
+        /// <see cref="Throw"/> class can still operate on this property.
+        /// </summary>
         public static Throw If
         {
             get { return null; }
-        }
-    }
-
-    internal static class ThrowExtensions
-    {
-        public static Throw True(this Throw self, bool condition, string paramName)
-        {
-            if (condition)
-            {
-                throw new ArgumentException(paramName);
-            }
-
-            return null;
-        }
-
-        public static Throw False(this Throw self, bool condition, string paramName)
-        {
-            if (!condition)
-            {
-                throw new ArgumentException(paramName);
-            }
-
-            return null;
-        }
-
-        public static Throw Negative(this Throw self, int value, string paramName)
-        {
-            if (value < 0)
-            {
-                throw new ArgumentOutOfRangeException("paramName");
-            }
-
-            return null;
-        }
-
-        public static Throw Null<T>(this Throw self, T value)
-        {
-            if (value == null)
-            {
-                throw new ArgumentNullException();
-            }
-
-            return null;
-        }
-
-        public static Throw Null<T>(this Throw self, T value, string paramName)
-        {
-            if (value == null)
-            {
-                throw new ArgumentNullException(paramName);
-            }
-
-            return null;
-        }
-
-        public static Throw OutOfRange<T>(this Throw self, IList<T> buffer, int offset, int count)
-        {
-            Throw.If.Null(buffer, "buffer");
-            if (offset < 0 || offset > buffer.Count)
-            {
-                throw new ArgumentOutOfRangeException("offset");
-            }
-
-            if (count < 0 || count > buffer.Count - offset)
-            {
-                throw new ArgumentOutOfRangeException("count");
-            }
-
-            return null;
-        }
-
-        public static Throw VncRequires(this Throw self, bool condition, string message, Vnc.VncFailureReason reason)
-        {
-            if (!condition)
-            {
-                throw new Vnc.VncException(message, reason);
-            }
-
-            return null;
-        }
-
-        public static Throw VncSanityCheck(bool condition)
-        {
-            Throw.If.VncRequires(condition, "Sanity check failed.", Vnc.VncFailureReason.SanityCheckFailed);
-            return null;
         }
     }
 }

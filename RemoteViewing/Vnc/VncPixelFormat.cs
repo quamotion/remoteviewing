@@ -69,9 +69,17 @@ namespace RemoteViewing.Vnc
         /// <param name="blueShift">The number of bits left the blue value is shifted.</param>
         /// <param name="isLittleEndian"><c>true</c> if the pixel is little-endian, or <c>false</c> if it is big-endian.</param>
         /// <param name="isPalettized"><c>true</c> if the framebuffer stores palette indices, or <c>false</c> if it stores colors.</param>
-        public VncPixelFormat(int bitsPerPixel, int bitDepth,
-                              int redBits, int redShift, int greenBits, int greenShift, int blueBits, int blueShift,
-                              bool isLittleEndian = true, bool isPalettized = false)
+        public VncPixelFormat(
+            int bitsPerPixel,
+            int bitDepth,
+            int redBits,
+            int redShift,
+            int greenBits,
+            int greenShift,
+            int blueBits,
+            int blueShift,
+            bool isLittleEndian = true,
+            bool isPalettized = false)
         {
             Throw.If.False(bitsPerPixel == 8 || bitsPerPixel == 16 || bitsPerPixel == 32, "bitsPerPixel");
             Throw.If.False(bitDepth == 24, "bitDepth");
@@ -90,163 +98,6 @@ namespace RemoteViewing.Vnc
             this.blueShift = blueShift;
             this.isLittleEndian = isLittleEndian;
             this.isPalettized = isPalettized;
-        }
-
-        /// <inheritdoc />
-        public override bool Equals(object obj)
-        {
-            var format = obj as VncPixelFormat;
-
-            if (format != null)
-            {
-                if (this.BitsPerPixel == format.BitsPerPixel && this.BitDepth == format.BitDepth &&
-                    this.RedBits == format.RedBits && this.RedShift == format.RedShift &&
-                    this.GreenBits == format.GreenBits && this.GreenShift == format.GreenShift &&
-                    this.BlueBits == format.BlueBits && this.BlueShift == format.BlueShift &&
-                    this.IsLittleEndian == format.IsLittleEndian && this.IsPalettized == format.IsPalettized)
-                {
-                    return true;
-                }
-            }
-
-            return false;
-        }
-
-        /// <inheritdoc />
-        public override int GetHashCode()
-        {
-            return this.bitsPerPixel ^ this.redBits;
-        }
-
-        /// <summary>
-        /// Copies pixels between two byte arrays. A format conversion is performed if necessary.
-        ///
-        /// Be sure to lock <see cref="VncFramebuffer.SyncRoot"/> first to avoid tearing,
-        /// if the connection is active.
-        /// </summary>
-        /// <param name="source">A pointer to the upper-left corner of the source.</param>
-        /// <param name="sourceStride">The offset in the source between one Y coordinate and the next.</param>
-        /// <param name="sourceFormat">The source pixel format.</param>
-        /// <param name="sourceRectangle">The rectangle in the source to decode.</param>
-        /// <param name="target">A pointer to the upper-left corner of the target.</param>
-        /// <param name="targetStride">The offset in the target between one Y coordinate and the next.</param>
-        /// <param name="targetFormat">The target pixel format.</param>
-        /// <param name="targetX">The X coordinate in the target that the leftmost pixel should be placed into.</param>
-        /// <param name="targetY">The Y coordinate in the target that the topmost pixel should be placed into.</param>
-        public static unsafe void Copy(byte[] source, int sourceStride, VncPixelFormat sourceFormat, VncRectangle sourceRectangle,
-                                       byte[] target, int targetStride, VncPixelFormat targetFormat, int targetX = 0, int targetY = 0)
-        {
-            Throw.If.Null(source, "source").Null(target, "target");
-
-            fixed (byte* sourcePtr = source)
-            fixed (byte* targetPtr = target)
-            {
-                Copy((IntPtr)sourcePtr, sourceStride, sourceFormat, sourceRectangle,
-                     (IntPtr)targetPtr, targetStride, targetFormat, targetX, targetY);
-            }
-        }
-
-        // TODO: Support more (any? :-) pixel formats.
-        /// <summary>
-        /// Copies pixels. A format conversion is performed if necessary.
-        ///
-        /// Be sure to lock <see cref="VncFramebuffer.SyncRoot"/> first to avoid tearing,
-        /// if the connection is active.
-        /// </summary>
-        /// <param name="source">A pointer to the upper-left corner of the source.</param>
-        /// <param name="sourceStride">The offset in the source between one Y coordinate and the next.</param>
-        /// <param name="sourceFormat">The source pixel format.</param>
-        /// <param name="sourceRectangle">The rectangle in the source to decode.</param>
-        /// <param name="target">A pointer to the upper-left corner of the target.</param>
-        /// <param name="targetStride">The offset in the target between one Y coordinate and the next.</param>
-        /// <param name="targetFormat">The target pixel format.</param>
-        /// <param name="targetX">The X coordinate in the target that the leftmost pixel should be placed into.</param>
-        /// <param name="targetY">The Y coordinate in the target that the topmost pixel should be placed into.</param>
-        public static unsafe void Copy(IntPtr source, int sourceStride, VncPixelFormat sourceFormat, VncRectangle sourceRectangle,
-                                       IntPtr target, int targetStride, VncPixelFormat targetFormat, int targetX = 0, int targetY = 0)
-        {
-            Throw.If.True(source == IntPtr.Zero, "source").True(target == IntPtr.Zero, "target");
-            Throw.If.Null(sourceFormat, "sourceFormat").Null(targetFormat, "targetFormat");
-
-            if (sourceRectangle.IsEmpty)
-            {
-                return;
-            }
-
-            int x = sourceRectangle.X, w = sourceRectangle.Width;
-            int y = sourceRectangle.Y, h = sourceRectangle.Height;
-
-            var sourceData = (byte*)(void*)source + (y * sourceStride) + (x * sourceFormat.BytesPerPixel);
-            var targetData = (byte*)(void*)target + (targetY * targetStride) + (targetX * targetFormat.BytesPerPixel);
-
-            if (sourceFormat.Equals(targetFormat))
-            {
-                for (int iy = 0; iy < h; iy++)
-                {
-                    if (sourceFormat.BytesPerPixel == 4)
-                    {
-                        uint* sourceDataX0 = (uint*)sourceData, targetDataX0 = (uint*)targetData;
-                        for (int ix = 0; ix < w; ix++)
-                        {
-                            *targetDataX0++ = (*sourceDataX0++);
-                        }
-                    }
-                    else
-                    {
-                        int bytes = w * sourceFormat.BytesPerPixel;
-                        byte* sourceDataX0 = (byte*)sourceData, targetDataX0 = (byte*)targetData;
-                        for (int ib = 0; ib < bytes; ib++)
-                        {
-                            *targetDataX0++ = (*sourceDataX0++);
-                        }
-                    }
-
-                    sourceData += sourceStride;
-                    targetData += targetStride;
-                }
-            }
-        }
-
-        private static int BitsFromMax(int max)
-        {
-            if (max == 0 || (max & (max + 1)) != 0)
-            {
-                throw new ArgumentException();
-            }
-
-            return (int)Math.Round(Math.Log(max + 1) / Math.Log(2));
-        }
-
-        internal static VncPixelFormat Decode(byte[] buffer, int offset)
-        {
-            var bitsPerPixel = buffer[offset + 0];
-            var depth = buffer[offset + 1];
-            var isLittleEndian = buffer[offset + 2] == 0;
-            var isPalettized = buffer[offset + 3] == 0;
-            var redBits = BitsFromMax(VncUtility.DecodeUInt16BE(buffer, offset + 4));
-            var greenBits = BitsFromMax(VncUtility.DecodeUInt16BE(buffer, offset + 6));
-            var blueBits = BitsFromMax(VncUtility.DecodeUInt16BE(buffer, offset + 8));
-            var redShift = buffer[offset + 10];
-            var greenShift = buffer[offset + 11];
-            var blueShift = buffer[offset + 12];
-
-            return new VncPixelFormat(bitsPerPixel, depth,
-                                      redBits, redShift, greenBits, greenShift, blueBits, blueShift,
-                                      isLittleEndian, isPalettized);
-        }
-
-        internal void Encode(byte[] buffer, int offset)
-        {
-            buffer[offset + 0] = (byte)this.BitsPerPixel;
-            buffer[offset + 1] = (byte)this.BitDepth;
-            buffer[offset + 2] = (byte)(this.IsLittleEndian ? 0 : 1);
-            buffer[offset + 3] = (byte)(this.IsPalettized ? 0 : 1);
-            VncUtility.EncodeUInt16BE(buffer, offset + 4, (ushort)((1 << this.RedBits) - 1));
-            VncUtility.EncodeUInt16BE(buffer, offset + 6, (ushort)((1 << this.GreenBits) - 1));
-            VncUtility.EncodeUInt16BE(buffer, offset + 8, (ushort)((1 << this.BlueBits) - 1));
-            buffer[offset + 10] = (byte)this.RedShift;
-            buffer[offset + 11] = (byte)this.GreenShift;
-            buffer[offset + 12] = (byte)this.BlueShift;
         }
 
         /// <summary>
@@ -343,9 +194,225 @@ namespace RemoteViewing.Vnc
             get { return this.isPalettized; }
         }
 
+        /// <summary>
+        /// Gets the size of a <see cref="VncPixelFormat"/> when serialized to a <see cref="byte"/> array.
+        /// </summary>
         internal static int Size
         {
             get { return 16; }
+        }
+
+        /// <summary>
+        /// Copies pixels between two byte arrays. A format conversion is performed if necessary.
+        ///
+        /// Be sure to lock <see cref="VncFramebuffer.SyncRoot"/> first to avoid tearing,
+        /// if the connection is active.
+        /// </summary>
+        /// <param name="source">A pointer to the upper-left corner of the source.</param>
+        /// <param name="sourceStride">The offset in the source between one Y coordinate and the next.</param>
+        /// <param name="sourceFormat">The source pixel format.</param>
+        /// <param name="sourceRectangle">The rectangle in the source to decode.</param>
+        /// <param name="target">A pointer to the upper-left corner of the target.</param>
+        /// <param name="targetStride">The offset in the target between one Y coordinate and the next.</param>
+        /// <param name="targetFormat">The target pixel format.</param>
+        /// <param name="targetX">The X coordinate in the target that the leftmost pixel should be placed into.</param>
+        /// <param name="targetY">The Y coordinate in the target that the topmost pixel should be placed into.</param>
+        public static unsafe void Copy(
+            byte[] source,
+            int sourceStride,
+            VncPixelFormat sourceFormat,
+            VncRectangle sourceRectangle,
+            byte[] target,
+            int targetStride,
+            VncPixelFormat targetFormat,
+            int targetX = 0,
+            int targetY = 0)
+        {
+            Throw.If.Null(source, "source").Null(target, "target");
+
+            fixed (byte* sourcePtr = source)
+            fixed (byte* targetPtr = target)
+            {
+                Copy(
+                    (IntPtr)sourcePtr,
+                    sourceStride,
+                    sourceFormat,
+                    sourceRectangle,
+                    (IntPtr)targetPtr,
+                    targetStride,
+                    targetFormat,
+                    targetX,
+                    targetY);
+            }
+        }
+
+        /// <summary>
+        /// <para>
+        /// Copies pixels. A format conversion is performed if necessary.
+        /// </para>
+        /// <para>
+        /// Be sure to lock <see cref="VncFramebuffer.SyncRoot"/> first to avoid tearing,
+        /// if the connection is active.
+        /// </para>
+        /// </summary>
+        /// <param name="source">A pointer to the upper-left corner of the source.</param>
+        /// <param name="sourceStride">The offset in the source between one Y coordinate and the next.</param>
+        /// <param name="sourceFormat">The source pixel format.</param>
+        /// <param name="sourceRectangle">The rectangle in the source to decode.</param>
+        /// <param name="target">A pointer to the upper-left corner of the target.</param>
+        /// <param name="targetStride">The offset in the target between one Y coordinate and the next.</param>
+        /// <param name="targetFormat">The target pixel format.</param>
+        /// <param name="targetX">The X coordinate in the target that the leftmost pixel should be placed into.</param>
+        /// <param name="targetY">The Y coordinate in the target that the topmost pixel should be placed into.</param>
+        public static unsafe void Copy(
+            IntPtr source,
+            int sourceStride,
+            VncPixelFormat sourceFormat,
+            VncRectangle sourceRectangle,
+            IntPtr target,
+            int targetStride,
+            VncPixelFormat targetFormat,
+            int targetX = 0,
+            int targetY = 0)
+        {
+            Throw.If.True(source == IntPtr.Zero, "source").True(target == IntPtr.Zero, "target");
+            Throw.If.Null(sourceFormat, "sourceFormat").Null(targetFormat, "targetFormat");
+
+            if (sourceRectangle.IsEmpty)
+            {
+                return;
+            }
+
+            int x = sourceRectangle.X, w = sourceRectangle.Width;
+            int y = sourceRectangle.Y, h = sourceRectangle.Height;
+
+            var sourceData = (byte*)(void*)source + (y * sourceStride) + (x * sourceFormat.BytesPerPixel);
+            var targetData = (byte*)(void*)target + (targetY * targetStride) + (targetX * targetFormat.BytesPerPixel);
+
+            if (sourceFormat.Equals(targetFormat))
+            {
+                for (int iy = 0; iy < h; iy++)
+                {
+                    if (sourceFormat.BytesPerPixel == 4)
+                    {
+                        uint* sourceDataX0 = (uint*)sourceData, targetDataX0 = (uint*)targetData;
+                        for (int ix = 0; ix < w; ix++)
+                        {
+                            *targetDataX0++ = *sourceDataX0++;
+                        }
+                    }
+                    else
+                    {
+                        int bytes = w * sourceFormat.BytesPerPixel;
+                        byte* sourceDataX0 = (byte*)sourceData, targetDataX0 = (byte*)targetData;
+                        for (int ib = 0; ib < bytes; ib++)
+                        {
+                            *targetDataX0++ = *sourceDataX0++;
+                        }
+                    }
+
+                    sourceData += sourceStride;
+                    targetData += targetStride;
+                }
+            }
+        }
+
+        /// <inheritdoc />
+        public override bool Equals(object obj)
+        {
+            var format = obj as VncPixelFormat;
+
+            if (format != null)
+            {
+                if (this.BitsPerPixel == format.BitsPerPixel && this.BitDepth == format.BitDepth &&
+                    this.RedBits == format.RedBits && this.RedShift == format.RedShift &&
+                    this.GreenBits == format.GreenBits && this.GreenShift == format.GreenShift &&
+                    this.BlueBits == format.BlueBits && this.BlueShift == format.BlueShift &&
+                    this.IsLittleEndian == format.IsLittleEndian && this.IsPalettized == format.IsPalettized)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        /// <inheritdoc />
+        public override int GetHashCode()
+        {
+            return this.bitsPerPixel ^ this.redBits;
+        }
+
+        /// <summary>
+        /// Decodes a <see cref="VncPixelFormat"/> from a <see cref="byte"/> array.
+        /// </summary>
+        /// <param name="buffer">
+        /// The <see cref="byte"/> array which contains the <see cref="VncPixelFormat"/> data.
+        /// </param>
+        /// <param name="offset">
+        /// The first index in the <paramref name="buffer"/> which contains the <see cref="VncPixelFormat"/>
+        /// data.
+        /// </param>
+        /// <returns>
+        /// A <see cref="VncPixelFormat"/> object.
+        /// </returns>
+        internal static VncPixelFormat Decode(byte[] buffer, int offset)
+        {
+            var bitsPerPixel = buffer[offset + 0];
+            var depth = buffer[offset + 1];
+            var isLittleEndian = buffer[offset + 2] == 0;
+            var isPalettized = buffer[offset + 3] == 0;
+            var redBits = BitsFromMax(VncUtility.DecodeUInt16BE(buffer, offset + 4));
+            var greenBits = BitsFromMax(VncUtility.DecodeUInt16BE(buffer, offset + 6));
+            var blueBits = BitsFromMax(VncUtility.DecodeUInt16BE(buffer, offset + 8));
+            var redShift = buffer[offset + 10];
+            var greenShift = buffer[offset + 11];
+            var blueShift = buffer[offset + 12];
+
+            return new VncPixelFormat(
+                bitsPerPixel,
+                depth,
+                redBits,
+                redShift,
+                greenBits,
+                greenShift,
+                blueBits,
+                blueShift,
+                isLittleEndian,
+                isPalettized);
+        }
+
+        /// <summary>
+        /// Serializes this <see cref="VncPixelFormat"/> to a <see cref="byte"/> array.
+        /// </summary>
+        /// <param name="buffer">
+        /// The <see cref="byte"/> array to which to encode the <see cref="VncPixelFormat"/> object.
+        /// </param>
+        /// <param name="offset">
+        /// The first <see cref="byte"/> at which to store the <see cref="VncPixelFormat"/> data.
+        /// </param>
+        internal void Encode(byte[] buffer, int offset)
+        {
+            buffer[offset + 0] = (byte)this.BitsPerPixel;
+            buffer[offset + 1] = (byte)this.BitDepth;
+            buffer[offset + 2] = (byte)(this.IsLittleEndian ? 0 : 1);
+            buffer[offset + 3] = (byte)(this.IsPalettized ? 0 : 1);
+            VncUtility.EncodeUInt16BE(buffer, offset + 4, (ushort)((1 << this.RedBits) - 1));
+            VncUtility.EncodeUInt16BE(buffer, offset + 6, (ushort)((1 << this.GreenBits) - 1));
+            VncUtility.EncodeUInt16BE(buffer, offset + 8, (ushort)((1 << this.BlueBits) - 1));
+            buffer[offset + 10] = (byte)this.RedShift;
+            buffer[offset + 11] = (byte)this.GreenShift;
+            buffer[offset + 12] = (byte)this.BlueShift;
+        }
+
+        private static int BitsFromMax(int max)
+        {
+            if (max == 0 || (max & (max + 1)) != 0)
+            {
+                throw new ArgumentException();
+            }
+
+            return (int)Math.Round(Math.Log(max + 1) / Math.Log(2));
         }
     }
 }

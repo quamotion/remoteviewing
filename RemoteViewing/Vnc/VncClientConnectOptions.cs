@@ -83,10 +83,10 @@ namespace RemoteViewing.Vnc
             set;
         }
 
-        /// <value>
-        /// Gets a value indicating whether the session can be shared with
+        /// <summary>
+        /// Gets or sets a value indicating whether the session can be shared with
         /// any currently-connected clients.
-        /// </value>
+        /// </summary>
         /// <value>
         /// <c>true</c> to share the desktop with any currently-connected clients.
         /// <c>false</c> to get exclusive access to the desktop.
