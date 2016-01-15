@@ -36,7 +36,7 @@ namespace RemoteViewing.Vnc
     public class VncException : Exception
     {
         /// <summary>
-        /// Initializes an instance of the <see cref="VncException"/> class.
+        /// Initializes a new instance of the <see cref="VncException"/> class.
         /// </summary>
         public VncException()
             : this("VNC error.")
@@ -44,13 +44,15 @@ namespace RemoteViewing.Vnc
         }
 
         /// <summary>
-        /// Initializes an instance of the <see cref="VncException"/> class, with a reason specified.
+        /// Initializes a new instance of the <see cref="VncException"/> class, with a reason specified.
         /// </summary>
         /// <param name="message">The error message.</param>
         /// <param name="reason">The reason the exception was thrown.</param>
         /// <param name="innerException">The exception that caused this exception to be thrown, or <see langword="null"/>.</param>
-        public VncException(string message, VncFailureReason reason = VncFailureReason.Unknown,
-                            Exception innerException = null)
+        public VncException(
+            string message,
+            VncFailureReason reason = VncFailureReason.Unknown,
+            Exception innerException = null)
             : base(message, innerException)
         {
             this.Reason = reason;

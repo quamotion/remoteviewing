@@ -109,8 +109,14 @@ namespace RemoteViewing.Vnc.Server
 
                         var subregion = new VncRectangle(x, y, w, h);
 
-                        VncPixelFormat.Copy(buffer, fb.Stride, fb.PixelFormat, subregion,
-                                            this.pixelBuffer, w * bpp, this.Framebuffer.PixelFormat);
+                        VncPixelFormat.Copy(
+                            buffer,
+                            fb.Stride,
+                            fb.PixelFormat,
+                            subregion,
+                            this.pixelBuffer,
+                            w * bpp,
+                            this.Framebuffer.PixelFormat);
 
                         int ix = x / TileSize, iy = y / TileSize;
                         var tileHash = this.hash.ComputeHash(this.pixelBuffer, 0, w * h * bpp);

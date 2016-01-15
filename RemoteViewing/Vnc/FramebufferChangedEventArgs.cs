@@ -52,6 +52,14 @@ namespace RemoteViewing.Vnc
         }
 
         /// <summary>
+        /// Gets the number of changed regions.
+        /// </summary>
+        public int RectangleCount
+        {
+            get { return this.rectangles.Count; }
+        }
+
+        /// <summary>
         /// Gets one of the changed regions.
         /// </summary>
         /// <param name="index">The index of the changed region. The first region has an index of 0.</param>
@@ -59,14 +67,6 @@ namespace RemoteViewing.Vnc
         public VncRectangle GetRectangle(int index)
         {
             return this.rectangles[index];
-        }
-
-        /// <summary>
-        /// Gets the number of changed regions.
-        /// </summary>
-        public int RectangleCount
-        {
-            get { return this.rectangles.Count; }
         }
     }
 }

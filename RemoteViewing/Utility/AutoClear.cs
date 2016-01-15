@@ -30,15 +30,27 @@ using System;
 
 namespace RemoteViewing.Utility
 {
+    /// <summary>
+    /// Wraps around a <see cref="Array"/> and clears the array if this
+    /// <see cref="AutoClear"/> object is disposed.
+    /// </summary>
     internal struct AutoClear : IDisposable
     {
         private Array array;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AutoClear"/> struct.
+        /// </summary>
+        /// <param name="array">
+        /// The <see cref="Array"/> which should be cleared when this <see cref="AutoClear"/>
+        /// object is disposed of.
+        /// </param>
         public AutoClear(Array array)
         {
             this.array = array;
         }
 
+        /// <inheritdoc/>
         public void Dispose()
         {
             if (this.array == null)

@@ -32,12 +32,31 @@ using System.Threading;
 
 namespace RemoteViewing.Utility
 {
+    /// <summary>
+    /// Represents a <seealso cref="Thread"/> that invokes a specific action at a
+    /// specific interval
+    /// </summary>
     internal sealed class PeriodicThread
     {
         private ManualResetEvent requestExit;
         private AutoResetEvent requestUpdate;
         private Thread requestThread;
 
+        /// <summary>
+        /// Invokes the <paramref name="action"/> at a frequency specified by <paramref name="getUpdateRateFunc"/>;
+        /// optionally waiting for a signal to execute the action.
+        /// </summary>
+        /// <param name="action">
+        /// The action to run at the frequency specifie.
+        /// </param>
+        /// <param name="getUpdateRateFunc">
+        /// A function that returns at which frequency (in Hz) the <paramref name="action"/> should
+        /// be performed.
+        /// </param>
+        /// <param name="useSignal">
+        /// <see langword="true"/> to wait for <see cref="Signal"/> before executing the action;
+        /// otherwise, <see langword="false"/>.
+        /// </param>
         public void Start(Func<bool> action, Func<double> getUpdateRateFunc, bool useSignal)
         {
             Throw.If.Null(action, "action").Null(getUpdateRateFunc, "getUpdateRateFunc");
@@ -71,8 +90,9 @@ namespace RemoteViewing.Utility
                     int timeout = Math.Max(0, Math.Min(60000, (int)Math.Round(1000.0 * secondsToWait)));
                     if (timeout > 0)
                     {
-                        if (didAction) // Rate limit if true.
+                        if (didAction)
                         {
+                            // Rate limit if true.
                             if (this.requestExit.WaitOne(timeout))
                             {
                                 return;
@@ -92,6 +112,9 @@ namespace RemoteViewing.Utility
             this.requestThread.Start();
         }
 
+        /// <summary>
+        /// Signals the <see cref="PeriodicThread"/> that an action should be performed.
+        /// </summary>
         public void Signal()
         {
             if (this.requestUpdate != null)
@@ -100,6 +123,9 @@ namespace RemoteViewing.Utility
             }
         }
 
+        /// <summary>
+        /// Stops this <see cref="PeriodicThread"/>.
+        /// </summary>
         public void Stop()
         {
             if (this.requestThread == null)

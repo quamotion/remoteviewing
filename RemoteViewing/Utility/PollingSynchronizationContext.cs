@@ -38,20 +38,6 @@ namespace RemoteViewing.Utility
         }
 
         /// <summary>
-        /// Post an action to run when <see cref="PollingSynchronizationContext.CheckEvents"/> is called.
-        /// This will not block.
-        /// </summary>
-        /// <param name="action">The action to run.</param>
-        private void Post(Action action)
-        {
-            lock (this.posts)
-            {
-                this.posts.Enqueue(action);
-                Monitor.Pulse(this.posts);
-            }
-        }
-
-        /// <summary>
         /// Posts an action to run when <see cref="PollingSynchronizationContext.CheckEvents"/> is called.
         /// This will not block.
         /// </summary>
@@ -76,6 +62,20 @@ namespace RemoteViewing.Utility
             this.Post(call_ => ((SynchronizedCall)call_).Run(), call);
 
             call.Wait();
+        }
+
+        /// <summary>
+        /// Post an action to run when <see cref="PollingSynchronizationContext.CheckEvents"/> is called.
+        /// This will not block.
+        /// </summary>
+        /// <param name="action">The action to run.</param>
+        private void Post(Action action)
+        {
+            lock (this.posts)
+            {
+                this.posts.Enqueue(action);
+                Monitor.Pulse(this.posts);
+            }
         }
     }
 }

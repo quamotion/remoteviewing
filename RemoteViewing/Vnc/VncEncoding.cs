@@ -28,13 +28,54 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace RemoteViewing.Vnc
 {
+    /// <summary>
+    /// Defines the encoding format used by the client and the server.
+    /// </summary>
     internal enum VncEncoding
     {
+        /// <summary>
+        /// The data is encoded in the raw encoding format.
+        /// </summary>
+        /// <remarks>
+        /// In this case the data consists of width × height pixel values (where width and height
+        /// are the width and height of the rectangle). The values simply represent each pixel in
+        /// left-to-right scanline order
+        /// </remarks>
         Raw = 0,
+
+        /// <summary>
+        /// The CopyRect (copy rectangle) encoding is a very simple and efficient encoding which
+        /// can be used when the client already has the same pixel data elsewhere in its framebuffer.
+        /// The encoding on the wire simply consists of an X,Y coordinate. This gives a
+        /// position in the framebuffer from which the client can copy the rectangle of pixel data.
+        /// </summary>
         CopyRect = 1,
+
+        /// <summary>
+        /// Rectangles are split up into 16x16 tiles, allowing the dimensions of the subrectangles to be
+        /// specified in 4 bits each, 16 bits in total. The rectangle is split into tiles starting at the
+        /// top left going in left-to-right, topto-bottom order. The encoded contents of the tiles simply
+        /// follow one another in the predetermined order.
+        /// </summary>
         Hextile = 5,
+
+        /// <summary>
+        /// Combines zlib compression, tiling, palettisation and run-length encoding. On the wire, the rectangle
+        /// begins with a 4-byte length field, and is followed by that many bytes of zlib-compressed data.
+        /// </summary>
         Zlib = 6,
+
+        /// <summary>
+        /// A client which requests the Cursor pseudo-encoding is declaring that it is capable of
+        /// drawing a mouse cursor locally. This can significantly improve perceived performance
+        /// over slow links
+        /// </summary>
         PseudoCursor = -239, // TODO: KVM doesn't use this one for me... Find some way to test it...
+
+        /// <summary>
+        /// A client which requests the DesktopSize pseudo-encoding is declaring that it is capable
+        /// of coping with a change in the framebuffer width and/or height.
+        /// </summary>
         PseudoDesktopSize = -223
     }
 }

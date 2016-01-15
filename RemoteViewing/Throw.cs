@@ -44,7 +44,7 @@ namespace RemoteViewing
         }
 
         /// <summary>
-        /// Always returns <see langword="null"/>, but extension methods for the
+        /// Gets a value which is always <see langword="null"/>, but extension methods for the
         /// <see cref="Throw"/> class can still operate on this property.
         /// </summary>
         public static Throw If

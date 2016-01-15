@@ -64,35 +64,6 @@ namespace RemoteViewing.Vnc
         }
 
         /// <summary>
-        /// Sets the color of a single pixel.
-        /// </summary>
-        /// <param name="x">The X coordinate of the pixel.</param>
-        /// <param name="y">The Y coordinate of the pixel.</param>
-        /// <param name="color">The RGB color of the pixel.</param>
-        public void SetPixel(int x, int y, int color)
-        {
-            lock (this.SyncRoot)
-            {
-                Throw.If.False((uint)x < (uint)this.Width, "x");
-                Throw.If.False((uint)y < (uint)this.Height, "y");
-
-                if (this.PixelFormat.BytesPerPixel == 4)
-                {
-                    Array.Copy(BitConverter.GetBytes(color), 0, this.GetBuffer(), (y * this.Stride) + (x * 4), 4);
-                }
-            }
-        }
-
-        /// <summary>
-        /// Returns the memory underlying this framebuffer.
-        /// </summary>
-        /// <returns>The framebuffer bytes.</returns>
-        public byte[] GetBuffer()
-        {
-            return this.buffer;
-        }
-
-        /// <summary>
         /// Gets the framebuffer name. Many VNC clients set their titlebar to this name.
         /// </summary>
         public string Name
@@ -149,6 +120,36 @@ namespace RemoteViewing.Vnc
             private set;
         }
 
+        /// <summary>
+        /// Returns the memory underlying this framebuffer.
+        /// </summary>
+        /// <returns>The framebuffer bytes.</returns>
+        public byte[] GetBuffer()
+        {
+            return this.buffer;
+        }
+
+        /// <summary>
+        /// Sets the color of a single pixel.
+        /// </summary>
+        /// <param name="x">The X coordinate of the pixel.</param>
+        /// <param name="y">The Y coordinate of the pixel.</param>
+        /// <param name="color">The RGB color of the pixel.</param>
+        public void SetPixel(int x, int y, int color)
+        {
+            lock (this.SyncRoot)
+            {
+                Throw.If.False((uint)x < (uint)this.Width, "x");
+                Throw.If.False((uint)y < (uint)this.Height, "y");
+
+                if (this.PixelFormat.BytesPerPixel == 4)
+                {
+                    Array.Copy(BitConverter.GetBytes(color), 0, this.GetBuffer(), (y * this.Stride) + (x * 4), 4);
+                }
+            }
+        }
+
+        /// <inheritdoc/>
         VncFramebuffer IVncFramebufferSource.Capture()
         {
             return this;

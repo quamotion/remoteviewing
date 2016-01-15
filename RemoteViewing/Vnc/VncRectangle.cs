@@ -53,34 +53,6 @@ namespace RemoteViewing.Vnc
             this.Height = height;
         }
 
-        /// <inheritdoc />
-        public override bool Equals(object obj)
-        {
-            return obj is VncRectangle && this.Equals((VncRectangle)obj);
-        }
-
-        /// <summary>
-        /// Compares the rectangle with another rectangle for equality.
-        /// </summary>
-        /// <param name="other">The other rectangle.</param>
-        /// <returns><c>true</c> if the rectangles are equal.</returns>
-        public bool Equals(VncRectangle other)
-        {
-            return this.X == other.X && this.Y == other.Y && this.Width == other.Width && this.Height == other.Height;
-        }
-
-        /// <inheritdoc />
-        public override int GetHashCode()
-        {
-            return this.X | this.Y << 16;
-        }
-
-        /// <inheritdoc />
-        public override string ToString()
-        {
-            return string.Format("{0}x{1} at {2}, {3}", this.Width, this.Height, this.X, this.Y);
-        }
-
         /// <summary>
         /// Gets the number of pixels.
         /// </summary>
@@ -121,6 +93,28 @@ namespace RemoteViewing.Vnc
         }
 
         /// <summary>
+        /// Compares two rectangles for equality.
+        /// </summary>
+        /// <param name="rect1">The first rectangle.</param>
+        /// <param name="rect2">The second rectangle.</param>
+        /// <returns><c>true</c> if the rectangles are equal.</returns>
+        public static bool operator ==(VncRectangle rect1, VncRectangle rect2)
+        {
+            return rect1.Equals(rect2);
+        }
+
+        /// <summary>
+        /// Compares two rectangles for inequality.
+        /// </summary>
+        /// <param name="rect1">The first rectangle.</param>
+        /// <param name="rect2">The second rectangle.</param>
+        /// <returns><c>true</c> if the rectangles are not equal.</returns>
+        public static bool operator !=(VncRectangle rect1, VncRectangle rect2)
+        {
+            return !rect1.Equals(rect2);
+        }
+
+        /// <summary>
         /// Intersects two rectangles.
         /// </summary>
         /// <param name="rect1">The first rectangle.</param>
@@ -140,7 +134,7 @@ else if (rect2.IsEmpty)
             int x = Math.Max(rect1.X, rect2.X), y = Math.Max(rect1.Y, rect2.Y);
             int w = Math.Min(rect1.X + rect1.Width, rect2.X + rect2.Width) - x;
             int h = Math.Min(rect1.Y + rect1.Height, rect2.Y + rect2.Height) - y;
-            return w > 0 && h > 0 ? new VncRectangle(x, y, w, h) : new VncRectangle();
+            return w > 0 && h > 0 ? new VncRectangle(x, y, w, h) : default(VncRectangle);
         }
 
         /// <summary>
@@ -166,26 +160,32 @@ else if (rect2.IsEmpty)
             return new VncRectangle(x, y, w, h);
         }
 
-        /// <summary>
-        /// Compares two rectangles for equality.
-        /// </summary>
-        /// <param name="rect1">The first rectangle.</param>
-        /// <param name="rect2">The second rectangle.</param>
-        /// <returns><c>true</c> if the rectangles are equal.</returns>
-        public static bool operator ==(VncRectangle rect1, VncRectangle rect2)
+        /// <inheritdoc />
+        public override bool Equals(object obj)
         {
-            return rect1.Equals(rect2);
+            return obj is VncRectangle && this.Equals((VncRectangle)obj);
         }
 
         /// <summary>
-        /// Compares two rectangles for inequality.
+        /// Compares the rectangle with another rectangle for equality.
         /// </summary>
-        /// <param name="rect1">The first rectangle.</param>
-        /// <param name="rect2">The second rectangle.</param>
-        /// <returns><c>true</c> if the rectangles are not equal.</returns>
-        public static bool operator !=(VncRectangle rect1, VncRectangle rect2)
+        /// <param name="other">The other rectangle.</param>
+        /// <returns><c>true</c> if the rectangles are equal.</returns>
+        public bool Equals(VncRectangle other)
         {
-            return !rect1.Equals(rect2);
+            return this.X == other.X && this.Y == other.Y && this.Width == other.Width && this.Height == other.Height;
+        }
+
+        /// <inheritdoc />
+        public override int GetHashCode()
+        {
+            return this.X | this.Y << 16;
+        }
+
+        /// <inheritdoc />
+        public override string ToString()
+        {
+            return string.Format("{0}x{1} at {2}, {3}", this.Width, this.Height, this.X, this.Y);
         }
     }
 }

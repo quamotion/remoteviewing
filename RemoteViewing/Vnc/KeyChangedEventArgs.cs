@@ -36,7 +36,7 @@ namespace RemoteViewing.Vnc
     public class KeyChangedEventArgs : EventArgs
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="PointerChangedEventArgs"/> class.
+        /// Initializes a new instance of the <see cref="KeyChangedEventArgs"/> class.
         /// </summary>
         /// <param name="keysym">The X11 keysym of the key. For many keys this is the ASCII value.</param>
         /// <param name="pressed"><c>true</c> for a key press event, or <c>false</c> for a key release event.</param>

@@ -40,6 +40,34 @@ namespace RemoteViewing.Vnc.Server
     /// </summary>
     public class VncServerSession
     {
+        private VncStream c = new VncStream();
+        private VncEncoding[] clientEncoding = new VncEncoding[0];
+        private VncPixelFormat clientPixelFormat;
+        private int clientWidth;
+        private int clientHeight;
+        private Version clientVersion = new Version();
+        private VncServerSessionOptions options;
+        private VncFramebufferCache fbuAutoCache;
+        private List<Rectangle> fbuRectangles = new List<Rectangle>();
+        private object fbuSync = new object();
+        private IVncFramebufferSource fbSource;
+        private double maxUpdateRate;
+        private Utility.PeriodicThread requester;
+        private object specialSync = new object();
+        private Thread threadMain;
+#if DEFLATESTREAM_FLUSH_WORKS
+        MemoryStream _zlibMemoryStream;
+        DeflateStream _zlibDeflater;
+#endif
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="VncServerSession"/> class.
+        /// </summary>
+        public VncServerSession()
+        {
+            this.MaxUpdateRate = 15;
+        }
+
         /// <summary>
         /// Occurs when the VNC client provides a password.
         /// Respond to this event by accepting or rejecting the password.
@@ -101,39 +129,89 @@ namespace RemoteViewing.Vnc.Server
         /// </summary>
         public event EventHandler<RemoteClipboardChangedEventArgs> RemoteClipboardChanged;
 
-        private struct Rectangle
+        /// <summary>
+        /// Gets the protocol version of the client.
+        /// </summary>
+        public Version ClientVersion
         {
-            public VncRectangle Region;
-            public VncEncoding Encoding;
-            public byte[] Contents;
+            get { return this.clientVersion; }
         }
 
-        private VncStream c = new VncStream();
-        private VncEncoding[] clientEncoding = new VncEncoding[0];
-        private VncPixelFormat clientPixelFormat;
-        private int clientWidth;
-        private int clientHeight;
-        private Version clientVersion = new Version();
-        private VncServerSessionOptions options;
-        private VncFramebufferCache fbuAutoCache;
-        private List<Rectangle> fbuRectangles = new List<Rectangle>();
-        private object fbuSync = new object();
-        private IVncFramebufferSource fbSource;
-        private double maxUpdateRate;
-        private Utility.PeriodicThread requester;
-        private object specialSync = new object();
-        private Thread threadMain;
-#if DEFLATESTREAM_FLUSH_WORKS
-        MemoryStream _zlibMemoryStream;
-        DeflateStream _zlibDeflater;
-#endif
+        /// <summary>
+        /// Gets the framebuffer for the VNC session.
+        /// </summary>
+        public VncFramebuffer Framebuffer
+        {
+            get;
+            private set;
+        }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="VncServerSession"/> class.
+        /// Gets information about the client's most recent framebuffer update request.
+        /// This may be <see langword="null"/> if the client has no framebuffer request queued.
         /// </summary>
-        public VncServerSession()
+        public FramebufferUpdateRequest FramebufferUpdateRequest
         {
-            this.MaxUpdateRate = 15;
+            get;
+            private set;
+        }
+
+        /// <summary>
+        /// Gets a lock which should be used before performing any framebuffer updates.
+        /// </summary>
+        public object FramebufferUpdateRequestLock
+        {
+            get { return this.fbuSync; }
+        }
+
+        /// <summary>
+        /// Gets a value indicating whether the server is connected to a client.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if the server is connected to a client.
+        /// </value>
+        public bool IsConnected
+        {
+            get;
+            private set;
+        }
+
+        /// <summary>
+        /// Gets or sets the max rate to send framebuffer updates at, in frames per second.
+        /// </summary>
+        /// <remarks>
+        /// The default is 15.
+        /// </remarks>
+        public double MaxUpdateRate
+        {
+            get
+            {
+                return this.maxUpdateRate;
+            }
+
+            set
+            {
+                if (value <= 0)
+                {
+                    throw new ArgumentOutOfRangeException(
+                        "Max update rate must be positive.",
+                                                          (Exception)null);
+                }
+
+                this.maxUpdateRate = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets user-specific data.
+        /// </summary>
+        /// <remarks>
+        /// Store anything you want here.
+        /// </remarks>
+        public object UserData
+        {
+            get;
+            set;
         }
 
         /// <summary>
@@ -168,6 +246,377 @@ namespace RemoteViewing.Vnc.Server
                 this.threadMain = new Thread(this.ThreadMain);
                 this.threadMain.IsBackground = true;
                 this.threadMain.Start();
+            }
+        }
+
+        /// <summary>
+        /// Tells the client to play a bell sound.
+        /// </summary>
+        public void Bell()
+        {
+            lock (this.c.SyncRoot)
+            {
+                if (!this.IsConnected)
+                {
+                    return;
+                }
+
+                this.c.SendByte((byte)2);
+            }
+        }
+
+        /// <summary>
+        /// Notifies the client that the local clipboard has changed.
+        /// If you are implementing clipboard integration, use this to set the remote clipboard.
+        /// </summary>
+        /// <param name="data">The contents of the local clipboard.</param>
+        public void SendLocalClipboardChange(string data)
+        {
+            Throw.If.Null(data, "data");
+
+            lock (this.c.SyncRoot)
+            {
+                if (!this.IsConnected)
+                {
+                    return;
+                }
+
+                this.c.SendByte((byte)3);
+                this.c.Send(new byte[3]);
+                this.c.SendString(data, true);
+            }
+        }
+
+        /// <summary>
+        /// Sets the framebuffer source.
+        /// </summary>
+        /// <param name="source">The framebuffer source, or <see langword="null"/> if you intend to handle the framebuffer manually.</param>
+        public void SetFramebufferSource(IVncFramebufferSource source)
+        {
+            this.fbSource = source;
+        }
+
+        /// <summary>
+        /// Notifies the framebuffer update thread to check for recent changes.
+        /// </summary>
+        public void FramebufferChanged()
+        {
+            this.requester.Signal();
+        }
+
+        /// <summary>
+        /// Begins a manual framebuffer update.
+        ///
+        /// Do not call this method without holding <see cref="VncServerSession.FramebufferUpdateRequestLock"/>.
+        /// </summary>
+        public void FramebufferManualBeginUpdate()
+        {
+            this.fbuRectangles.Clear();
+        }
+
+        /// <summary>
+        /// Queues an update corresponding to one region of the framebuffer being copied to another.
+        /// </summary>
+        /// <param name="target">
+        /// The updated <see cref="VncRectangle"/>.
+        /// </param>
+        /// <param name="sourceX">
+        /// The X coordinate of the source.
+        /// </param>
+        /// <param name="sourceY">
+        /// The Y coordinate of the source.
+        /// </param>
+        /// <remarks>
+        /// Do not call this method without holding <see cref="VncServerSession.FramebufferUpdateRequestLock"/>.
+        /// </remarks>
+        public void FramebufferManualCopyRegion(VncRectangle target, int sourceX, int sourceY)
+        {
+            if (!this.clientEncoding.Contains(VncEncoding.CopyRect))
+            {
+                var source = new VncRectangle(sourceX, sourceY, target.Width, target.Height);
+                var region = VncRectangle.Union(source, target);
+
+                if (region.Area > source.Area + target.Area)
+                {
+                    this.FramebufferManualInvalidate(new[] { source, target });
+                }
+                else
+                {
+                    this.FramebufferManualInvalidate(region);
+                }
+
+                return;
+            }
+
+            var contents = new byte[4];
+            VncUtility.EncodeUInt16BE(contents, 0, (ushort)sourceX);
+            VncUtility.EncodeUInt16BE(contents, 2, (ushort)sourceY);
+            this.AddRegion(target, VncEncoding.CopyRect, contents);
+        }
+
+        /// <summary>
+        /// Queues an update for the entire framebuffer.
+        ///
+        /// Do not call this method without holding <see cref="VncServerSession.FramebufferUpdateRequestLock"/>.
+        /// </summary>
+        public void FramebufferManualInvalidateAll()
+        {
+            this.FramebufferManualInvalidate(new VncRectangle(0, 0, this.Framebuffer.Width, this.Framebuffer.Height));
+        }
+
+        /// <summary>
+        /// Queues an update for the specified region.
+        ///
+        /// Do not call this method without holding <see cref="VncServerSession.FramebufferUpdateRequestLock"/>.
+        /// </summary>
+        /// <param name="region">The region to invalidate.</param>
+        public void FramebufferManualInvalidate(VncRectangle region)
+        {
+            var fb = this.Framebuffer;
+            var cpf = this.clientPixelFormat;
+            region = VncRectangle.Intersect(region, new VncRectangle(0, 0, this.clientWidth, this.clientHeight));
+            if (region.IsEmpty)
+            {
+                return;
+            }
+
+            int x = region.X, y = region.Y, w = region.Width, h = region.Height, bpp = cpf.BytesPerPixel;
+            var contents = new byte[w * h * bpp];
+
+            VncPixelFormat.Copy(
+                fb.GetBuffer(),
+                fb.Stride,
+                fb.PixelFormat,
+                region,
+                contents,
+                w * bpp,
+                cpf);
+
+#if DEFLATESTREAM_FLUSH_WORKS
+            if (_clientEncoding.Contains(VncEncoding.Zlib))
+            {
+                _zlibMemoryStream.Position = 0;
+                _zlibMemoryStream.SetLength(0);
+                _zlibMemoryStream.Write(new byte[4], 0, 4);
+
+                if (_zlibDeflater == null)
+                {
+                    _zlibMemoryStream.Write(new[] { (byte)120, (byte)218 }, 0, 2);
+                    _zlibDeflater = new DeflateStream(_zlibMemoryStream, CompressionMode.Compress, false);
+                }
+
+                _zlibDeflater.Write(contents, 0, contents.Length);
+                _zlibDeflater.Flush();
+                contents = _zlibMemoryStream.ToArray();
+
+                VncUtility.EncodeUInt32BE(contents, 0, (uint)(contents.Length - 4));
+                AddRegion(region, VncEncoding.Zlib, contents);
+            }
+            else
+#endif
+            {
+                this.AddRegion(region, VncEncoding.Raw, contents);
+            }
+        }
+
+        /// <summary>
+        /// Queues an update for each of the specified regions.
+        ///
+        /// Do not call this method without holding <see cref="VncServerSession.FramebufferUpdateRequestLock"/>.
+        /// </summary>
+        /// <param name="regions">The regions to invalidate.</param>
+        public void FramebufferManualInvalidate(VncRectangle[] regions)
+        {
+            Throw.If.Null(regions, "regions");
+            foreach (var region in regions)
+            {
+                this.FramebufferManualInvalidate(region);
+            }
+        }
+
+        /// <summary>
+        /// Completes a manual framebuffer update.
+        /// </summary>
+        /// <returns>
+        /// <see langword="true"/> if the operation completed successfully; otherwise,
+        /// <see langword="false"/>.
+        /// </returns>
+        /// <remarks>
+        /// Do not call this method without holding <see cref="VncServerSession.FramebufferUpdateRequestLock"/>.
+        /// </remarks>
+        public bool FramebufferManualEndUpdate()
+        {
+            var fb = this.Framebuffer;
+            if (this.clientWidth != fb.Width || this.clientHeight != fb.Height)
+            {
+                if (this.clientEncoding.Contains(VncEncoding.PseudoDesktopSize))
+                {
+                    var region = new VncRectangle(0, 0, fb.Width, fb.Height);
+                    this.AddRegion(region, VncEncoding.PseudoDesktopSize, new byte[0]);
+                    this.clientWidth = this.Framebuffer.Width;
+                    this.clientHeight = this.Framebuffer.Height;
+                }
+            }
+
+            if (this.fbuRectangles.Count == 0)
+            {
+                return false;
+            }
+
+            this.FramebufferUpdateRequest = null;
+
+            lock (this.c.SyncRoot)
+            {
+                this.c.Send(new byte[2] { 0, 0 });
+                this.c.SendUInt16BE((ushort)this.fbuRectangles.Count);
+
+                foreach (var rectangle in this.fbuRectangles)
+                {
+                    this.c.SendRectangle(rectangle.Region);
+                    this.c.SendUInt32BE((uint)rectangle.Encoding);
+                    this.c.Send(rectangle.Contents);
+                }
+
+                this.fbuRectangles.Clear();
+                return true;
+            }
+        }
+
+        /// <summary>
+        /// Raises the <see cref="PasswordProvided"/> event.
+        /// </summary>
+        /// <param name="e">
+        /// The event arguments.
+        /// </param>
+        protected virtual void OnPasswordProvided(PasswordProvidedEventArgs e)
+        {
+            var ev = this.PasswordProvided;
+            if (ev != null)
+            {
+                ev(this, e);
+            }
+        }
+
+        /// <summary>
+        /// Raises the <see cref="CreatingDesktop"/> event.
+        /// </summary>
+        /// <param name="e">
+        /// The event arguments.
+        /// </param>
+        protected virtual void OnCreatingDesktop(CreatingDesktopEventArgs e)
+        {
+            var ev = this.CreatingDesktop;
+            if (ev != null)
+            {
+                ev(this, e);
+            }
+        }
+
+        /// <summary>
+        /// Raises the <see cref="Connected"/> event.
+        /// </summary>
+        protected virtual void OnConnected()
+        {
+            var ev = this.Connected;
+            if (ev != null)
+            {
+                ev(this, EventArgs.Empty);
+            }
+        }
+
+        /// <summary>
+        /// Raises the <see cref="ConnectionFailed"/> event.
+        /// </summary>
+        protected virtual void OnConnectionFailed()
+        {
+            var ev = this.ConnectionFailed;
+            if (ev != null)
+            {
+                ev(this, EventArgs.Empty);
+            }
+        }
+
+        /// <summary>
+        /// Raises the <see cref="Closed"/> event.
+        /// </summary>
+        protected virtual void OnClosed()
+        {
+            var ev = this.Closed;
+            if (ev != null)
+            {
+                ev(this, EventArgs.Empty);
+            }
+        }
+
+        /// <summary>
+        /// Raises the <see cref="FramebufferCapturing"/> event.
+        /// </summary>
+        protected virtual void OnFramebufferCapturing()
+        {
+            var ev = this.FramebufferCapturing;
+            if (ev != null)
+            {
+                ev(this, EventArgs.Empty);
+            }
+        }
+
+        /// <summary>
+        /// Raises the <see cref="FramebufferUpdating"/> event.
+        /// </summary>
+        /// <param name="e">
+        /// The event arguments.
+        /// </param>
+        protected virtual void OnFramebufferUpdating(FramebufferUpdatingEventArgs e)
+        {
+            var ev = this.FramebufferUpdating;
+            if (ev != null)
+            {
+                ev(this, e);
+            }
+        }
+
+        /// <summary>
+        /// Raises the <see cref="KeyChanged"/> event.
+        /// </summary>
+        /// <param name="e">
+        /// The event arguments.
+        /// </param>
+        protected void OnKeyChanged(KeyChangedEventArgs e)
+        {
+            var ev = this.KeyChanged;
+            if (ev != null)
+            {
+                ev(this, e);
+            }
+        }
+
+        /// <summary>
+        /// Raises the <see cref="PointerChanged"/> event.
+        /// </summary>
+        /// <param name="e">
+        /// The event arguments.
+        /// </param>
+        protected void OnPointerChanged(PointerChangedEventArgs e)
+        {
+            var ev = this.PointerChanged;
+            if (ev != null)
+            {
+                ev(this, e);
+            }
+        }
+
+        /// <summary>
+        /// Raises the <see cref="RemoteClipboardChanged"/> event.
+        /// </summary>
+        /// <param name="e">
+        /// The event arguments.
+        /// </param>
+        protected virtual void OnRemoteClipboardChanged(RemoteClipboardChangedEventArgs e)
+        {
+            var ev = this.RemoteClipboardChanged;
+            if (ev != null)
+            {
+                ev(this, e);
             }
         }
 
@@ -221,8 +670,11 @@ namespace RemoteViewing.Vnc.Server
                             break;
 
                         default:
-                            VncStream.Require(false, "Unsupported command.",
-                                              VncFailureReason.UnrecognizedProtocolElement);
+                            VncStream.Require(
+                                false,
+                                "Unsupported command.",
+                                VncFailureReason.UnrecognizedProtocolElement);
+
                             break;
                     }
                 }
@@ -408,61 +860,6 @@ namespace RemoteViewing.Vnc.Server
             this.OnRemoteClipboardChanged(new RemoteClipboardChangedEventArgs(clipboard));
         }
 
-        /// <summary>
-        /// Tells the client to play a bell sound.
-        /// </summary>
-        public void Bell()
-        {
-            lock (this.c.SyncRoot)
-            {
-                if (!this.IsConnected)
-                {
-                    return;
-                }
-
-                this.c.SendByte((byte)2);
-            }
-        }
-
-        /// <summary>
-        /// Notifies the client that the local clipboard has changed.
-        /// If you are implementing clipboard integration, use this to set the remote clipboard.
-        /// </summary>
-        /// <param name="data">The contents of the local clipboard.</param>
-        public void SendLocalClipboardChange(string data)
-        {
-            Throw.If.Null(data, "data");
-
-            lock (this.c.SyncRoot)
-            {
-                if (!this.IsConnected)
-                {
-                    return;
-                }
-
-                this.c.SendByte((byte)3);
-                this.c.Send(new byte[3]);
-                this.c.SendString(data, true);
-            }
-        }
-
-        /// <summary>
-        /// Sets the framebuffer source.
-        /// </summary>
-        /// <param name="source">The framebuffer source, or <see langword="null"/> if you intend to handle the framebuffer manually.</param>
-        public void SetFramebufferSource(IVncFramebufferSource source)
-        {
-            this.fbSource = source;
-        }
-
-        /// <summary>
-        /// Notifies the framebuffer update thread to check for recent changes.
-        /// </summary>
-        public void FramebufferChanged()
-        {
-            this.requester.Signal();
-        }
-
         private bool FramebufferSendChanges()
         {
             var e = new FramebufferUpdatingEventArgs();
@@ -500,16 +897,6 @@ namespace RemoteViewing.Vnc.Server
             return e.SentChanges;
         }
 
-        /// <summary>
-        /// Begins a manual framebuffer update.
-        ///
-        /// Do not call this method without holding <see cref="VncServerSession.FramebufferUpdateRequestLock"/>.
-        /// </summary>
-        public void FramebufferManualBeginUpdate()
-        {
-            this.fbuRectangles.Clear();
-        }
-
         private void AddRegion(VncRectangle region, VncEncoding encoding, byte[] contents)
         {
             this.fbuRectangles.Add(new Rectangle() { Region = region, Encoding = encoding, Contents = contents });
@@ -523,36 +910,6 @@ namespace RemoteViewing.Vnc.Server
             }
         }
 
-        /// <summary>
-        /// Queues an update corresponding to one region of the framebuffer being copide to another.
-        ///
-        /// Do not call this method without holding <see cref="VncServerSession.FramebufferUpdateRequestLock"/>.
-        /// </summary>
-        public void FramebufferManualCopyRegion(VncRectangle target, int sourceX, int sourceY)
-        {
-            if (!this.clientEncoding.Contains(VncEncoding.CopyRect))
-            {
-                var source = new VncRectangle(sourceX, sourceY, target.Width, target.Height);
-                var region = VncRectangle.Union(source, target);
-
-                if (region.Area > source.Area + target.Area)
-                {
-                    this.FramebufferManualInvalidate(new[] { source, target });
-                }
-                else
-                {
-                    this.FramebufferManualInvalidate(region);
-                }
-
-                return;
-            }
-
-            var contents = new byte[4];
-            VncUtility.EncodeUInt16BE(contents, 0, (ushort)sourceX);
-            VncUtility.EncodeUInt16BE(contents, 2, (ushort)sourceY);
-            this.AddRegion(target, VncEncoding.CopyRect, contents);
-        }
-
         private void InitFramebufferEncoder()
         {
 #if DEFLATESTREAM_FLUSH_WORKS
@@ -561,346 +918,11 @@ namespace RemoteViewing.Vnc.Server
 #endif
         }
 
-        /// <summary>
-        /// Queues an update for the entire framebuffer.
-        ///
-        /// Do not call this method without holding <see cref="VncServerSession.FramebufferUpdateRequestLock"/>.
-        /// </summary>
-        public void FramebufferManualInvalidateAll()
+        private struct Rectangle
         {
-            this.FramebufferManualInvalidate(new VncRectangle(0, 0, this.Framebuffer.Width, this.Framebuffer.Height));
-        }
-
-        /// <summary>
-        /// Queues an update for the specified region.
-        ///
-        /// Do not call this method without holding <see cref="VncServerSession.FramebufferUpdateRequestLock"/>.
-        /// </summary>
-        /// <param name="region">The region to invalidate.</param>
-        public void FramebufferManualInvalidate(VncRectangle region)
-        {
-            var fb = this.Framebuffer;
-            var cpf = this.clientPixelFormat;
-            region = VncRectangle.Intersect(region, new VncRectangle(0, 0, this.clientWidth, this.clientHeight));
-            if (region.IsEmpty)
-            {
-                return;
-            }
-
-            int x = region.X, y = region.Y, w = region.Width, h = region.Height, bpp = cpf.BytesPerPixel;
-            var contents = new byte[w * h * bpp];
-
-            VncPixelFormat.Copy(fb.GetBuffer(), fb.Stride, fb.PixelFormat, region,
-                                contents, w * bpp, cpf);
-
-#if DEFLATESTREAM_FLUSH_WORKS
-            if (_clientEncoding.Contains(VncEncoding.Zlib))
-            {
-                _zlibMemoryStream.Position = 0;
-                _zlibMemoryStream.SetLength(0);
-                _zlibMemoryStream.Write(new byte[4], 0, 4);
-
-                if (_zlibDeflater == null)
-                {
-                    _zlibMemoryStream.Write(new[] { (byte)120, (byte)218 }, 0, 2);
-                    _zlibDeflater = new DeflateStream(_zlibMemoryStream, CompressionMode.Compress, false);
-                }
-
-                _zlibDeflater.Write(contents, 0, contents.Length);
-                _zlibDeflater.Flush();
-                contents = _zlibMemoryStream.ToArray();
-
-                VncUtility.EncodeUInt32BE(contents, 0, (uint)(contents.Length - 4));
-                AddRegion(region, VncEncoding.Zlib, contents);
-            }
-            else
-#endif
-            {
-                this.AddRegion(region, VncEncoding.Raw, contents);
-            }
-        }
-
-        /// <summary>
-        /// Queues an update for each of the specified regions.
-        ///
-        /// Do not call this method without holding <see cref="VncServerSession.FramebufferUpdateRequestLock"/>.
-        /// </summary>
-        /// <param name="regions">The regions to invalidate.</param>
-        public void FramebufferManualInvalidate(VncRectangle[] regions)
-        {
-            Throw.If.Null(regions, "regions");
-            foreach (var region in regions)
-            {
-                this.FramebufferManualInvalidate(region);
-            }
-        }
-
-        /// <summary>
-        /// Completes a manual framebuffer update.
-        ///
-        /// Do not call this method without holding <see cref="VncServerSession.FramebufferUpdateRequestLock"/>.
-        /// </summary>
-        public bool FramebufferManualEndUpdate()
-        {
-            var fb = this.Framebuffer;
-            if (this.clientWidth != fb.Width || this.clientHeight != fb.Height)
-            {
-                if (this.clientEncoding.Contains(VncEncoding.PseudoDesktopSize))
-                {
-                    var region = new VncRectangle(0, 0, fb.Width, fb.Height);
-                    this.AddRegion(region, VncEncoding.PseudoDesktopSize, new byte[0]);
-                    this.clientWidth = this.Framebuffer.Width;
-                    this.clientHeight = this.Framebuffer.Height;
-                }
-            }
-
-            if (this.fbuRectangles.Count == 0)
-            {
-                return false;
-            }
-
-            this.FramebufferUpdateRequest = null;
-
-            lock (this.c.SyncRoot)
-            {
-                this.c.Send(new byte[2] { 0, 0 });
-                this.c.SendUInt16BE((ushort)this.fbuRectangles.Count);
-
-                foreach (var rectangle in this.fbuRectangles)
-                {
-                    this.c.SendRectangle(rectangle.Region);
-                    this.c.SendUInt32BE((uint)rectangle.Encoding);
-                    this.c.Send(rectangle.Contents);
-                }
-
-                this.fbuRectangles.Clear();
-                return true;
-            }
-        }
-
-        protected virtual void OnPasswordProvided(PasswordProvidedEventArgs e)
-        {
-            this.RaisePasswordProvided(e);
-        }
-
-        protected void RaisePasswordProvided(PasswordProvidedEventArgs e)
-        {
-            var ev = this.PasswordProvided;
-            if (ev != null)
-            {
-                ev(this, e);
-            }
-        }
-
-        protected virtual void OnCreatingDesktop(CreatingDesktopEventArgs e)
-        {
-            this.RaiseCreatingDesktop(e);
-        }
-
-        protected void RaiseCreatingDesktop(CreatingDesktopEventArgs e)
-        {
-            var ev = this.CreatingDesktop;
-            if (ev != null)
-            {
-                ev(this, e);
-            }
-        }
-
-        protected virtual void OnConnected()
-        {
-            this.RaiseConnected();
-        }
-
-        protected void RaiseConnected()
-        {
-            var ev = this.Connected;
-            if (ev != null)
-            {
-                ev(this, EventArgs.Empty);
-            }
-        }
-
-        protected virtual void OnConnectionFailed()
-        {
-            this.RaiseConnectionFailed();
-        }
-
-        protected void RaiseConnectionFailed()
-        {
-            var ev = this.ConnectionFailed;
-            if (ev != null)
-            {
-                ev(this, EventArgs.Empty);
-            }
-        }
-
-        protected virtual void OnClosed()
-        {
-            this.RaiseClosed();
-        }
-
-        protected void RaiseClosed()
-        {
-            var ev = this.Closed;
-            if (ev != null)
-            {
-                ev(this, EventArgs.Empty);
-            }
-        }
-
-        protected virtual void OnFramebufferCapturing()
-        {
-            this.RaiseFramebufferCapturing();
-        }
-
-        protected void RaiseFramebufferCapturing()
-        {
-            var ev = this.FramebufferCapturing;
-            if (ev != null)
-            {
-                ev(this, EventArgs.Empty);
-            }
-        }
-
-        protected virtual void OnFramebufferUpdating(FramebufferUpdatingEventArgs e)
-        {
-            this.RaiseFramebufferUpdating(e);
-        }
-
-        protected void RaiseFramebufferUpdating(FramebufferUpdatingEventArgs e)
-        {
-            var ev = this.FramebufferUpdating;
-            if (ev != null)
-            {
-                ev(this, e);
-            }
-        }
-
-        protected void OnKeyChanged(KeyChangedEventArgs e)
-        {
-            this.RaiseKeyChanged(e);
-        }
-
-        protected void RaiseKeyChanged(KeyChangedEventArgs e)
-        {
-            var ev = this.KeyChanged;
-            if (ev != null)
-            {
-                ev(this, e);
-            }
-        }
-
-        protected void OnPointerChanged(PointerChangedEventArgs e)
-        {
-            this.RaisePointerChanged(e);
-        }
-
-        protected void RaisePointerChanged(PointerChangedEventArgs e)
-        {
-            var ev = this.PointerChanged;
-            if (ev != null)
-            {
-                ev(this, e);
-            }
-        }
-
-        protected virtual void OnRemoteClipboardChanged(RemoteClipboardChangedEventArgs e)
-        {
-            this.RaiseRemoteClipboardChanged(e);
-        }
-
-        protected void RaiseRemoteClipboardChanged(RemoteClipboardChangedEventArgs e)
-        {
-            var ev = this.RemoteClipboardChanged;
-            if (ev != null)
-            {
-                ev(this, e);
-            }
-        }
-
-        /// <summary>
-        /// Gets the protocol version of the client.
-        /// </summary>
-        public Version ClientVersion
-        {
-            get { return this.clientVersion; }
-        }
-
-        /// <summary>
-        /// Gets the framebuffer for the VNC session.
-        /// </summary>
-        public VncFramebuffer Framebuffer
-        {
-            get;
-            private set;
-        }
-
-        /// <summary>
-        /// Gets information about the client's most recent framebuffer update request.
-        /// This may be <see langword="null"/> if the client has no framebuffer request queued.
-        /// </summary>
-        public FramebufferUpdateRequest FramebufferUpdateRequest
-        {
-            get;
-            private set;
-        }
-
-        /// <summary>
-        /// Gets a lock which should be used before performing any framebuffer updates.
-        /// </summary>
-        public object FramebufferUpdateRequestLock
-        {
-            get { return this.fbuSync; }
-        }
-
-        /// <summary>
-        /// Gets a value indicating whether the server is connected to a client.
-        /// </summary>
-        /// <value>
-        /// <c>true</c> if the server is connected to a client.
-        /// </value>
-        public bool IsConnected
-        {
-            get;
-            private set;
-        }
-
-        /// <summary>
-        /// Gets or sets the max rate to send framebuffer updates at, in frames per second.
-        /// </summary>
-        /// <remarks>
-        /// The default is 15.
-        /// </remarks>
-        public double MaxUpdateRate
-        {
-            get
-            {
-                return this.maxUpdateRate;
-            }
-
-            set
-            {
-                if (value <= 0)
-                {
-                    throw new ArgumentOutOfRangeException(
-                        "Max update rate must be positive.",
-                                                          (Exception)null);
-                }
-
-                this.maxUpdateRate = value;
-            }
-        }
-
-        /// <summary>
-        /// Gets or sets user-specific data.
-        /// </summary>
-        /// <remarks>
-        /// Store anything you want here.
-        /// </remarks>
-        public object UserData
-        {
-            get;
-            set;
+            public VncRectangle Region;
+            public VncEncoding Encoding;
+            public byte[] Contents;
         }
     }
 }

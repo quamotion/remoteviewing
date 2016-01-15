@@ -81,6 +81,7 @@ namespace RemoteViewing.Windows.Forms
             InitializeComponent();
         }
 
+        /// <inheritdoc/>
         protected override void OnLoad(EventArgs e)
         {
             base.OnLoad(e);
@@ -92,6 +93,7 @@ namespace RemoteViewing.Windows.Forms
             }
         }
 
+        /// <inheritdoc/>
         protected override void OnHandleDestroyed(EventArgs e)
         {
             if (!DesignMode)
@@ -103,6 +105,7 @@ namespace RemoteViewing.Windows.Forms
             base.OnHandleDestroyed(e);
         }
 
+        /// <inheritdoc/>
         protected override void WndProc(ref Message m)
         {
             if (AllowClipboardSharingToServer && m.Msg == WM_CLIPBOARDUPDATE)
@@ -278,6 +281,7 @@ namespace RemoteViewing.Windows.Forms
             if (AllowInput) { e.IsInputKey = true; }
         }
 
+        /// <inheritdoc/>
         protected override void OnLostFocus(EventArgs e)
         {
             base.OnLostFocus(e);
@@ -331,6 +335,7 @@ namespace RemoteViewing.Windows.Forms
             _buttons &= ~mask; SendMouseUpdate();
         }
 
+        /// <inheritdoc/>
         protected override void OnMouseWheel(MouseEventArgs e)
         {
             base.OnMouseWheel(e);

@@ -55,6 +55,18 @@ namespace RemoteViewing.Vnc.Server
         }
 
         /// <summary>
+        /// Gets a value indicating whether the client has successfully authenticated.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if the client has successfully authenticated.
+        /// </value>
+        public bool IsAuthenticated
+        {
+            get;
+            private set;
+        }
+
+        /// <summary>
         /// Successfully authenticates the client.
         /// </summary>
         /// <returns>Always <c>true</c>.</returns>
@@ -103,18 +115,6 @@ namespace RemoteViewing.Vnc.Server
 
                 return this.Accept();
             }
-        }
-
-        /// <summary>
-        /// Gets a value indicating whether the client has successfully authenticated.
-        /// </summary>
-        /// <value>
-        /// <c>true</c> if the client has successfully authenticated.
-        /// </value>
-        public bool IsAuthenticated
-        {
-            get;
-            private set;
         }
     }
 }

@@ -31,8 +31,17 @@ using System.Security.Cryptography;
 
 namespace RemoteViewing.Vnc
 {
+    /// <summary>
+    /// Provides helper methods which implement the VNC password challenge protocol.
+    /// </summary>
     internal static class VncPasswordChallenge
     {
+        /// <summary>
+        /// Generates a 16-byte challenge.
+        /// </summary>
+        /// <returns>
+        /// A ,<see cref="byte"/> array which contains the 16-byte challenge.
+        /// </returns>
         public static byte[] GenerateChallenge()
         {
             var challenge = new byte[16];
@@ -40,6 +49,18 @@ namespace RemoteViewing.Vnc
             return challenge;
         }
 
+        /// <summary>
+        /// Calculates a response for a password challenge, using a password.
+        /// </summary>
+        /// <param name="challenge">
+        /// The challenge received from the server.
+        /// </param>
+        /// <param name="password">
+        /// The password to encrypt the challenge with.
+        /// </param>
+        /// <param name="response">
+        /// The response to send back to the server.
+        /// </param>
         public static void GetChallengeResponse(byte[] challenge, char[] password, byte[] response)
         {
             Throw.If.Null(password, "password");
@@ -51,6 +72,18 @@ namespace RemoteViewing.Vnc
             }
         }
 
+        /// <summary>
+        /// Calculates a response for a password challenge, using a password.
+        /// </summary>
+        /// <param name="challenge">
+        /// The challenge received from the server.
+        /// </param>
+        /// <param name="password">
+        /// The password to encrypt the challenge with.
+        /// </param>
+        /// <param name="response">
+        /// The response to send back to the server.
+        /// </param>
         public static void GetChallengeResponse(byte[] challenge, byte[] password, byte[] response)
         {
             Throw.If.Null(challenge, "challenge").Null(password, "password").Null(response, "response");
@@ -74,7 +107,16 @@ namespace RemoteViewing.Vnc
             }
         }
 
-        // See http://www.vidarholen.net/contents/junk/vnc.html.
+        /// <summary>
+        /// Reverses the bits of a <see cref="byte"/>.
+        /// </summary>
+        /// <param name="value">
+        /// The <see cref="byte"/> for which to reverse the bits.
+        /// </param>
+        /// <returns>
+        /// The <paramref name="value"/> with the bits reversed.
+        /// </returns>
+        /// <seealso href="http://www.vidarholen.net/contents/junk/vnc.html"/>
         private static byte ReverseBits(byte @value)
         {
             byte outValue = 0;
