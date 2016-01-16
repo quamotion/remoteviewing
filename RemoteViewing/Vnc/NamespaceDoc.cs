@@ -26,46 +26,17 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 #endregion
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
+using System.Runtime.CompilerServices;
 
 namespace RemoteViewing.Vnc
 {
     /// <summary>
-    /// Provides data for the <see cref="VncClient.FramebufferChanged"/> event.
+    /// RemoteViewing is a .NET-native VNC client and server library. It supports Raw, Hextile, Copyrect,
+    /// and Zlib encodings, and includes a Windows Forms control to make embedding VNC in your program
+    /// extremely easy.
     /// </summary>
-    public class FramebufferChangedEventArgs : EventArgs
+    [CompilerGenerated]
+    internal class NamespaceDoc
     {
-        private List<VncRectangle> rectangles;
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="FramebufferChangedEventArgs"/> class.
-        /// </summary>
-        /// <param name="rectangles">The bounding rectangles of the changed regions.</param>
-        public FramebufferChangedEventArgs(IEnumerable<VncRectangle> rectangles)
-        {
-            Throw.If.Null(rectangles, "rectangles");
-
-            this.rectangles = rectangles.ToList();
-        }
-
-        /// <summary>
-        /// Gets the number of changed regions.
-        /// </summary>
-        public int RectangleCount
-        {
-            get { return this.rectangles.Count; }
-        }
-
-        /// <summary>
-        /// Gets one of the changed regions.
-        /// </summary>
-        /// <param name="index">The index of the changed region. The first region has an index of 0.</param>
-        /// <returns>A rectangle describing the changed region.</returns>
-        public VncRectangle GetRectangle(int index)
-        {
-            return this.rectangles[index];
-        }
     }
 }

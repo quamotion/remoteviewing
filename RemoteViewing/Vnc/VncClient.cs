@@ -39,6 +39,20 @@ namespace RemoteViewing.Vnc
     /// </summary>
     public partial class VncClient
     {
+        private VncStream c = new VncStream();
+        private VncClientConnectOptions options;
+        private double maxUpdateRate;
+        private Version serverVersion = new Version();
+        private Thread threadMain;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="VncClient"/> class.
+        /// </summary>
+        public VncClient()
+        {
+            this.MaxUpdateRate = 15;
+        }
+
         /// <summary>
         /// Occurs when a bell occurs on the remote server.
         /// </summary>
@@ -70,18 +84,71 @@ namespace RemoteViewing.Vnc
         /// </summary>
         public event EventHandler<RemoteClipboardChangedEventArgs> RemoteClipboardChanged;
 
-        private VncStream c = new VncStream();
-        private VncClientConnectOptions options;
-        private double maxUpdateRate;
-        private Version serverVersion = new Version();
-        private Thread threadMain;
+        /// <summary>
+        /// Gets the framebuffer for the VNC session.
+        /// </summary>
+        public VncFramebuffer Framebuffer
+        {
+            get;
+            private set;
+        }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="VncClient"/> class.
+        /// Gets a value indicating whether the client is connected to a server.
         /// </summary>
-        public VncClient()
+        /// <value>
+        /// <c>true</c> if the client is connected to a server.
+        /// </value>
+        public bool IsConnected
         {
-            this.MaxUpdateRate = 15;
+            get;
+            private set;
+        }
+
+        /// <summary>
+        /// Gets or sets the max rate to request framebuffer updates at, in frames per second.
+        /// </summary>
+        /// <remarks>
+        /// The default is 15.
+        /// </remarks>
+        public double MaxUpdateRate
+        {
+            get
+            {
+                return this.maxUpdateRate;
+            }
+
+            set
+            {
+                if (value <= 0)
+                {
+                    throw new ArgumentOutOfRangeException(
+                        "Max update rate must be positive.",
+                                                          (Exception)null);
+                }
+
+                this.maxUpdateRate = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets the protocol version of the server.
+        /// </summary>
+        public Version ServerVersion
+        {
+            get { return this.serverVersion; }
+        }
+
+        /// <summary>
+        /// Gets or sets user-specific data.
+        /// </summary>
+        /// <remarks>
+        /// Store anything you want here.
+        /// </remarks>
+        public object UserData
+        {
+            get;
+            set;
         }
 
         /// <summary>
@@ -178,6 +245,159 @@ namespace RemoteViewing.Vnc
                 this.threadMain.IsBackground = true;
                 this.threadMain.Start();
             }
+        }
+
+        /// <summary>
+        /// Notifies the server that the local clipboard has changed.
+        /// If you are implementing clipboard integration, use this to set the remote clipboard.
+        /// </summary>
+        /// <param name="data">The contents of the local clipboard.</param>
+        public void SendLocalClipboardChange(string data)
+        {
+            Throw.If.Null(data, "data");
+
+            var bytes = VncStream.EncodeString(data);
+
+            var p = new byte[8 + bytes.Length];
+
+            p[0] = (byte)6;
+            VncUtility.EncodeUInt32BE(p, 4, (uint)bytes.Length);
+            Array.Copy(bytes, 0, p, 8, bytes.Length);
+
+            if (this.IsConnected)
+            {
+                this.c.Send(p);
+            }
+        }
+
+        /// <summary>
+        /// Sends a key event to the VNC server to indicate a key has been pressed or released.
+        /// </summary>
+        /// <param name="keysym">The X11 keysym of the key. For many keys this is the ASCII value.</param>
+        /// <param name="pressed"><c>true</c> for a key press event, or <c>false</c> for a key release event.</param>
+        public void SendKeyEvent(int keysym, bool pressed)
+        {
+            var p = new byte[8];
+
+            p[0] = (byte)4;
+            p[1] = (byte)(pressed ? 1 : 0);
+            VncUtility.EncodeUInt32BE(p, 4, (uint)keysym);
+
+            if (this.IsConnected)
+            {
+                this.c.Send(p);
+            }
+        }
+
+        /// <summary>
+        /// Sends a pointer event to the VNC server to indicate mouse motion, a button click, etc.
+        /// </summary>
+        /// <param name="x">The X coordinate of the mouse.</param>
+        /// <param name="y">The Y coordinate of the mouse.</param>
+        /// <param name="pressedButtons">
+        ///     A bit mask of pressed mouse buttons, in X11 convention: 1 is left, 2 is middle, and 4 is right.
+        ///     Mouse wheel scrolling is treated as a button event: 8 for up and 16 for down.
+        /// </param>
+        public void SendPointerEvent(int x, int y, int pressedButtons)
+        {
+            var p = new byte[6];
+
+            p[0] = (byte)5;
+            p[1] = (byte)pressedButtons;
+            VncUtility.EncodeUInt16BE(p, 2, (ushort)x);
+            VncUtility.EncodeUInt16BE(p, 4, (ushort)y);
+
+            if (this.IsConnected)
+            {
+                this.c.Send(p);
+            }
+        }
+
+        /// <summary>
+        /// Raises the <see cref="Bell"/> event
+        /// </summary>
+        protected virtual void OnBell()
+        {
+            var ev = this.Bell;
+            if (ev != null)
+            {
+                ev(this, EventArgs.Empty);
+            }
+        }
+
+        /// <summary>
+        /// Raises the <see cref="Connected"/> event.
+        /// </summary>
+        protected virtual void OnConnected()
+        {
+            var ev = this.Connected;
+            if (ev != null)
+            {
+                ev(this, EventArgs.Empty);
+            }
+        }
+
+        /// <summary>
+        /// Raises the <see cref="ConnectionFailed"/> event.
+        /// </summary>
+        protected virtual void OnConnectionFailed()
+        {
+            var ev = this.ConnectionFailed;
+            if (ev != null)
+            {
+                ev(this, EventArgs.Empty);
+            }
+        }
+
+        /// <summary>
+        /// Raises the <see cref="Close"/> event.
+        /// </summary>
+        protected virtual void OnClosed()
+        {
+            var ev = this.Closed;
+            if (ev != null)
+            {
+                ev(this, EventArgs.Empty);
+            }
+        }
+
+        /// <summary>
+        /// Raises the <see cref="FramebufferChanged"/> event.
+        /// </summary>
+        /// <param name="e">
+        /// A <see cref="FramebufferChangedEventArgs"/> that describes the changes
+        /// in the framebuffer.
+        /// </param>
+        protected virtual void OnFramebufferChanged(FramebufferChangedEventArgs e)
+        {
+            var ev = this.FramebufferChanged;
+            if (ev != null)
+            {
+                ev(this, e);
+            }
+        }
+
+        /// <summary>
+        /// Raises the <see cref="RemoteClipboardChanged"/> event.
+        /// </summary>
+        /// <param name="e">
+        /// A <see cref="RemoteClipboardChangedEventArgs"/> that contains information on the
+        /// clipboard changes.
+        /// </param>
+        protected virtual void OnRemoteClipboardChanged(RemoteClipboardChangedEventArgs e)
+        {
+            var ev = this.RemoteClipboardChanged;
+            if (ev != null)
+            {
+                ev(this, e);
+            }
+        }
+
+        // Assumes we are already locked.
+        private void CopyToFramebuffer(int tx, int ty, int w, int h, byte[] pixels)
+        {
+            var fb = this.Framebuffer;
+            this.CopyToGeneral(tx, ty, fb.Width, fb.Height, fb.GetBuffer(), 0, 0, w, h, pixels, w, h);
         }
 
         private void ThreadMain()
@@ -380,79 +600,6 @@ namespace RemoteViewing.Vnc
             this.c.Send(p);
         }
 
-        /// <summary>
-        /// Notifies the server that the local clipboard has changed.
-        /// If you are implementing clipboard integration, use this to set the remote clipboard.
-        /// </summary>
-        /// <param name="data">The contents of the local clipboard.</param>
-        public void SendLocalClipboardChange(string data)
-        {
-            Throw.If.Null(data, "data");
-
-            var bytes = VncStream.EncodeString(data);
-
-            var p = new byte[8 + bytes.Length];
-
-            p[0] = (byte)6;
-            VncUtility.EncodeUInt32BE(p, 4, (uint)bytes.Length);
-            Array.Copy(bytes, 0, p, 8, bytes.Length);
-
-            if (this.IsConnected)
-            {
-                this.c.Send(p);
-            }
-        }
-
-        /// <summary>
-        /// Sends a key event to the VNC server to indicate a key has been pressed or released.
-        /// </summary>
-        /// <param name="keysym">The X11 keysym of the key. For many keys this is the ASCII value.</param>
-        /// <param name="pressed"><c>true</c> for a key press event, or <c>false</c> for a key release event.</param>
-        public void SendKeyEvent(int keysym, bool pressed)
-        {
-            var p = new byte[8];
-
-            p[0] = (byte)4;
-            p[1] = (byte)(pressed ? 1 : 0);
-            VncUtility.EncodeUInt32BE(p, 4, (uint)keysym);
-
-            if (this.IsConnected)
-            {
-                this.c.Send(p);
-            }
-        }
-
-        /// <summary>
-        /// Sends a pointer event to the VNC server to indicate mouse motion, a button click, etc.
-        /// </summary>
-        /// <param name="x">The X coordinate of the mouse.</param>
-        /// <param name="y">The Y coordinate of the mouse.</param>
-        /// <param name="pressedButtons">
-        ///     A bit mask of pressed mouse buttons, in X11 convention: 1 is left, 2 is middle, and 4 is right.
-        ///     Mouse wheel scrolling is treated as a button event: 8 for up and 16 for down.
-        /// </param>
-        public void SendPointerEvent(int x, int y, int pressedButtons)
-        {
-            var p = new byte[6];
-
-            p[0] = (byte)5;
-            p[1] = (byte)pressedButtons;
-            VncUtility.EncodeUInt16BE(p, 2, (ushort)x);
-            VncUtility.EncodeUInt16BE(p, 4, (ushort)y);
-
-            if (this.IsConnected)
-            {
-                this.c.Send(p);
-            }
-        }
-
-        // Assumes we are already locked.
-        private void CopyToFramebuffer(int tx, int ty, int w, int h, byte[] pixels)
-        {
-            var fb = this.Framebuffer;
-            this.CopyToGeneral(tx, ty, fb.Width, fb.Height, fb.GetBuffer(), 0, 0, w, h, pixels, w, h);
-        }
-
         private void CopyToGeneral(
             int tx,
             int ty,
@@ -504,153 +651,6 @@ namespace RemoteViewing.Vnc
             var clipboard = this.c.ReceiveString(0xffffff);
 
             this.OnRemoteClipboardChanged(new RemoteClipboardChangedEventArgs(clipboard));
-        }
-
-        /// <summary>
-        /// Raises the <see cref="Bell"/> event
-        /// </summary>
-        protected virtual void OnBell()
-        {
-            var ev = this.Bell;
-            if (ev != null)
-            {
-                ev(this, EventArgs.Empty);
-            }
-        }
-
-        /// <summary>
-        /// Raises the <see cref="Connected"/> event.
-        /// </summary>
-        protected virtual void OnConnected()
-        {
-            var ev = this.Connected;
-            if (ev != null)
-            {
-                ev(this, EventArgs.Empty);
-            }
-        }
-
-        /// <summary>
-        /// Raises the <see cref="ConnectionFailed"/> event.
-        /// </summary>
-        protected virtual void OnConnectionFailed()
-        {
-            var ev = this.ConnectionFailed;
-            if (ev != null)
-            {
-                ev(this, EventArgs.Empty);
-            }
-        }
-
-        /// <summary>
-        /// Raises the <see cref="Close"/> event.
-        /// </summary>
-        protected virtual void OnClosed()
-        {
-            var ev = this.Closed;
-            if (ev != null)
-            {
-                ev(this, EventArgs.Empty);
-            }
-        }
-
-        /// <summary>
-        /// Raises the <see cref="FramebufferChanged"/> event.
-        /// </summary>
-        /// <param name="e">
-        /// A <see cref="FramebufferChangedEventArgs"/> that describes the changes
-        /// in the framebuffer.
-        /// </param>
-        protected virtual void OnFramebufferChanged(FramebufferChangedEventArgs e)
-        {
-            var ev = this.FramebufferChanged;
-            if (ev != null)
-            {
-                ev(this, e);
-            }
-        }
-
-        /// <summary>
-        /// Raises the <see cref="RemoteClipboardChanged"/> event.
-        /// </summary>
-        /// <param name="e">
-        /// A <see cref="RemoteClipboardChangedEventArgs"/> that contains information on the
-        /// clipboard changes.
-        /// </param>
-        protected virtual void OnRemoteClipboardChanged(RemoteClipboardChangedEventArgs e)
-        {
-            var ev = this.RemoteClipboardChanged;
-            if (ev != null)
-            {
-                ev(this, e);
-            }
-        }
-
-        /// <summary>
-        /// Gets the framebuffer for the VNC session.
-        /// </summary>
-        public VncFramebuffer Framebuffer
-        {
-            get;
-            private set;
-        }
-
-        /// <summary>
-        /// Gets a value indicating whether the client is connected to a server.
-        /// </summary>
-        /// <value>
-        /// <c>true</c> if the client is connected to a server.
-        /// </value>
-        public bool IsConnected
-        {
-            get;
-            private set;
-        }
-
-        /// <summary>
-        /// Gets or sets the max rate to request framebuffer updates at, in frames per second.
-        /// </summary>
-        /// <remarks>
-        /// The default is 15.
-        /// </remarks>
-        public double MaxUpdateRate
-        {
-            get
-            {
-                return this.maxUpdateRate;
-            }
-
-            set
-            {
-                if (value <= 0)
-                {
-                    throw new ArgumentOutOfRangeException(
-                        "Max update rate must be positive.",
-                                                          (Exception)null);
-                }
-
-                this.maxUpdateRate = value;
-            }
-        }
-
-        /// <summary>
-        /// Gets the protocol version of the server.
-        /// </summary>
-        public Version ServerVersion
-        {
-            get { return this.serverVersion; }
-        }
-
-        /// <summary>
-        /// Gets or sets user-specific data.
-        /// </summary>
-        /// <remarks>
-        /// Store anything you want here.
-        /// </remarks>
-        public object UserData
-        {
-            get;
-            set;
         }
     }
 }

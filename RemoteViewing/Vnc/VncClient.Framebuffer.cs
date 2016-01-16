@@ -30,12 +30,13 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
-using System.Linq;
-using System.Text;
 
 namespace RemoteViewing.Vnc
 {
-    partial class VncClient
+    /// <summary>
+    /// Connects to a remote VNC server and interacts with it.
+    /// </summary>
+    public partial class VncClient
     {
         private byte[] framebufferScratch = new byte[0];
         private byte[] zlibScratch = new byte[0];
