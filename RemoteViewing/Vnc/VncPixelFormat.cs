@@ -219,10 +219,12 @@ namespace RemoteViewing.Vnc
         /// <param name="targetY">The Y coordinate in the target that the topmost pixel should be placed into.</param>
         public static unsafe void Copy(
             byte[] source,
+            int sourceWidth,
             int sourceStride,
             VncPixelFormat sourceFormat,
             VncRectangle sourceRectangle,
             byte[] target,
+            int targetWidth,
             int targetStride,
             VncPixelFormat targetFormat,
             int targetX = 0,
@@ -230,19 +232,37 @@ namespace RemoteViewing.Vnc
         {
             Throw.If.Null(source, "source").Null(target, "target");
 
-            fixed (byte* sourcePtr = source)
-            fixed (byte* targetPtr = target)
+            if (sourceRectangle.IsEmpty)
             {
-                Copy(
-                    (IntPtr)sourcePtr,
-                    sourceStride,
-                    sourceFormat,
-                    sourceRectangle,
-                    (IntPtr)targetPtr,
-                    targetStride,
-                    targetFormat,
-                    targetX,
-                    targetY);
+                return;
+            }
+
+            int x = sourceRectangle.X, w = sourceRectangle.Width;
+            int y = sourceRectangle.Y, h = sourceRectangle.Height;
+
+            if (sourceFormat.Equals(targetFormat))
+            {
+                if (sourceRectangle.Width == sourceWidth 
+                    && sourceWidth == targetWidth 
+                    && sourceStride == targetStride)
+                {
+                    int sourceStart = sourceStride * y;
+                    int length = targetStride * h;
+
+                    Buffer.BlockCopy(source, sourceStart, target, 0, length);
+                }
+                else
+                {
+                    for (int iy = 0; iy < h; iy++)
+                    {
+                        int sourceStart = sourceStride * (iy + y) + x * sourceFormat.BitsPerPixel / 8;
+                        int targetStart = targetStride * iy;
+
+                        int length = w * sourceFormat.BitsPerPixel / 8;
+
+                        Buffer.BlockCopy(source, sourceStart, target, targetStart, length);
+                    }
+                }
             }
         }
 

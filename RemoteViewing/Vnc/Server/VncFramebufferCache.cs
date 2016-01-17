@@ -27,18 +27,26 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #endregion
 
 using System;
+using System.Runtime.InteropServices;
 
 namespace RemoteViewing.Vnc.Server
 {
+
     /// <summary>
     /// Caches the <see cref="VncFramebuffer"/> pixel data and updates them as new
     /// <see cref="VncFramebuffer"/> commands are received.
     /// </summary>
     internal sealed class VncFramebufferCache
     {
+        [DllImport("msvcrt.dll", CallingConvention = CallingConvention.Cdecl)]
+        private static extern int memcmp(byte[] b1, byte[] b2, uint count);
+
+        [DllImport("msvcrt.dll", CallingConvention = CallingConvention.Cdecl)]
+        private static unsafe extern int memcmp(byte* b1, byte* b2, uint count);
+
         // The size of the tiles which will be invalidated. So we're basically
         // dividing the framebuffer in blocks of 32x32 and are invalidating them one at a time.
-        private const int TileSize = 32;
+        private const int TileSize = 64;
 
         // We cache the latest framebuffer data as it was sent to the client. When looking for changes,
         // we compare with the framebuffer which is cached here and send the deltas (for each time
@@ -56,6 +64,8 @@ namespace RemoteViewing.Vnc.Server
             Throw.If.Null(framebuffer, "framebuffer");
             this.Framebuffer = framebuffer;
             this.cachedFramebuffer = new VncFramebuffer(framebuffer.Name, framebuffer.Width, framebuffer.Height, framebuffer.PixelFormat);
+            
+            this.isLineInvalid = new bool[this.Framebuffer.Height];
         }
 
         /// <summary>
@@ -66,6 +76,8 @@ namespace RemoteViewing.Vnc.Server
             get;
             private set;
         }
+        
+        private readonly bool[] isLineInvalid;
 
         /// <summary>
         /// Responds to a <see cref="VncServerSession"/> update request.
@@ -77,8 +89,10 @@ namespace RemoteViewing.Vnc.Server
         /// <see langword="true"/> if the operation completed successfully; otherwise,
         /// <see langword="false"/>.
         /// </returns>
-        public bool RespondToUpdateRequest(VncServerSession session)
+        public unsafe bool RespondToUpdateRequest(VncServerSession session)
         {
+            VncRectangle subregion = default(VncRectangle);
+
             var fb = this.Framebuffer;
             var fbr = session.FramebufferUpdateRequest;
             if (fb == null || fbr == null)
@@ -102,52 +116,62 @@ namespace RemoteViewing.Vnc.Server
                     var actualBuffer = this.Framebuffer.GetBuffer();
                     var bufferedBuffer = this.cachedFramebuffer.GetBuffer();
 
-                    int ymax = Math.Min(region.Y + region.Height, fb.Height);
-                    int xmax = Math.Min(region.X + region.Width, fb.Width);
-
-                    // Loop over the region for which the update was requested, one tile at a time.
-                    for (int y = region.Y; y < ymax; y += TileSize)
+                    for (int y = region.Y; y < region.Y + region.Height; y++)
                     {
-                        for (int x = region.X; x < xmax; x += TileSize)
+                        subregion.X = region.X;
+                        subregion.Y = y;
+                        subregion.Width = region.Width;
+                        subregion.Height = 1;
+
+                        bool isValid = true;
+
+                        // For a given y, the x pixels are stored sequentially in the array
+                        // starting at y * stride (number of bytes per row); for each x
+                        // value there are bpp bytes of data (4 for a 32-bit integer); we are looking
+                        // for pixels between x and x + w so this translates to
+                        // y * stride + bpp * x and y * stride + bpp * (x + w)
+                        int srcOffset = (y * this.Framebuffer.Stride) + (bpp * region.X);
+                        int length = bpp * region.Width;
+
+                        fixed(byte* actualLinePtr = actualBuffer, bufferedLinePtr = bufferedBuffer)
                         {
-                            int w = Math.Min(TileSize, xmax - x);
-                            int h = Math.Min(TileSize, ymax - y);
-
-                            var subregion = new VncRectangle(x, y, w, h);
-
-                            bool isValid = true;
-
-                            // For this tile, loop over all pixels and compare the individual
-                            // byte data for these pixels (4 bytes per pixel)
-                            for (int jy = y; jy < y + h; jy++)
-                            {
-                                // For a given y, the x pixels are stored sequentially in the array
-                                // starting at y * stride (number of bytes per row); for each x
-                                // value there are bpp bytes of data (4 for a 32-bit integer); we are looking
-                                // for pixels between x and x + w so this translates to
-                                // y * stride + bpp * x and y * stride + bpp * (x + w)
-                                for (int k = (jy * this.Framebuffer.Stride) + (bpp * x);
-                                     k < (jy * this.Framebuffer.Stride) + (bpp * (x + w));
-                                     k++)
-                                {
-                                    if (actualBuffer[k] != bufferedBuffer[k])
-                                    {
-                                        bufferedBuffer[k] = actualBuffer[k];
-                                        isValid = false;
-                                    }
-                                }
-                            }
-
-                            if (incremental && !isValid)
-                            {
-                                session.FramebufferManualInvalidate(subregion);
-                            }
+                            isValid = memcmp(actualLinePtr + srcOffset, bufferedLinePtr + srcOffset, (uint)length) == 0;
                         }
+
+                        if (!isValid)
+                        {
+                            Buffer.BlockCopy(actualBuffer, srcOffset, bufferedBuffer, srcOffset, length);
+                        }
+
+                        this.isLineInvalid[y - region.Y] = !isValid;
                     }
                 } // lock
             } // lock
 
-            if (!incremental)
+            if (incremental)
+            {
+                int? y = null;
+
+                for (int line = 0; line < region.Height; line++)
+                {
+                    if (y == null && this.isLineInvalid[line])
+                    {
+                        y = region.Y + line;
+                    }
+
+                    if (y != null && (!this.isLineInvalid[line] || line == region.Height))
+                    {
+                        // Flush
+                        subregion.X = region.X;
+                        subregion.Y = region.Y + y.Value;
+                        subregion.Width = region.Width;
+                        subregion.Height = line - y.Value;
+                        session.FramebufferManualInvalidate(subregion);
+                        y = null;
+                    }
+                }
+            }
+            else
             {
                 session.FramebufferManualInvalidate(region);
             }

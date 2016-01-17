@@ -388,10 +388,12 @@ namespace RemoteViewing.Vnc.Server
 
             VncPixelFormat.Copy(
                 fb.GetBuffer(),
+                fb.Width,
                 fb.Stride,
                 fb.PixelFormat,
                 region,
                 contents,
+                w,
                 w * bpp,
                 cpf);
 
