@@ -412,7 +412,6 @@ namespace RemoteViewing.Vnc
                     () =>
                     {
                         this.SendFramebufferUpdateRequest(true);
-                        return true;
                     },
                     () => this.MaxUpdateRate,
                     true);

@@ -57,7 +57,7 @@ namespace RemoteViewing.Utility
         /// <see langword="true"/> to wait for <see cref="Signal"/> before executing the action;
         /// otherwise, <see langword="false"/>.
         /// </param>
-        public void Start(Func<bool> action, Func<double> getUpdateRateFunc, bool useSignal)
+        public void Start(Action action, Func<double> getUpdateRateFunc, bool useSignal)
         {
             Throw.If.Null(action, "action").Null(getUpdateRateFunc, "getUpdateRateFunc");
 
@@ -75,10 +75,9 @@ namespace RemoteViewing.Utility
                         return;
                     }
 
-                    bool didAction;
                     try
                     {
-                        didAction = action();
+                        action();
                     }
                     catch (Exception)
                     {
@@ -90,20 +89,9 @@ namespace RemoteViewing.Utility
                     int timeout = Math.Max(0, Math.Min(60000, (int)Math.Round(1000.0 * secondsToWait)));
                     if (timeout > 0)
                     {
-                        if (didAction)
+                        if (this.requestExit.WaitOne(timeout))
                         {
-                            // Rate limit if true.
-                            if (this.requestExit.WaitOne(timeout))
-                            {
-                                return;
-                            }
-                        }
-                        else
-                        {
-                            if (WaitHandle.WaitAny(waitHandles) == 1)
-                            {
-                                return;
-                            }
+                            return;
                         }
                     }
                 }

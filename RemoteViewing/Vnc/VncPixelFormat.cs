@@ -343,6 +343,12 @@ namespace RemoteViewing.Vnc
             return this.bitsPerPixel ^ this.redBits;
         }
 
+        /// <inheritdoc/>
+        public override string ToString()
+        {
+            return $"{this.BitsPerPixel} bpp; {this.BitDepth} depth: R {this.RedBits} {this.RedShift}; G {this.GreenBits} {this.GreenShift}; B {this.BlueBits} {this.BlueShift}; LE: {this.IsLittleEndian}; Palettized {this.IsPalettized}";
+        }
+
         /// <summary>
         /// Decodes a <see cref="VncPixelFormat"/> from a <see cref="byte"/> array.
         /// </summary>

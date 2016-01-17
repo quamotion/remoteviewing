@@ -26,6 +26,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 #endregion
 
+using RemoteViewing.Logging;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -40,6 +41,8 @@ namespace RemoteViewing.Vnc.Server
     /// </summary>
     public class VncServerSession
     {
+        private static readonly ILog Logger = LogProvider.GetCurrentClassLogger();
+
         private VncStream c = new VncStream();
         private VncEncoding[] clientEncoding = new VncEncoding[0];
         private VncPixelFormat clientPixelFormat;
@@ -634,38 +637,42 @@ namespace RemoteViewing.Vnc.Server
                 this.NegotiateDesktop();
                 this.NegotiateEncodings();
 
-                this.requester.Start(this.FramebufferSendChanges, () => this.MaxUpdateRate, false);
+                this.requester.Start(() => this.FramebufferSendChanges(), () => this.MaxUpdateRate, false);
 
                 this.IsConnected = true;
+                Logger.Info("The client has connected successfully");
+
                 this.OnConnected();
 
                 while (true)
                 {
-                    var command = this.c.ReceiveByte();
+                    var command = (VncMessageType)this.c.ReceiveByte();
+
+                    Logger.Info($"Received the {command} command.");
 
                     switch (command)
                     {
-                        case 0:
+                        case VncMessageType.SetPixelFormat:
                             this.HandleSetPixelFormat();
                             break;
 
-                        case 2:
+                        case VncMessageType.SetEncodings:
                             this.HandleSetEncodings();
                             break;
 
-                        case 3:
+                        case VncMessageType.FrameBufferUpdateRequest:
                             this.HandleFramebufferUpdateRequest();
                             break;
 
-                        case 4:
+                        case VncMessageType.KeyEvent:
                             this.HandleKeyEvent();
                             break;
 
-                        case 5:
+                        case VncMessageType.PointerEvent:
                             this.HandlePointerEvent();
                             break;
 
-                        case 6:
+                        case VncMessageType.ClientCutText:
                             this.HandleReceiveClipboardData();
                             break;
 
@@ -705,6 +712,8 @@ namespace RemoteViewing.Vnc.Server
 
         private void NegotiateVersion(out AuthenticationMethod[] methods)
         {
+            Logger.Info("Negotiating the version.");
+
             this.c.SendVersion(new Version(3, 8));
 
             this.clientVersion = this.c.ReceiveVersion();
@@ -720,10 +729,15 @@ namespace RemoteViewing.Vnc.Server
             {
                 methods = new AuthenticationMethod[0];
             }
+
+            Logger.Info($"The client version is {this.clientVersion}");
+            Logger.Info($"Supported autentication method are {string.Join(" ", methods)}");
         }
 
         private void NegotiateSecurity(AuthenticationMethod[] methods)
         {
+            Logger.Info("Negotiating security");
+
             this.c.SendByte((byte)methods.Length);
             VncStream.Require(
                 methods.Length > 0,
@@ -763,10 +777,14 @@ namespace RemoteViewing.Vnc.Server
                 success,
                               "Failed to authenticate.",
                               VncFailureReason.AuthenticationFailed);
+
+            Logger.Info("The user authenticated successfully.");
         }
 
         private void NegotiateDesktop()
         {
+            Logger.Info("Negotiating desktop settings");
+
             byte shareDesktopSetting = this.c.ReceiveByte();
             bool shareDesktop = shareDesktopSetting != 0;
 
@@ -790,11 +808,17 @@ namespace RemoteViewing.Vnc.Server
             this.Framebuffer.PixelFormat.Encode(pixelFormat, 0);
             this.c.Send(pixelFormat);
             this.c.SendString(this.Framebuffer.Name, true);
+
+            Logger.Info($"The desktop {this.Framebuffer.Name} has initialized with pixel format {this.clientPixelFormat}; the screen size is {this.clientWidth}x{this.clientHeight}");
         }
 
         private void NegotiateEncodings()
         {
+            Logger.Info("Negotiating encodings");
+
             this.clientEncoding = new VncEncoding[0]; // Default to no encodings.
+
+            Logger.Info($"Supported encodings method are {string.Join(" ", this.clientEncoding)}");
         }
 
         private void HandleSetPixelFormat()
@@ -912,10 +936,12 @@ namespace RemoteViewing.Vnc.Server
 
         private void InitFramebufferEncoder()
         {
+            Logger.Info("Initializing the frame buffer encoder");
 #if DEFLATESTREAM_FLUSH_WORKS
             _zlibMemoryStream = new MemoryStream();
             _zlibDeflater = null;
 #endif
+            Logger.Info("Initialized the frame buffer encoder");
         }
 
         private struct Rectangle
