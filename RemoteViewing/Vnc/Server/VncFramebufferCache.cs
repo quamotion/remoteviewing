@@ -27,8 +27,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #endregion
 
 using System;
-using System.Linq;
-using System.Security.Cryptography;
 
 namespace RemoteViewing.Vnc.Server
 {
@@ -38,11 +36,14 @@ namespace RemoteViewing.Vnc.Server
     /// </summary>
     internal sealed class VncFramebufferCache
     {
+        // The size of the tiles which will be invalidated. So we're basically
+        // dividing the framebuffer in blocks of 32x32 and are invalidating them one at a time.
         private const int TileSize = 32;
 
-        private SHA1Managed hash = new SHA1Managed();
-        private byte[,][] hashes; // [y,x][hash]
-        private byte[] pixelBuffer;
+        // We cache the latest framebuffer data as it was sent to the client. When looking for changes,
+        // we compare with the framebuffer which is cached here and send the deltas (for each time
+        // which was invalidate) to the client.
+        private VncFramebuffer cachedFramebuffer;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="VncFramebufferCache"/> class.
@@ -54,11 +55,7 @@ namespace RemoteViewing.Vnc.Server
         {
             Throw.If.Null(framebuffer, "framebuffer");
             this.Framebuffer = framebuffer;
-
-            this.hashes = new byte[
-                (framebuffer.Height + TileSize - 1) / TileSize,
-                               (framebuffer.Width + TileSize - 1) / TileSize][];
-            this.pixelBuffer = new byte[TileSize * TileSize * this.Framebuffer.PixelFormat.BytesPerPixel];
+            this.cachedFramebuffer = new VncFramebuffer(framebuffer.Name, framebuffer.Width, framebuffer.Height, framebuffer.PixelFormat);
         }
 
         /// <summary>
@@ -91,47 +88,64 @@ namespace RemoteViewing.Vnc.Server
 
             var incremental = fbr.Incremental;
             var region = fbr.Region;
+            int bpp = fb.PixelFormat.BytesPerPixel;
+
             session.FramebufferManualBeginUpdate();
 
-            var buffer = fb.GetBuffer();
-            int bpp = fb.PixelFormat.BytesPerPixel;
+            // Take a lock here, as we will modify
+            // both buffers heavily in the next block.
             lock (fb.SyncRoot)
             {
-                int ymax = Math.Min(region.Y + region.Height, fb.Height);
-                int xmax = Math.Min(region.X + region.Width, fb.Width);
-
-                for (int y = region.Y; y < ymax; y += TileSize)
+                lock (this.cachedFramebuffer.SyncRoot)
                 {
-                    for (int x = region.X; x < xmax; x += TileSize)
+                    // Get the buffers (byte arrays) of data. We'll compare the data one pixel at a time.
+                    var actualBuffer = this.Framebuffer.GetBuffer();
+                    var bufferedBuffer = this.cachedFramebuffer.GetBuffer();
+
+                    int ymax = Math.Min(region.Y + region.Height, fb.Height);
+                    int xmax = Math.Min(region.X + region.Width, fb.Width);
+
+                    // Loop over the region for which the update was requested, one tile at a time.
+                    for (int y = region.Y; y < ymax; y += TileSize)
                     {
-                        int w = Math.Min(TileSize, xmax - x);
-                        int h = Math.Min(TileSize, ymax - y);
-
-                        var subregion = new VncRectangle(x, y, w, h);
-
-                        VncPixelFormat.Copy(
-                            buffer,
-                            fb.Stride,
-                            fb.PixelFormat,
-                            subregion,
-                            this.pixelBuffer,
-                            w * bpp,
-                            this.Framebuffer.PixelFormat);
-
-                        int ix = x / TileSize, iy = y / TileSize;
-                        var tileHash = this.hash.ComputeHash(this.pixelBuffer, 0, w * h * bpp);
-
-                        if (this.hashes[iy, ix] == null || !this.hashes[iy, ix].SequenceEqual(tileHash))
+                        for (int x = region.X; x < xmax; x += TileSize)
                         {
-                            this.hashes[iy, ix] = tileHash;
-                            if (incremental)
+                            int w = Math.Min(TileSize, xmax - x);
+                            int h = Math.Min(TileSize, ymax - y);
+
+                            var subregion = new VncRectangle(x, y, w, h);
+
+                            bool isValid = true;
+
+                            // For this tile, loop over all pixels and compare the individual
+                            // byte data for these pixels (4 bytes per pixel)
+                            for (int jy = y; jy < y + h; jy++)
+                            {
+                                // For a given y, the x pixels are stored sequentially in the array
+                                // starting at y * stride (number of bytes per row); for each x
+                                // value there are bpp bytes of data (4 for a 32-bit integer); we are looking
+                                // for pixels between x and x + w so this translates to
+                                // y * stride + bpp * x and y * stride + bpp * (x + w)
+                                for (int k = (jy * this.Framebuffer.Stride) + (bpp * x);
+                                     k < (jy * this.Framebuffer.Stride) + (bpp * (x + w));
+                                     k++)
+                                {
+                                    if (actualBuffer[k] != bufferedBuffer[k])
+                                    {
+                                        bufferedBuffer[k] = actualBuffer[k];
+                                        isValid = false;
+                                    }
+                                }
+                            }
+
+                            if (incremental && !isValid)
                             {
                                 session.FramebufferManualInvalidate(subregion);
                             }
                         }
                     }
-                }
-            }
+                } // lock
+            } // lock
 
             if (!incremental)
             {

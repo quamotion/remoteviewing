@@ -134,14 +134,31 @@ namespace RemoteViewing.Vnc
         /// <param name="color">The RGB color of the pixel.</param>
         public void SetPixel(int x, int y, int color)
         {
+            this.SetPixel(x, y, BitConverter.GetBytes(color));
+        }
+
+        /// <summary>
+        /// Sets the color of a single pixel.
+        /// </summary>
+        /// <param name="x">The X coordinate of the pixel.</param>
+        /// <param name="y">The Y coordinate of the pixel.</param>
+        /// <param name="color">
+        /// The pixel color as a byte-encoded integer.
+        /// </param>
+        public void SetPixel(int x, int y, byte[] color)
+        {
+            Throw.If.False((uint)x < (uint)this.Width, "x");
+            Throw.If.False((uint)y < (uint)this.Height, "y");
+
             lock (this.SyncRoot)
             {
-                Throw.If.False((uint)x < (uint)this.Width, "x");
-                Throw.If.False((uint)y < (uint)this.Height, "y");
-
                 if (this.PixelFormat.BytesPerPixel == 4)
                 {
-                    Array.Copy(BitConverter.GetBytes(color), 0, this.GetBuffer(), (y * this.Stride) + (x * 4), 4);
+                    Array.Copy(color, 0, this.GetBuffer(), (y * this.Stride) + (x * 4), 4);
+                }
+                else
+                {
+                    throw new NotSupportedException();
                 }
             }
         }
