@@ -10,7 +10,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>RemoteViewing</RootNamespace>
     <AssemblyName>RemoteViewing</AssemblyName>
-    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile>Client</TargetFrameworkProfile>
   </PropertyGroup>
@@ -36,10 +36,12 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Microsoft.CSharp" />
     <Reference Include="System" />
     <Reference Include="System.Core" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="App_Packages\LibLog.4.2\LibLog.cs" />
     <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="ThrowExtensions.cs" />
     <Compile Include="Utility\AutoClear.cs" />
@@ -50,6 +52,7 @@
     <Compile Include="Vnc\Server\FramebufferUpdatingEventArgs.cs" />
     <Compile Include="Vnc\Server\PasswordProvidedEventArgs.cs" />
     <Compile Include="Vnc\Server\VncFramebufferCache.cs" />
+    <Compile Include="Vnc\Server\VncMessageType.cs" />
     <Compile Include="Vnc\VncPasswordChallenge.cs" />
     <Compile Include="Vnc\Server\VncServerSessionOptions.cs" />
     <Compile Include="Vnc\VncStream.cs" />
@@ -75,7 +78,9 @@
     <Compile Include="Vnc\AuthenticationMethod.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="packages.config" />
+    <None Include="packages.config">
+      <SubType>Designer</SubType>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Analyzer Include="..\packages\StyleCop.Analyzers.1.0.0-rc3\analyzers\dotnet\cs\Newtonsoft.Json.dll" />
