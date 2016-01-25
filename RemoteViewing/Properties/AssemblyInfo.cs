@@ -41,5 +41,3 @@ using System.Runtime.InteropServices;
 [assembly: CLSCompliant(true)]
 [assembly: ComVisible(false)]
 [assembly: Guid("bd19082b-d2a8-46fd-b50f-a7fe0379ed3c")]
-
-[assembly: InternalsVisibleTo("RemoteViewing.Windows.Forms")]

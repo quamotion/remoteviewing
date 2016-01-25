@@ -1,10 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
-namespace RemoteViewing.Vnc.Server
+﻿namespace RemoteViewing.Vnc.Server
 {
+    /// <summary>
+    /// Represents the different kinds of messages that can be exchanged between a VNC server and client.
+    /// </summary>
     internal enum VncMessageType : byte
     {
         /// <summary>

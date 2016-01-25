@@ -35,6 +35,12 @@
     <DocumentationFile>..\bin\RemoteViewing.XML</DocumentationFile>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
+  <PropertyGroup>
+    <SignAssembly>true</SignAssembly>
+  </PropertyGroup>
+  <PropertyGroup>
+    <AssemblyOriginatorKeyFile>RemoteViewing.snk</AssemblyOriginatorKeyFile>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System" />
@@ -50,6 +56,7 @@
     <Compile Include="Vnc\Server\CreatingDesktopEventArgs.cs" />
     <Compile Include="Vnc\Server\FramebufferUpdateRequest.cs" />
     <Compile Include="Vnc\Server\FramebufferUpdatingEventArgs.cs" />
+    <Compile Include="Vnc\Server\NativeMethods.cs" />
     <Compile Include="Vnc\Server\PasswordProvidedEventArgs.cs" />
     <Compile Include="Vnc\Server\VncFramebufferCache.cs" />
     <Compile Include="Vnc\Server\VncMessageType.cs" />
@@ -81,6 +88,7 @@
     <None Include="packages.config">
       <SubType>Designer</SubType>
     </None>
+    <None Include="RemoteViewing.snk" />
   </ItemGroup>
   <ItemGroup>
     <Analyzer Include="..\packages\StyleCop.Analyzers.1.0.0-rc3\analyzers\dotnet\cs\Newtonsoft.Json.dll" />

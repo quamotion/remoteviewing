@@ -35,6 +35,12 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <DocumentationFile>..\bin\RemoteViewing.Windows.Forms.XML</DocumentationFile>
   </PropertyGroup>
+  <PropertyGroup>
+    <SignAssembly>true</SignAssembly>
+  </PropertyGroup>
+  <PropertyGroup>
+    <AssemblyOriginatorKeyFile>RemoteViewing.snk</AssemblyOriginatorKeyFile>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -42,6 +48,12 @@
     <Reference Include="System.Windows.Forms" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\RemoteViewing\Throw.cs">
+      <Link>Throw.cs</Link>
+    </Compile>
+    <Compile Include="..\RemoteViewing\ThrowExtensions.cs">
+      <Link>ThrowExtensions.cs</Link>
+    </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Server\VncScreenFramebufferSource.cs" />
     <Compile Include="VncBitmap.cs" />
@@ -58,6 +70,9 @@
       <Project>{89569346-2C71-4A85-99B9-D3EB71FDE87A}</Project>
       <Name>RemoteViewing</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="RemoteViewing.snk" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

@@ -209,10 +209,12 @@ namespace RemoteViewing.Vnc
         /// if the connection is active.
         /// </summary>
         /// <param name="source">A pointer to the upper-left corner of the source.</param>
+        /// <param name="sourceWidth">The width of the source image.</param>
         /// <param name="sourceStride">The offset in the source between one Y coordinate and the next.</param>
         /// <param name="sourceFormat">The source pixel format.</param>
         /// <param name="sourceRectangle">The rectangle in the source to decode.</param>
         /// <param name="target">A pointer to the upper-left corner of the target.</param>
+        /// <param name="targetWidth">The width of the target image.</param>
         /// <param name="targetStride">The offset in the target between one Y coordinate and the next.</param>
         /// <param name="targetFormat">The target pixel format.</param>
         /// <param name="targetX">The X coordinate in the target that the leftmost pixel should be placed into.</param>
@@ -242,8 +244,8 @@ namespace RemoteViewing.Vnc
 
             if (sourceFormat.Equals(targetFormat))
             {
-                if (sourceRectangle.Width == sourceWidth 
-                    && sourceWidth == targetWidth 
+                if (sourceRectangle.Width == sourceWidth
+                    && sourceWidth == targetWidth
                     && sourceStride == targetStride)
                 {
                     int sourceStart = sourceStride * y;
@@ -255,7 +257,7 @@ namespace RemoteViewing.Vnc
                 {
                     for (int iy = 0; iy < h; iy++)
                     {
-                        int sourceStart = sourceStride * (iy + y) + x * sourceFormat.BitsPerPixel / 8;
+                        int sourceStart = (sourceStride * (iy + y)) + (x * sourceFormat.BitsPerPixel / 8);
                         int targetStart = targetStride * iy;
 
                         int length = w * sourceFormat.BitsPerPixel / 8;

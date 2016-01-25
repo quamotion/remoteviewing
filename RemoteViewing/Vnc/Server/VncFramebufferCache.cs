@@ -38,11 +38,6 @@ namespace RemoteViewing.Vnc.Server
     /// </summary>
     internal sealed class VncFramebufferCache
     {
-        [DllImport("msvcrt.dll", CallingConvention = CallingConvention.Cdecl)]
-        private static extern int memcmp(byte[] b1, byte[] b2, uint count);
-
-        [DllImport("msvcrt.dll", CallingConvention = CallingConvention.Cdecl)]
-        private static unsafe extern int memcmp(byte* b1, byte* b2, uint count);
 
         // The size of the tiles which will be invalidated. So we're basically
         // dividing the framebuffer in blocks of 32x32 and are invalidating them one at a time.
@@ -64,7 +59,7 @@ namespace RemoteViewing.Vnc.Server
             Throw.If.Null(framebuffer, "framebuffer");
             this.Framebuffer = framebuffer;
             this.cachedFramebuffer = new VncFramebuffer(framebuffer.Name, framebuffer.Width, framebuffer.Height, framebuffer.PixelFormat);
-            
+
             this.isLineInvalid = new bool[this.Framebuffer.Height];
         }
 
@@ -76,7 +71,7 @@ namespace RemoteViewing.Vnc.Server
             get;
             private set;
         }
-        
+
         private readonly bool[] isLineInvalid;
 
         /// <summary>
@@ -133,9 +128,9 @@ namespace RemoteViewing.Vnc.Server
                         int srcOffset = (y * this.Framebuffer.Stride) + (bpp * region.X);
                         int length = bpp * region.Width;
 
-                        fixed(byte* actualLinePtr = actualBuffer, bufferedLinePtr = bufferedBuffer)
+                        fixed (byte* actualLinePtr = actualBuffer, bufferedLinePtr = bufferedBuffer)
                         {
-                            isValid = memcmp(actualLinePtr + srcOffset, bufferedLinePtr + srcOffset, (uint)length) == 0;
+                            isValid = NativeMethods.memcmp(actualLinePtr + srcOffset, bufferedLinePtr + srcOffset, (uint)length) == 0;
                         }
 
                         if (!isValid)
