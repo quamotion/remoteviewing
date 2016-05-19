@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <package>
   <metadata>
-    <id>RemoteViewing</id>
+    <id>Quamotion.RemoteViewing</id>
     <version>$version$</version>
     <authors>James F. Bellinger, Frederik Carlier</authors>
     <owners>Quamotion</owners>
-    <title>RemoteViewing - A .NET VNC client and server library</title>
-    <description>RemoteViewing is a .NET-native VNC client and server library.</description>
+    <title>RemoteViewing - A .NET VNC client and server library. (Quamotion)</title>
+    <description>RemoteViewing is a .NET-native VNC client and server library. It supports Raw, Hextile, Copyrect, and Zlib encodings.</description>
     <projectUrl>https://github.com/qmfrederik/remoteviewing/</projectUrl>
     <licenseUrl>https://github.com/qmfrederik/remoteviewing/blob/master/License.txt</licenseUrl>
-    <tags>VNC</tags>
+    <tags>VNC RFB remote desktop client server Hextile Copyrect Zlib</tags>
     <language>en-US</language>
   </metadata>
   <files>
