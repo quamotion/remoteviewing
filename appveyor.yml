@@ -6,4 +6,6 @@ build_script:
 
 on_success:
   - cmd: nuget pack Quamotion.RemoteViewing.nuspec -Version %APPVEYOR_BUILD_VERSION%
+  - cmd: nuget pack Quamotion.RemoteViewing.Windows.Forms.nuspec -Version %APPVEYOR_BUILD_VERSION%
   - ps: Push-AppveyorArtifact "Quamotion.RemoteViewing.$($env:APPVEYOR_BUILD_VERSION).nupkg"
+  - ps: Push-AppveyorArtifact "Quamotion.RemoteViewing.Windows.Forms.$($env:APPVEYOR_BUILD_VERSION).nupkg"

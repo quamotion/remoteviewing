@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package>
+  <metadata>
+    <id>Quamotion.RemoteViewing.Windows.Forms</id>
+    <version>$version$</version>
+    <authors>James F. Bellinger, Frederik Carlier</authors>
+    <owners>Quamotion</owners>
+    <title>RemoteViewing - A .NET VNC client and server library. (Quamotion)</title>
+    <description>RemoteViewing is a .NET-native VNC client and server library. It supports Raw, Hextile, Copyrect, and Zlib encodings.</description>
+    <projectUrl>https://github.com/qmfrederik/remoteviewing/</projectUrl>
+    <licenseUrl>https://github.com/qmfrederik/remoteviewing/blob/master/License.txt</licenseUrl>
+    <tags>VNC RFB remote desktop client server Hextile Copyrect Zlib</tags>
+    <language>en-US</language>
+  </metadata>
+  <files>
+    <file src="bin\RemoteViewing.Windows.Forms.dll" target="lib\net40" />
+    <file src="bin\RemoteViewing.Windows.Forms.xml" target="lib\net40" />
+  </files>
+</package>
