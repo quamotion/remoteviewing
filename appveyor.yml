@@ -1,3 +1,6 @@
+before_build:
+  - nuget restore
+
 build_script:
   - msbuild RemoteViewing.sln /p:Configuration=Release /p:Platform="Any CPU" /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
 
