@@ -31,6 +31,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Net.Sockets;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace RemoteViewing.Vnc
 {
@@ -42,7 +43,7 @@ namespace RemoteViewing.Vnc
         private VncStream c = new VncStream();
         private VncClientConnectOptions options;
         private double maxUpdateRate;
-        private Version serverVersion = new Version();
+        private Version serverVersion;
         private Thread threadMain;
 
         /// <summary>
@@ -180,7 +181,7 @@ namespace RemoteViewing.Vnc
 
                 try
                 {
-                    client.Connect(hostname, port);
+                    client.ConnectAsync(hostname, port).Wait();
                 }
                 catch (Exception)
                 {
@@ -194,7 +195,7 @@ namespace RemoteViewing.Vnc
                 }
                 catch (Exception)
                 {
-                    client.Close();
+                    ((IDisposable)client).Dispose();
                     throw;
                 }
             }

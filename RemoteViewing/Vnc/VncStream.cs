@@ -158,7 +158,7 @@ namespace RemoteViewing.Vnc
             var stream = this.Stream;
             if (stream != null)
             {
-                stream.Close();
+                stream.Dispose();
             }
         }
 

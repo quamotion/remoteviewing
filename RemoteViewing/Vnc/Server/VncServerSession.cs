@@ -41,14 +41,14 @@ namespace RemoteViewing.Vnc.Server
     /// </summary>
     public class VncServerSession
     {
-        private static readonly ILog Logger = LogProvider.GetCurrentClassLogger();
+        private static readonly ILog Logger = LogProvider.GetLogger(nameof(VncServerSession));
 
         private VncStream c = new VncStream();
         private VncEncoding[] clientEncoding = new VncEncoding[0];
         private VncPixelFormat clientPixelFormat;
         private int clientWidth;
         private int clientHeight;
-        private Version clientVersion = new Version();
+        private Version clientVersion;
         private VncServerSessionOptions options;
         private VncFramebufferCache fbuAutoCache;
         private List<Rectangle> fbuRectangles = new List<Rectangle>();
