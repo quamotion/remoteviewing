@@ -33,7 +33,10 @@ namespace RemoteViewing.Vnc.Server
     /// <summary>
     /// Provides data for the <see cref="VncServerSession.FramebufferUpdating"/> event.
     /// </summary>
-    public class FramebufferUpdatingEventArgs : HandledEventArgs
+    public class FramebufferUpdatingEventArgs
+#if !CORECLR
+        : HandledEventArgs
+#endif
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="FramebufferUpdatingEventArgs"/> class.
@@ -41,6 +44,17 @@ namespace RemoteViewing.Vnc.Server
         public FramebufferUpdatingEventArgs()
         {
         }
+
+#if CORECLR
+        /// <summary>
+        /// Gets or sets a value indicating whether the event is handled.
+        /// </summary>
+        public bool Handled
+        {
+            get;
+            set;
+        }
+#endif
 
         /// <summary>
         /// Gets or sets a value indicating whether you send an update in response to this event.

@@ -45,7 +45,7 @@ namespace RemoteViewing.Vnc
         public static byte[] GenerateChallenge()
         {
             var challenge = new byte[16];
-            new RNGCryptoServiceProvider().GetBytes(challenge);
+            RandomNumberGenerator.Create().GetBytes(challenge);
             return challenge;
         }
 
