@@ -55,6 +55,7 @@
     <Compile Include="ThrowExtensions.cs" />
     <Compile Include="Utility\AutoClear.cs" />
     <Compile Include="Utility\PeriodicThread.cs" />
+    <Compile Include="Utility\User32.cs" />
     <Compile Include="Vnc\IVncFramebufferSource.cs" />
     <Compile Include="Vnc\Server\CreatingDesktopEventArgs.cs" />
     <Compile Include="Vnc\Server\FramebufferUpdateRequest.cs" />
@@ -63,6 +64,7 @@
     <Compile Include="Vnc\Server\PasswordProvidedEventArgs.cs" />
     <Compile Include="Vnc\Server\VncFramebufferCache.cs" />
     <Compile Include="Vnc\Server\VncMessageType.cs" />
+    <Compile Include="Vnc\VncMouse.cs" />
     <Compile Include="Vnc\VncPasswordChallenge.cs" />
     <Compile Include="Vnc\Server\VncServerSessionOptions.cs" />
     <Compile Include="Vnc\VncStream.cs" />
