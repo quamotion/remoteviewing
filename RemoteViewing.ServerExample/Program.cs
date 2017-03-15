@@ -68,7 +68,7 @@ namespace RemoteViewing.ServerExample
             Console.WriteLine("Try to connect! The password is: {0}", Password);
 
             // Wait for a connection.
-            var listener = new TcpListener(IPAddress.Any, 5900);
+            var listener = new TcpListener(IPAddress.Any, 5901);
             listener.Start();
             var client = listener.AcceptTcpClient();
 

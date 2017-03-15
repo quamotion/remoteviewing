@@ -32,15 +32,16 @@ namespace RemoteViewing.Vnc.Server {
         /// <param name="e">EventArgs</param>
         public void OnMouseUpdate (object sender, PointerChangedEventArgs e) {
             byte newState = (byte) e.PressedButtons;
-            uint winApiState = 0;
+
+            User32.SetCursorPos(e.X, e.Y);
 
             // Case left button pressed
             if (!IsButtonDown(X11MouseState, X11MouseEventFlags.LEFTDOWN) &&
                 IsButtonDown(newState, X11MouseEventFlags.LEFTDOWN)) {
 
                 X11MouseState = SetButtonDown(X11MouseState, X11MouseEventFlags.LEFTDOWN);
-                winApiState += (uint)WinApiMouseEventFlags.LEFTDOWN;
-                //winApiState += (uint)WinApiMouseEventFlags.MOVE;
+
+                User32.mouse_event((int)WinApiMouseEventFlags.LEFTDOWN, 0, 0, 0, 0);
 
                 Debug.WriteLine("Left mouse button pressed at {0}, {1}", e.X, e.Y);
             }
@@ -50,18 +51,12 @@ namespace RemoteViewing.Vnc.Server {
                 !IsButtonDown(newState, X11MouseEventFlags.LEFTDOWN)) {
 
                 X11MouseState = SetButtonUp(X11MouseState, X11MouseEventFlags.LEFTDOWN);
-                winApiState += (uint)WinApiMouseEventFlags.LEFTUP;
-                //winApiState += (uint)WinApiMouseEventFlags.MOVE;
+
+                User32.mouse_event((int)WinApiMouseEventFlags.LEFTUP, 0, 0, 0, 0);
 
                 Debug.WriteLine("Left mouse button released at {0}, {1}", e.X, e.Y);
             }
-
-            User32.mouse_event(winApiState, (uint) e.X, (uint) e.Y, 0, 0);
         }
-
-        //private uint MakeWinApiMouseFlags(byte ) {
-        //
-        //}
 
         private bool IsButtonDown(byte state, X11MouseEventFlags flag) {
             return (state & (byte)flag) != 0;
@@ -78,7 +73,7 @@ namespace RemoteViewing.Vnc.Server {
 
 
     [Flags]
-    enum WinApiMouseEventFlags : uint {
+    enum WinApiMouseEventFlags : int {
         LEFTDOWN = 0x00000002,
         LEFTUP = 0x00000004,
         MIDDLEDOWN = 0x00000020,

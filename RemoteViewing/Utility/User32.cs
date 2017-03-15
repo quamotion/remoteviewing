@@ -21,6 +21,9 @@ namespace RemoteViewing.Utility
         /// <param name="dwData"></param>
         /// <param name="dwExtraInfo"></param>
         [DllImport("user32.dll")]
-        public static extern void mouse_event(uint dwFlags, uint dx, uint dy, uint dwData, int dwExtraInfo);
+        public static extern void mouse_event(int dwFlags, int dx, int dy, int dwData, int dwExtraInfo);
+
+        [System.Runtime.InteropServices.DllImport("user32.dll")]
+        public static extern bool SetCursorPos(int x, int y);
     }
 }
