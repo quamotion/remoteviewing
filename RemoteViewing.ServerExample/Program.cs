@@ -76,6 +76,9 @@ namespace RemoteViewing.ServerExample
             var options = new VncServerSessionOptions();
             options.AuthenticationMethod = AuthenticationMethod.Password;
 
+            // Virtual mouse
+            var mouse = new VncMouse();
+
             // Create a session.
             Session = new VncServerSession();
             Session.Connected += HandleConnected;
@@ -83,6 +86,7 @@ namespace RemoteViewing.ServerExample
             Session.Closed += HandleClosed;
             Session.PasswordProvided += HandlePasswordProvided;
             Session.SetFramebufferSource(new VncScreenFramebufferSource("Hello World", Screen.PrimaryScreen));
+            Session.PointerChanged += mouse.OnMouseUpdate;
             Session.Connect(client.GetStream(), options);
 
             // Let's go.
