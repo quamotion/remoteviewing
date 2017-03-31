@@ -858,6 +858,11 @@ namespace RemoteViewing.Vnc.Server
 
                 region = VncRectangle.Intersect(region, new VncRectangle(0, 0, this.Framebuffer.Width, this.Framebuffer.Height));
 
+                if (region.IsEmpty)
+                {
+                    return;
+                }
+
                 this.FramebufferUpdateRequest = new FramebufferUpdateRequest(incremental, region);
                 this.FramebufferChanged();
             }
