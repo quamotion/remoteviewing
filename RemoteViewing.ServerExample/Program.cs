@@ -36,33 +36,33 @@ using RemoteViewing.Windows.Forms.Server;
 
 namespace RemoteViewing.ServerExample
 {
-    class Program
+    internal class Program
     {
-        static string Password = "test";
-        static VncServerSession Session;
+        private static string Password = "test";
+        private static VncServerSession Session;
 
-        static void HandleConnected(object sender, EventArgs e)
+        private static void HandleConnected(object sender, EventArgs e)
         {
             Console.WriteLine("Connected");
         }
 
-        static void HandleConnectionFailed(object sender, EventArgs e)
+        private static void HandleConnectionFailed(object sender, EventArgs e)
         {
             Console.WriteLine("Connection Failed");
         }
 
-        static void HandleClosed(object sender, EventArgs e)
+        private static void HandleClosed(object sender, EventArgs e)
         {
             Console.WriteLine("Closed");
         }
 
-        static void HandlePasswordProvided(object sender, PasswordProvidedEventArgs e)
+        private static void HandlePasswordProvided(object sender, PasswordProvidedEventArgs e)
         {
             e.Accept(Password.ToCharArray());
         }
 
         [STAThread]
-        static void Main(string[] args)
+        private static void Main(string[] args)
         {
             Console.WriteLine("Listening on local port 5900.");
             Console.WriteLine("Try to connect! The password is: {0}", Password);

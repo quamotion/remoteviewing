@@ -44,10 +44,10 @@ namespace RemoteViewing.Windows.Forms.Server
     /// </summary>
     public class VncScreenFramebufferSource : IVncFramebufferSource
     {
-        Bitmap _bitmap;
-        VncFramebuffer _framebuffer;
-        string _name;
-        VncScreenFramebufferSourceGetBoundsCallback _getScreenBounds;
+        private Bitmap _bitmap;
+        private VncFramebuffer _framebuffer;
+        private string _name;
+        private VncScreenFramebufferSourceGetBoundsCallback _getScreenBounds;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="VncScreenFramebufferSource"/> class.
@@ -98,8 +98,12 @@ namespace RemoteViewing.Windows.Forms.Server
 
                 lock (this._framebuffer.SyncRoot)
                 {
-                    VncBitmap.CopyToFramebuffer(this._bitmap, new VncRectangle(0, 0, w, h),
-                                                this._framebuffer, 0, 0);
+                    VncBitmap.CopyToFramebuffer(
+                        this._bitmap,
+                        new VncRectangle(0, 0, w, h),
+                        this._framebuffer,
+                        0,
+                        0);
                 }
             }
 
