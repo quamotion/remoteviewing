@@ -26,6 +26,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 #endregion
 
+using RemoteViewing.Logging;
 using System;
 using System.Runtime.InteropServices;
 
@@ -37,6 +38,8 @@ namespace RemoteViewing.Vnc.Server
     /// </summary>
     internal sealed class VncFramebufferCache
     {
+        private static readonly ILog Logger = LogProvider.GetLogger(nameof(VncServerSession));
+
         // The size of the tiles which will be invalidated. So we're basically
         // dividing the framebuffer in blocks of 32x32 and are invalidating them one at a time.
         private const int TileSize = 64;
@@ -96,6 +99,8 @@ namespace RemoteViewing.Vnc.Server
             var incremental = fbr.Incremental;
             var region = fbr.Region;
             int bpp = fb.PixelFormat.BytesPerPixel;
+
+            Logger.Debug($"Responding to an update request for region {region}.");
 
             session.FramebufferManualBeginUpdate();
 
