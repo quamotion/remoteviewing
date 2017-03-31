@@ -5,13 +5,13 @@ Copyright (c) 2013 James F. Bellinger <http://www.zer7.com/software/remoteviewin
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions are met: 
+modification, are permitted provided that the following conditions are met:
 
 1. Redistributions of source code must retain the above copyright notice, this
-   list of conditions and the following disclaimer. 
+   list of conditions and the following disclaimer.
 2. Redistributions in binary form must reproduce the above copyright notice,
    this list of conditions and the following disclaimer in the documentation
-   and/or other materials provided with the distribution. 
+   and/or other materials provided with the distribution.
 
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
 ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
@@ -61,8 +61,8 @@ namespace RemoteViewing.Windows.Forms.Server
                 throw new ArgumentNullException(nameof(screen));
             }
 
-            _name = name ?? throw new ArgumentNullException(nameof(name));
-            _getScreenBounds = () => screen.Bounds;
+            this._name = name ?? throw new ArgumentNullException(nameof(name));
+            this._getScreenBounds = () => screen.Bounds;
         }
 
         /// <summary>
@@ -73,8 +73,8 @@ namespace RemoteViewing.Windows.Forms.Server
         /// <param name="getBoundsCallback">A callback supplying the bounds of the screen region to copy.</param>
         public VncScreenFramebufferSource(string name, VncScreenFramebufferSourceGetBoundsCallback getBoundsCallback)
         {
-            _name = name ?? throw new ArgumentNullException(nameof(name));
-            _getScreenBounds = getBoundsCallback ?? throw new ArgumentNullException(nameof(getBoundsCallback));
+            this._name = name ?? throw new ArgumentNullException(nameof(name));
+            this._getScreenBounds = getBoundsCallback ?? throw new ArgumentNullException(nameof(getBoundsCallback));
         }
 
         /// <summary>
@@ -83,27 +83,27 @@ namespace RemoteViewing.Windows.Forms.Server
         /// <returns>A framebuffer corresponding to the screen.</returns>
         public VncFramebuffer Capture()
         {
-            var bounds = _getScreenBounds();
+            var bounds = this._getScreenBounds();
             int w = bounds.Width, h = bounds.Height;
 
-            if (_bitmap == null || _bitmap.Width != w || _bitmap.Height != h)
+            if (this._bitmap == null || this._bitmap.Width != w || this._bitmap.Height != h)
             {
-                _bitmap = new Bitmap(w, h);
-                _framebuffer = new VncFramebuffer(_name, w, h, new VncPixelFormat());
+                this._bitmap = new Bitmap(w, h);
+                this._framebuffer = new VncFramebuffer(this._name, w, h, new VncPixelFormat());
             }
 
-            using (var g = Graphics.FromImage(_bitmap))
+            using (var g = Graphics.FromImage(this._bitmap))
             {
                 g.CopyFromScreen(bounds.X, bounds.Y, 0, 0, bounds.Size);
 
-                lock (_framebuffer.SyncRoot)
+                lock (this._framebuffer.SyncRoot)
                 {
-                    VncBitmap.CopyToFramebuffer(_bitmap, new VncRectangle(0, 0, w, h),
-                                                _framebuffer, 0, 0);
+                    VncBitmap.CopyToFramebuffer(this._bitmap, new VncRectangle(0, 0, w, h),
+                                                this._framebuffer, 0, 0);
                 }
             }
 
-            return _framebuffer;
+            return this._framebuffer;
         }
     }
 }

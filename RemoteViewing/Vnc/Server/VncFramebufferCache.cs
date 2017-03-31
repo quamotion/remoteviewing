@@ -31,14 +31,12 @@ using System.Runtime.InteropServices;
 
 namespace RemoteViewing.Vnc.Server
 {
-
     /// <summary>
     /// Caches the <see cref="VncFramebuffer"/> pixel data and updates them as new
     /// <see cref="VncFramebuffer"/> commands are received.
     /// </summary>
     internal sealed class VncFramebufferCache
     {
-
         // The size of the tiles which will be invalidated. So we're basically
         // dividing the framebuffer in blocks of 32x32 and are invalidating them one at a time.
         private const int TileSize = 64;
@@ -139,7 +137,7 @@ namespace RemoteViewing.Vnc.Server
                             {
                                 Buffer.BlockCopy(actualBuffer, srcOffset, bufferedBuffer, srcOffset, length);
                             }
-                            catch(Exception ex)
+                            catch (Exception ex)
                             {
                                 throw;
                             }
