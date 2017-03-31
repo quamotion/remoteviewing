@@ -1,0 +1,27 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <Description>Integrates RemoteViewing with ASP.NET Core, allowing you to host a noVNC server.</Description>
+    <AssemblyTitle>RemoteViewing - ASP.NET Core noVNC Server.</AssemblyTitle>
+    <VersionPrefix>1.0.8</VersionPrefix>
+    <Authors>James F. Bellinger, Frederik Carlier</Authors>
+    <TargetFrameworks>netstandard1.5;net451</TargetFrameworks>
+    <PackageTargetFallback>$(PackageTargetFallback);portable-net45</PackageTargetFallback>
+    <AssemblyName>RemoteViewing.AspNetCore</AssemblyName>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <PackageId>Quamotion.RemoteViewing.AspNetCore</PackageId>
+    <PackageProjectUrl>https://github.com/qmfrederik/remoteviewing/</PackageProjectUrl>
+    <PackageLicenseUrl>https://github.com/qmfrederik/remoteviewing/blob/master/License.txt</PackageLicenseUrl>
+    <PackageTags>VNC RFB remote desktop client server Hextile Copyrect Zlib asp aspnet aspnetcore noVNC</PackageTags>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <DocumentationFile>bin\$(Configuration)\$(TargetFramework)\$(AssemblyName).xml</DocumentationFile>
+    <CodeAnalysisRuleSet>..\RemoteViewing.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\RemoteViewing\RemoteViewing.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.WebSockets.Server" Version="0.1.0" />
+    <PackageReference Include="Nito.AsyncEx" Version="4.0.1" />
+  </ItemGroup>
+</Project>
