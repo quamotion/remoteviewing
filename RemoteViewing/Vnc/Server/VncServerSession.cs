@@ -854,6 +854,10 @@ namespace RemoteViewing.Vnc.Server
 
             lock (this.FramebufferUpdateRequestLock)
             {
+                Logger.Info($"Received a FramebufferUpdateRequest command for {region}");
+
+                region = VncRectangle.Intersect(region, new VncRectangle(0, 0, this.Framebuffer.Width, this.Framebuffer.Height));
+
                 this.FramebufferUpdateRequest = new FramebufferUpdateRequest(incremental, region);
                 this.FramebufferChanged();
             }

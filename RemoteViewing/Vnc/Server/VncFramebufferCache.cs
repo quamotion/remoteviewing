@@ -110,10 +110,14 @@ namespace RemoteViewing.Vnc.Server
             {
                 lock (this.cachedFramebuffer.SyncRoot)
                 {
-                    // Get the buffers (byte arrays) of data. We'll compare the data one pixel at a time.
                     var actualBuffer = this.Framebuffer.GetBuffer();
                     var bufferedBuffer = this.cachedFramebuffer.GetBuffer();
 
+                    // In this block, we will determine which rectangles need updating. Right now, we consider
+                    // each line at once. It's not a very efficient algorithm, but it works.
+                    // We're going to start at the upper-left position of the region, and then we will work our way down,
+                    // on a line by line basis, to determine if each line is still valid.
+                    // isLineInvalid will indicate, on a line-by-line basis, whether a line is still valid or not.
                     for (int y = region.Y; y < region.Y + region.Height; y++)
                     {
                         subregion.X = region.X;
@@ -155,6 +159,9 @@ namespace RemoteViewing.Vnc.Server
 
             if (incremental)
             {
+                // Determine logical group of lines which are invalid. We find the first line which is invalid,
+                // create a new region which contains the all invalid lines which immediately follow the current line.
+                // If we find a valid line, we'll create a new region.
                 int? y = null;
 
                 for (int line = 0; line < region.Height; line++)
@@ -164,13 +171,13 @@ namespace RemoteViewing.Vnc.Server
                         y = region.Y + line;
                     }
 
-                    if (y != null && (!this.isLineInvalid[line] || line == region.Height))
+                    if (y != null && (!this.isLineInvalid[line] || line == region.Height - 1))
                     {
                         // Flush
                         subregion.X = region.X;
                         subregion.Y = region.Y + y.Value;
                         subregion.Width = region.Width;
-                        subregion.Height = line - y.Value;
+                        subregion.Height = line - y.Value + 1;
                         session.FramebufferManualInvalidate(subregion);
                         y = null;
                     }
