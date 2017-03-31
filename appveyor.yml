@@ -1,8 +1,4 @@
-install:
-  - choco install -y wget
-  - wget -q https://download.microsoft.com/download/5/F/E/5FEB7E95-C643-48D5-8329-9D2C63676CE8/dotnet-dev-win-x64.1.0.0-rc4-004771.exe
-  - dotnet-dev-win-x64.1.0.0-rc4-004771.exe /install /quiet /log dotnetinstall.log
-  - ps: Push-AppveyorArtifact "dotnetinstall.log"
+image: Visual Studio 2017
 
 before_build:
   - cmd: dotnet restore
