@@ -44,10 +44,10 @@ namespace RemoteViewing.Windows.Forms.Server
     /// </summary>
     public class VncScreenFramebufferSource : IVncFramebufferSource
     {
-        private Bitmap _bitmap;
-        private VncFramebuffer _framebuffer;
-        private string _name;
-        private VncScreenFramebufferSourceGetBoundsCallback _getScreenBounds;
+        private Bitmap bitmap;
+        private VncFramebuffer framebuffer;
+        private string name;
+        private VncScreenFramebufferSourceGetBoundsCallback getScreenBounds;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="VncScreenFramebufferSource"/> class.
@@ -61,8 +61,8 @@ namespace RemoteViewing.Windows.Forms.Server
                 throw new ArgumentNullException(nameof(screen));
             }
 
-            this._name = name ?? throw new ArgumentNullException(nameof(name));
-            this._getScreenBounds = () => screen.Bounds;
+            this.name = name ?? throw new ArgumentNullException(nameof(name));
+            this.getScreenBounds = () => screen.Bounds;
         }
 
         /// <summary>
@@ -73,8 +73,8 @@ namespace RemoteViewing.Windows.Forms.Server
         /// <param name="getBoundsCallback">A callback supplying the bounds of the screen region to copy.</param>
         public VncScreenFramebufferSource(string name, VncScreenFramebufferSourceGetBoundsCallback getBoundsCallback)
         {
-            this._name = name ?? throw new ArgumentNullException(nameof(name));
-            this._getScreenBounds = getBoundsCallback ?? throw new ArgumentNullException(nameof(getBoundsCallback));
+            this.name = name ?? throw new ArgumentNullException(nameof(name));
+            this.getScreenBounds = getBoundsCallback ?? throw new ArgumentNullException(nameof(getBoundsCallback));
         }
 
         /// <summary>
@@ -83,31 +83,31 @@ namespace RemoteViewing.Windows.Forms.Server
         /// <returns>A framebuffer corresponding to the screen.</returns>
         public VncFramebuffer Capture()
         {
-            var bounds = this._getScreenBounds();
+            var bounds = this.getScreenBounds();
             int w = bounds.Width, h = bounds.Height;
 
-            if (this._bitmap == null || this._bitmap.Width != w || this._bitmap.Height != h)
+            if (this.bitmap == null || this.bitmap.Width != w || this.bitmap.Height != h)
             {
-                this._bitmap = new Bitmap(w, h);
-                this._framebuffer = new VncFramebuffer(this._name, w, h, new VncPixelFormat());
+                this.bitmap = new Bitmap(w, h);
+                this.framebuffer = new VncFramebuffer(this.name, w, h, new VncPixelFormat());
             }
 
-            using (var g = Graphics.FromImage(this._bitmap))
+            using (var g = Graphics.FromImage(this.bitmap))
             {
                 g.CopyFromScreen(bounds.X, bounds.Y, 0, 0, bounds.Size);
 
-                lock (this._framebuffer.SyncRoot)
+                lock (this.framebuffer.SyncRoot)
                 {
                     VncBitmap.CopyToFramebuffer(
-                        this._bitmap,
+                        this.bitmap,
                         new VncRectangle(0, 0, w, h),
-                        this._framebuffer,
+                        this.framebuffer,
                         0,
                         0);
                 }
             }
 
-            return this._framebuffer;
+            return this.framebuffer;
         }
     }
 }

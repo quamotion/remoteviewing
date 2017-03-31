@@ -34,9 +34,11 @@ namespace RemoteViewing.Windows.Forms
     /// <summary>
     /// Helps with Windows Forms keyboard interaction.
     /// </summary>
+    /// <remarks>
+    /// See http://www.realvnc.com/docs/rfbproto.pdf for common keys.
+    /// </remarks>
     public static class VncKeysym
     {
-        // See http://www.realvnc.com/docs/rfbproto.pdf for common keys.
         /// <summary>
         /// Converts Windows Forms <see cref="Keys"/> to X11 keysyms.
         /// </summary>

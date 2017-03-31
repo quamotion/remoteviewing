@@ -41,6 +41,8 @@ namespace RemoteViewing.Vnc.Server
         // dividing the framebuffer in blocks of 32x32 and are invalidating them one at a time.
         private const int TileSize = 64;
 
+        private readonly bool[] isLineInvalid;
+
         // We cache the latest framebuffer data as it was sent to the client. When looking for changes,
         // we compare with the framebuffer which is cached here and send the deltas (for each time
         // which was invalidate) to the client.
@@ -69,8 +71,6 @@ namespace RemoteViewing.Vnc.Server
             get;
             private set;
         }
-
-        private readonly bool[] isLineInvalid;
 
         /// <summary>
         /// Responds to a <see cref="VncServerSession"/> update request.
@@ -137,7 +137,7 @@ namespace RemoteViewing.Vnc.Server
                             {
                                 Buffer.BlockCopy(actualBuffer, srcOffset, bufferedBuffer, srcOffset, length);
                             }
-                            catch (Exception ex)
+                            catch
                             {
                                 throw;
                             }

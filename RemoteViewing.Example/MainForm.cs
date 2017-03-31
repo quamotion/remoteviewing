@@ -32,14 +32,20 @@ using System.Windows.Forms;
 
 namespace RemoteViewing.Example
 {
+    /// <summary>
+    /// The main form used in this sample application.
+    /// </summary>
     public partial class MainForm : Form
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="MainForm"/> class.
+        /// </summary>
         public MainForm()
         {
             this.InitializeComponent();
         }
 
-        private void btnConnect_Click(object sender, EventArgs e)
+        private void OnClick(object sender, EventArgs e)
         {
             if (this.vncControl.Client.IsConnected)
             {
@@ -124,17 +130,17 @@ namespace RemoteViewing.Example
             }
         }
 
-        private void vncControl_Connected(object sender, EventArgs e)
+        private void OnConnected(object sender, EventArgs e)
         {
             this.btnConnect.Text = "Close";
         }
 
-        private void vncControl_Closed(object sender, EventArgs e)
+        private void OnClosed(object sender, EventArgs e)
         {
             this.btnConnect.Text = "Connect";
         }
 
-        private void vncControl_ConnectionFailed(object sender, EventArgs e)
+        private void OnConnectionFailed(object sender, EventArgs e)
         {
         }
     }
