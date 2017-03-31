@@ -1,0 +1,21 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<RuleSet Name="Rules for RemoteViewing" Description="Code analysis rules for RemoteViewing." ToolsVersion="14.0">
+  <Include Path="basicdesignguidelinerules.ruleset" Action="Default" />
+  <Rules AnalyzerId="StyleCop.Analyzers" RuleNamespace="StyleCop.Analyzers">
+    <Rule Id="SA1118" Action="None" />
+    <Rule Id="SA1130" Action="None" />
+    <Rule Id="SA1200" Action="None" />
+    <Rule Id="SA1208" Action="None" />
+    <Rule Id="SA1600" Action="None" />
+    <Rule Id="SA1604" Action="None" />
+    <Rule Id="SA1606" Action="None" />
+    <Rule Id="SA1611" Action="None" />
+    <Rule Id="SA1615" Action="None" />
+    <Rule Id="SA1618" Action="None" />
+    <Rule Id="SA1636" Action="None" />
+    <Rule Id="SA1641" Action="None" />
+    <Rule Id="SA1652" Action="None" />
+    <Rule Id="SA1124" Action="None" />
+    <Rule Id="SA1633" Action="None" />
+  </Rules>
+</RuleSet>

@@ -5,13 +5,13 @@ Copyright (c) 2013 James F. Bellinger <http://www.zer7.com/software/remoteviewin
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions are met: 
+modification, are permitted provided that the following conditions are met:
 
 1. Redistributions of source code must retain the above copyright notice, this
-   list of conditions and the following disclaimer. 
+   list of conditions and the following disclaimer.
 2. Redistributions in binary form must reproduce the above copyright notice,
    this list of conditions and the following disclaimer in the documentation
-   and/or other materials provided with the distribution. 
+   and/or other materials provided with the distribution.
 
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
 ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
@@ -66,7 +66,7 @@ namespace RemoteViewing.Windows.Forms
 
         Bitmap _bitmap;
         VncClient _client;
-        string _expectedClipboard = "";
+        string _expectedClipboard = string.Empty;
         HashSet<int> _keysyms = new HashSet<int>();
 
         /// <summary>
@@ -74,11 +74,11 @@ namespace RemoteViewing.Windows.Forms
         /// </summary>
         public VncControl()
         {
-            AllowInput = true;
-            AllowRemoteCursor = true;
-            Client = new VncClient();
+            this.AllowInput = true;
+            this.AllowRemoteCursor = true;
+            this.Client = new VncClient();
 
-            InitializeComponent();
+            this.InitializeComponent();
         }
 
         /// <inheritdoc/>
@@ -86,9 +86,9 @@ namespace RemoteViewing.Windows.Forms
         {
             base.OnLoad(e);
 
-            if (!DesignMode)
+            if (!this.DesignMode)
             {
-                try { AddClipboardFormatListener(Handle); }
+                try { AddClipboardFormatListener(this.Handle); }
                 catch { }
             }
         }
@@ -96,9 +96,9 @@ namespace RemoteViewing.Windows.Forms
         /// <inheritdoc/>
         protected override void OnHandleDestroyed(EventArgs e)
         {
-            if (!DesignMode)
+            if (!this.DesignMode)
             {
-                try { RemoveClipboardFormatListener(Handle); }
+                try { RemoveClipboardFormatListener(this.Handle); }
                 catch { }
             }
 
@@ -108,9 +108,9 @@ namespace RemoteViewing.Windows.Forms
         /// <inheritdoc/>
         protected override void WndProc(ref Message m)
         {
-            if (AllowClipboardSharingToServer && m.Msg == WM_CLIPBOARDUPDATE)
+            if (this.AllowClipboardSharingToServer && m.Msg == WM_CLIPBOARDUPDATE)
             {
-                string clipboard = "";
+                string clipboard = string.Empty;
                 try
                 {
                     if (Clipboard.ContainsText())
@@ -120,15 +120,14 @@ namespace RemoteViewing.Windows.Forms
                 }
                 catch (ExternalException)
                 {
-
                 }
 
                 if (clipboard.Length != 0)
                 {
-                    if (_client != null && clipboard != _expectedClipboard)
+                    if (this._client != null && clipboard != this._expectedClipboard)
                     {
-                        _expectedClipboard = clipboard;
-                        _client.SendLocalClipboardChange(clipboard);
+                        this._expectedClipboard = clipboard;
+                        this._client.SendLocalClipboardChange(clipboard);
                     }
                 }
             }
@@ -138,9 +137,9 @@ namespace RemoteViewing.Windows.Forms
 
         void ClearInputState()
         {
-            _buttons = 0;
-            foreach (var keysym in _keysyms) { SendKeyUpdate(keysym, false); }
-            _keysyms.Clear();
+            this._buttons = 0;
+            foreach (var keysym in this._keysyms) { this.SendKeyUpdate(keysym, false); }
+            this._keysyms.Clear();
         }
 
         void UpdateFramebuffer(bool force, VncFramebuffer framebuffer)
@@ -148,20 +147,20 @@ namespace RemoteViewing.Windows.Forms
             if (framebuffer == null) { return; }
             int w = framebuffer.Width, h = framebuffer.Height;
 
-            if (_bitmap == null || _bitmap.Width != w || _bitmap.Height != h || force)
+            if (this._bitmap == null || this._bitmap.Width != w || this._bitmap.Height != h || force)
             {
-                _bitmap = new Bitmap(w, h, PixelFormat.Format32bppRgb);
-                VncBitmap.CopyFromFramebuffer(framebuffer, new VncRectangle(0, 0, w, h), _bitmap, 0, 0);
-                ClientSize = new Size(w, h); Invalidate();
+                this._bitmap = new Bitmap(w, h, PixelFormat.Format32bppRgb);
+                VncBitmap.CopyFromFramebuffer(framebuffer, new VncRectangle(0, 0, w, h), this._bitmap, 0, 0);
+                this.ClientSize = new Size(w, h); this.Invalidate();
             }
         }
 
         void UpdateFramebuffer(bool force)
         {
-            if (_client == null) { return; }
+            if (this._client == null) { return; }
 
-            var framebuffer = _client.Framebuffer;
-            UpdateFramebuffer(force, framebuffer);
+            var framebuffer = this._client.Framebuffer;
+            this.UpdateFramebuffer(force, framebuffer);
         }
 
         void HandleBell(object sender, EventArgs e)
@@ -171,59 +170,59 @@ namespace RemoteViewing.Windows.Forms
 
         void HandleConnected(object sender, EventArgs e)
         {
-            BeginInvoke(new Action(() =>
+            this.BeginInvoke(new Action(() =>
                 {
-                    _expectedClipboard = "";
-                    ClearInputState();
+                    this._expectedClipboard = string.Empty;
+                    this.ClearInputState();
 
-                    var ev = Connected;
+                    var ev = this.Connected;
                     if (ev != null) { ev(this, EventArgs.Empty); }
                 }));
         }
 
         void HandleConnectionFailed(object sender, EventArgs e)
         {
-            BeginInvoke(new Action(() =>
+            this.BeginInvoke(new Action(() =>
             {
-                ClearInputState();
+                this.ClearInputState();
 
-                var ev = ConnectionFailed;
+                var ev = this.ConnectionFailed;
                 if (ev != null) { ev(this, EventArgs.Empty); }
             }));
         }
 
         void HandleClosed(object sender, EventArgs e)
         {
-            BeginInvoke(new Action(() =>
+            this.BeginInvoke(new Action(() =>
                 {
-                    ClearInputState();
+                    this.ClearInputState();
 
-                    var ev = Closed;
+                    var ev = this.Closed;
                     if (ev != null) { ev(this, EventArgs.Empty); }
                 }));
         }
 
         void HandleFramebufferChanged(object sender, FramebufferChangedEventArgs e)
         {
-            BeginInvoke(new Action(() =>
+            this.BeginInvoke(new Action(() =>
                 {
-                    if (DesignMode) { return; }
+                    if (this.DesignMode) { return; }
 
-                    if (_client == null) { return; }
+                    if (this._client == null) { return; }
 
-                    var framebuffer = _client.Framebuffer;
+                    var framebuffer = this._client.Framebuffer;
                     if (framebuffer == null) { return; }
 
                     lock (framebuffer.SyncRoot)
                     {
-                        UpdateFramebuffer(false, framebuffer);
+                        this.UpdateFramebuffer(false, framebuffer);
 
-                        if (_bitmap != null)
+                        if (this._bitmap != null)
                         {
                             for (int i = 0; i < e.RectangleCount; i++)
                             {
                                 var rect = e.GetRectangle(i);
-                                VncBitmap.CopyFromFramebuffer(framebuffer, rect, _bitmap, rect.X, rect.Y);
+                                VncBitmap.CopyFromFramebuffer(framebuffer, rect, this._bitmap, rect.X, rect.Y);
                             }
                         }
                     }
@@ -231,25 +230,24 @@ namespace RemoteViewing.Windows.Forms
                     for (int i = 0; i < e.RectangleCount; i++)
                     {
                         var rect = e.GetRectangle(i);
-                        Invalidate(new Rectangle(rect.X, rect.Y, rect.Width, rect.Height));
+                        this.Invalidate(new Rectangle(rect.X, rect.Y, rect.Width, rect.Height));
                     }
                 }));
         }
 
         void HandleRemoteClipboardChanged(object sender, RemoteClipboardChangedEventArgs e)
         {
-            if (AllowClipboardSharingFromServer)
+            if (this.AllowClipboardSharingFromServer)
             {
-                if (e.Contents.Length != 0 && _expectedClipboard != e.Contents)
+                if (e.Contents.Length != 0 && this._expectedClipboard != e.Contents)
                 {
                     try
                     {
                         Clipboard.SetText(e.Contents);
-                        _expectedClipboard = e.Contents;
+                        this._expectedClipboard = e.Contents;
                     }
                     catch (ExternalException)
                     {
-
                     }
                 }
             }
@@ -268,71 +266,71 @@ namespace RemoteViewing.Windows.Forms
 
         void SendKeyUpdate(int keysym, bool pressed)
         {
-            if (_client != null && AllowInput) { _client.SendKeyEvent(keysym, pressed); }
+            if (this._client != null && this.AllowInput) { this._client.SendKeyEvent(keysym, pressed); }
         }
 
         void SendMouseUpdate()
         {
-            if (_client != null && AllowInput) { _client.SendPointerEvent(_x, _y, _buttons); }
+            if (this._client != null && this.AllowInput) { this._client.SendPointerEvent(this._x, this._y, this._buttons); }
         }
 
         private void VncControl_PreviewKeyDown(object sender, PreviewKeyDownEventArgs e)
         {
-            if (AllowInput) { e.IsInputKey = true; }
+            if (this.AllowInput) { e.IsInputKey = true; }
         }
 
         /// <inheritdoc/>
         protected override void OnLostFocus(EventArgs e)
         {
             base.OnLostFocus(e);
-            ClearInputState();
+            this.ClearInputState();
         }
 
         private void VncControl_KeyDown(object sender, KeyEventArgs e)
         {
             int keysym = VncKeysym.FromKeyCode(e.KeyCode); if (keysym < 0) { return; }
-            SendKeyUpdate(keysym, true); _keysyms.Add(keysym);
+            this.SendKeyUpdate(keysym, true); this._keysyms.Add(keysym);
         }
 
         private void VncControl_KeyUp(object sender, KeyEventArgs e)
         {
             int keysym = VncKeysym.FromKeyCode(e.KeyCode); if (keysym < 0) { return; }
-            SendKeyUpdate(keysym, false); _keysyms.Remove(keysym);
+            this.SendKeyUpdate(keysym, false); this._keysyms.Remove(keysym);
         }
 
         private void VncControl_MouseEnter(object sender, EventArgs e)
         {
-            if (AllowRemoteCursor) { Cursor.Hide(); }
+            if (this.AllowRemoteCursor) { Cursor.Hide(); }
         }
 
         private void VncControl_MouseLeave(object sender, EventArgs e)
         {
-            if (AllowRemoteCursor) { Cursor.Show(); }
+            if (this.AllowRemoteCursor) { Cursor.Show(); }
         }
 
         private void VncControl_MouseDown(object sender, MouseEventArgs e)
         {
-            _x = e.X; _y = e.Y; _buttons |= GetMouseMask(e.Button);
-            SendMouseUpdate();
+            this._x = e.X; this._y = e.Y; this._buttons |= GetMouseMask(e.Button);
+            this.SendMouseUpdate();
         }
 
         private void VncControl_MouseUp(object sender, MouseEventArgs e)
         {
-            _x = e.X; _y = e.Y; _buttons &= ~GetMouseMask(e.Button);
-            SendMouseUpdate();
+            this._x = e.X; this._y = e.Y; this._buttons &= ~GetMouseMask(e.Button);
+            this.SendMouseUpdate();
         }
 
         private void VncControl_MouseMove(object sender, MouseEventArgs e)
         {
-            _x = e.X; _y = e.Y;
-            SendMouseUpdate();
+            this._x = e.X; this._y = e.Y;
+            this.SendMouseUpdate();
         }
 
         void SendMouseScroll(bool down)
         {
             int mask = down ? (1 << 4) : (1 << 3);
-            _buttons |= mask; SendMouseUpdate();
-            _buttons &= ~mask; SendMouseUpdate();
+            this._buttons |= mask; this.SendMouseUpdate();
+            this._buttons &= ~mask; this.SendMouseUpdate();
         }
 
         /// <inheritdoc/>
@@ -340,15 +338,15 @@ namespace RemoteViewing.Windows.Forms
         {
             base.OnMouseWheel(e);
 
-            _x = e.X; _y = e.Y;
-            if (e.Delta < 0) { SendMouseScroll(false); }
-            else if (e.Delta > 0) { SendMouseScroll(true); }
+            this._x = e.X; this._y = e.Y;
+            if (e.Delta < 0) { this.SendMouseScroll(false); }
+            else if (e.Delta > 0) { this.SendMouseScroll(true); }
         }
 
         private void VncControl_Paint(object sender, PaintEventArgs e)
         {
-            if (_bitmap == null) { return; }
-            e.Graphics.DrawImageUnscaled(_bitmap, 0, 0);
+            if (this._bitmap == null) { return; }
+            e.Graphics.DrawImageUnscaled(this._bitmap, 0, 0);
         }
 
         [DllImport("user32", EntryPoint = "AddClipboardFormatListener", SetLastError = true)]
@@ -361,48 +359,48 @@ namespace RemoteViewing.Windows.Forms
 
         /// <summary>
         /// The <see cref="VncClient"/> being interacted with.
-        /// 
+        ///
         /// By default, this is a new instance.
         /// Call <see cref="VncClient.Connect(string, int, VncClientConnectOptions)"/>
         /// on it to get things up and running quickly.
         /// </summary>
         public VncClient Client
         {
-            get { return _client; }
+            get { return this._client; }
             set
             {
-                if (_client == value) { return; }
+                if (this._client == value) { return; }
 
-                if (_client != null)
+                if (this._client != null)
                 {
-                    _client.Bell -= HandleBell;
-                    _client.Connected -= HandleConnected;
-                    _client.ConnectionFailed -= HandleConnectionFailed;
-                    _client.Closed -= HandleClosed;
-                    _client.FramebufferChanged -= HandleFramebufferChanged;
-                    _client.RemoteClipboardChanged -= HandleRemoteClipboardChanged;
+                    this._client.Bell -= this.HandleBell;
+                    this._client.Connected -= this.HandleConnected;
+                    this._client.ConnectionFailed -= this.HandleConnectionFailed;
+                    this._client.Closed -= this.HandleClosed;
+                    this._client.FramebufferChanged -= this.HandleFramebufferChanged;
+                    this._client.RemoteClipboardChanged -= this.HandleRemoteClipboardChanged;
                 }
 
-                _client = value;
+                this._client = value;
 
-                if (_client != null)
+                if (this._client != null)
                 {
-                    _client.Bell += HandleBell;
-                    _client.Connected += HandleConnected;
-                    _client.ConnectionFailed += HandleConnectionFailed;
-                    _client.Closed += HandleClosed;
-                    _client.FramebufferChanged += HandleFramebufferChanged;
-                    _client.RemoteClipboardChanged += HandleRemoteClipboardChanged;
+                    this._client.Bell += this.HandleBell;
+                    this._client.Connected += this.HandleConnected;
+                    this._client.ConnectionFailed += this.HandleConnectionFailed;
+                    this._client.Closed += this.HandleClosed;
+                    this._client.FramebufferChanged += this.HandleFramebufferChanged;
+                    this._client.RemoteClipboardChanged += this.HandleRemoteClipboardChanged;
                 }
 
-                ClearInputState();
-                UpdateFramebuffer(true);
+                this.ClearInputState();
+                this.UpdateFramebuffer(true);
             }
         }
 
         /// <summary>
         /// Whether the control should send input to the server, or act only as a viewer.
-        /// 
+        ///
         /// By default, this is <c>true</c>.
         /// </summary>
         public bool AllowInput
@@ -413,7 +411,7 @@ namespace RemoteViewing.Windows.Forms
 
         /// <summary>
         /// Whether the local cursor is allowed to be hidden.
-        /// 
+        ///
         /// By default, this is <c>true</c>.
         /// </summary>
         public bool AllowRemoteCursor
