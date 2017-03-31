@@ -49,7 +49,16 @@ namespace RemoteViewing.Windows.Forms
         public unsafe static void CopyToFramebuffer(Bitmap source, VncRectangle sourceRectangle,
                                                     VncFramebuffer target, int targetX, int targetY)
         {
-            Throw.If.Null(source, "source").Null(target, "target");
+            if (source == null)
+            {
+                throw new ArgumentNullException(nameof(source));
+            }
+
+            if (target == null)
+            {
+                throw new ArgumentNullException(nameof(target));
+            }
+
             if (sourceRectangle.IsEmpty) { return; }
 
             var winformsRect = new Rectangle(sourceRectangle.X, sourceRectangle.Y, sourceRectangle.Width, sourceRectangle.Height);
@@ -79,7 +88,16 @@ namespace RemoteViewing.Windows.Forms
         public unsafe static void CopyFromFramebuffer(VncFramebuffer source, VncRectangle sourceRectangle,
                                                       Bitmap target, int targetX, int targetY)
         {
-            Throw.If.Null(source, "source").Null(target, "target");
+            if (source == null)
+            {
+                throw new ArgumentNullException(nameof(source));
+            }
+
+            if (target == null)
+            {
+                throw new ArgumentNullException(nameof(target));
+            }
+
             if (sourceRectangle.IsEmpty) { return; }
 
             var winformsRect = new Rectangle(targetX, targetY, sourceRectangle.Width, sourceRectangle.Height);

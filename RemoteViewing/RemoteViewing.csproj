@@ -1,111 +1,36 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProductVersion>8.0.30703</ProductVersion>
-    <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{89569346-2C71-4A85-99B9-D3EB71FDE87A}</ProjectGuid>
-    <OutputType>Library</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>RemoteViewing</RootNamespace>
+    <Description>RemoteViewing is a .NET-native VNC client and server library. It supports Raw, Hextile, Copyrect, and Zlib encodings.</Description>
+    <AssemblyTitle>RemoteViewing - A .NET VNC client and server library.</AssemblyTitle>
+    <VersionPrefix>1.0.8</VersionPrefix>
+    <Authors>James F. Bellinger, Frederik Carlier</Authors>
+    <TargetFrameworks>netstandard1.5;net45</TargetFrameworks>
     <AssemblyName>RemoteViewing</AssemblyName>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
-    <FileAlignment>512</FileAlignment>
-    <TargetFrameworkProfile>
-    </TargetFrameworkProfile>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>..\bin\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <DocumentationFile>..\bin\RemoteViewing.XML</DocumentationFile>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <Prefer32Bit>false</Prefer32Bit>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>..\bin\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <DocumentationFile>..\bin\RemoteViewing.XML</DocumentationFile>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <Prefer32Bit>false</Prefer32Bit>
-  </PropertyGroup>
-  <PropertyGroup>
-    <SignAssembly>true</SignAssembly>
-  </PropertyGroup>
-  <PropertyGroup>
     <AssemblyOriginatorKeyFile>RemoteViewing.snk</AssemblyOriginatorKeyFile>
+    <SignAssembly>true</SignAssembly>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <PackageId>Quamotion.RemoteViewing</PackageId>
+    <PackageProjectUrl>https://github.com/qmfrederik/remoteviewing/</PackageProjectUrl>
+    <PackageLicenseUrl>https://github.com/qmfrederik/remoteviewing/blob/master/License.txt</PackageLicenseUrl>
+    <PackageTags>VNC RFB remote desktop client server Hextile Copyrect Zlib</PackageTags>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
   </PropertyGroup>
+
   <ItemGroup>
+    <PackageReference Include="StyleCop.Analyzers" Version="1.0.0"/>
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard1.5' ">
+    <PackageReference Include="System.Threading.Thread" Version="4.3.0" />
+    <PackageReference Include="System.Dynamic.Runtime" Version="4.3.0" />
+    <PackageReference Include="Microsoft.CSharp" Version="4.3.0" />
+  </ItemGroup>
+
+  <PropertyGroup Condition=" '$(TargetFramework)' == 'netstandard1.5' ">
+    <DefineConstants>$(DefineConstants);LIBLOG_PORTABLE;CORECLR</DefineConstants>
+  </PropertyGroup>
+
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net45' ">
     <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System" />
-    <Reference Include="System.Core" />
   </ItemGroup>
-  <ItemGroup>
-    <Compile Include="App_Packages\LibLog.4.2\LibLog.cs" />
-    <Compile Include="GlobalSuppressions.cs" />
-    <Compile Include="ThrowExtensions.cs" />
-    <Compile Include="Utility\AutoClear.cs" />
-    <Compile Include="Utility\PeriodicThread.cs" />
-    <Compile Include="Utility\User32.cs" />
-    <Compile Include="Vnc\IVncFramebufferSource.cs" />
-    <Compile Include="Vnc\Server\CreatingDesktopEventArgs.cs" />
-    <Compile Include="Vnc\Server\FramebufferUpdateRequest.cs" />
-    <Compile Include="Vnc\Server\FramebufferUpdatingEventArgs.cs" />
-    <Compile Include="Vnc\Server\NativeMethods.cs" />
-    <Compile Include="Vnc\Server\PasswordProvidedEventArgs.cs" />
-    <Compile Include="Vnc\Server\VncFramebufferCache.cs" />
-    <Compile Include="Vnc\Server\VncMessageType.cs" />
-    <Compile Include="Vnc\VncMouse.cs" />
-    <Compile Include="Vnc\VncPasswordChallenge.cs" />
-    <Compile Include="Vnc\Server\VncServerSessionOptions.cs" />
-    <Compile Include="Vnc\VncStream.cs" />
-    <Compile Include="Utility\PollingSynchronizationContext.cs" />
-    <Compile Include="Throw.cs" />
-    <Compile Include="Utility\SynchronizedCall.cs" />
-    <Compile Include="Vnc\KeyChangedEventArgs.cs" />
-    <Compile Include="Vnc\PointerChangedEventArgs.cs" />
-    <Compile Include="Vnc\Server\VncServerSession.cs" />
-    <Compile Include="Vnc\VncRectangle.cs" />
-    <Compile Include="Vnc\FramebufferChangedEventArgs.cs" />
-    <Compile Include="Vnc\RemoteClipboardChangedEventArgs.cs" />
-    <Compile Include="Vnc\VncClient.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Vnc\VncClient.Framebuffer.cs" />
-    <Compile Include="Vnc\VncClientConnectOptions.cs" />
-    <Compile Include="Vnc\VncFramebuffer.cs" />
-    <Compile Include="Vnc\VncFailureReason.cs" />
-    <Compile Include="Vnc\VncException.cs" />
-    <Compile Include="Vnc\VncUtility.cs" />
-    <Compile Include="Vnc\VncEncoding.cs" />
-    <Compile Include="Vnc\VncPixelFormat.cs" />
-    <Compile Include="Vnc\AuthenticationMethod.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="packages.config">
-      <SubType>Designer</SubType>
-    </None>
-    <None Include="RemoteViewing.snk" />
-  </ItemGroup>
-  <ItemGroup>
-    <Analyzer Include="..\packages\StyleCop.Analyzers.1.0.0\analyzers\dotnet\cs\Newtonsoft.Json.dll" />
-    <Analyzer Include="..\packages\StyleCop.Analyzers.1.0.0\analyzers\dotnet\cs\StyleCop.Analyzers.CodeFixes.dll" />
-    <Analyzer Include="..\packages\StyleCop.Analyzers.1.0.0\analyzers\dotnet\cs\StyleCop.Analyzers.dll" />
-  </ItemGroup>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
-       Other similar extension points exist, see Microsoft.Common.targets.
-  <Target Name="BeforeBuild">
-  </Target>
-  <Target Name="AfterBuild">
-  </Target>
-  -->
 </Project>

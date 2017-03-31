@@ -56,8 +56,13 @@ namespace RemoteViewing.Windows.Forms.Server
         /// <param name="screen">The bounds of the screen region.</param>
         public VncScreenFramebufferSource(string name, Screen screen)
         {
-            Throw.If.Null(name, "name").Null(screen, "screen");
-            _name = name; _getScreenBounds = () => screen.Bounds;
+            if (screen == null)
+            {
+                throw new ArgumentNullException(nameof(screen));
+            }
+
+            _name = name ?? throw new ArgumentNullException(nameof(name));
+            _getScreenBounds = () => screen.Bounds;
         }
 
         /// <summary>
@@ -68,8 +73,8 @@ namespace RemoteViewing.Windows.Forms.Server
         /// <param name="getBoundsCallback">A callback supplying the bounds of the screen region to copy.</param>
         public VncScreenFramebufferSource(string name, VncScreenFramebufferSourceGetBoundsCallback getBoundsCallback)
         {
-            Throw.If.Null(name, "name").Null(getBoundsCallback, "getBoundsCallback");
-            _name = name; _getScreenBounds = getBoundsCallback;
+            _name = name ?? throw new ArgumentNullException(nameof(name));
+            _getScreenBounds = getBoundsCallback ?? throw new ArgumentNullException(nameof(getBoundsCallback));
         }
 
         /// <summary>
