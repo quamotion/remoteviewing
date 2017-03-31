@@ -135,7 +135,14 @@ namespace RemoteViewing.Vnc.Server
 
                         if (!isValid)
                         {
-                            Buffer.BlockCopy(actualBuffer, srcOffset, bufferedBuffer, srcOffset, length);
+                            try
+                            {
+                                Buffer.BlockCopy(actualBuffer, srcOffset, bufferedBuffer, srcOffset, length);
+                            }
+                            catch(Exception ex)
+                            {
+                                throw;
+                            }
                         }
 
                         this.isLineInvalid[y - region.Y] = !isValid;
