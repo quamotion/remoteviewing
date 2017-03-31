@@ -31,10 +31,10 @@ using System.Windows.Forms;
 
 namespace RemoteViewing.Example
 {
-    class Program
+    internal class Program
     {
         [STAThread]
-        static void Main(string[] args)
+        private static void Main(string[] args)
         {
             Application.SetCompatibleTextRenderingDefault(false);
             Application.EnableVisualStyles();

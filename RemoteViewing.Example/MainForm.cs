@@ -32,14 +32,20 @@ using System.Windows.Forms;
 
 namespace RemoteViewing.Example
 {
+    /// <summary>
+    /// The main form used in this sample application.
+    /// </summary>
     public partial class MainForm : Form
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="MainForm"/> class.
+        /// </summary>
         public MainForm()
         {
             this.InitializeComponent();
         }
 
-        private void btnConnect_Click(object sender, EventArgs e)
+        private void OnClick(object sender, EventArgs e)
         {
             if (this.vncControl.Client.IsConnected)
             {
@@ -50,42 +56,65 @@ namespace RemoteViewing.Example
                 var hostname = this.txtHostname.Text.Trim();
                 if (hostname == string.Empty)
                 {
-                    MessageBox.Show(this, "Hostname isn't set.", "Hostname",
-                        MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    MessageBox.Show(
+                        this,
+                        "Hostname isn't set.",
+                        "Hostname",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Error);
                     return;
                 }
 
                 int port;
                 if (!int.TryParse(this.txtPort.Text, out port) || port < 1 || port > 65535)
                 {
-                    MessageBox.Show(this, "Port must be between 1 and 65535.", "Port",
-                                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    MessageBox.Show(
+                        this,
+                        "Port must be between 1 and 65535.",
+                        "Port",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Error);
                     return;
                 }
 
                 var options = new Vnc.VncClientConnectOptions();
-                if (this.txtPassword.Text != string.Empty) { options.Password = this.txtPassword.Text.ToCharArray(); }
+                if (this.txtPassword.Text != string.Empty)
+                {
+                    options.Password = this.txtPassword.Text.ToCharArray();
+                }
 
                 try
                 {
                     try
                     {
                         this.Cursor = Cursors.WaitCursor;
-                        try { this.vncControl.Client.Connect(hostname, port, options); }
-                        finally { this.Cursor = Cursors.Default; }
+                        try
+                        {
+                            this.vncControl.Client.Connect(hostname, port, options);
+                        }
+                        finally
+                        {
+                            this.Cursor = Cursors.Default;
+                        }
                     }
                     catch (Vnc.VncException ex)
                     {
-                        MessageBox.Show(this,
-                                        "Connection failed (" + ex.Reason.ToString() + ").",
-                                        "Connect", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        MessageBox.Show(
+                            this,
+                            "Connection failed (" + ex.Reason.ToString() + ").",
+                            "Connect",
+                            MessageBoxButtons.OK,
+                            MessageBoxIcon.Error);
                         return;
                     }
                     catch (SocketException ex)
                     {
-                        MessageBox.Show(this,
-                                        "Connection failed (" + ex.SocketErrorCode.ToString() + ").",
-                                        "Connect", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        MessageBox.Show(
+                            this,
+                            "Connection failed (" + ex.SocketErrorCode.ToString() + ").",
+                            "Connect",
+                            MessageBoxButtons.OK,
+                            MessageBoxIcon.Error);
                         return;
                     }
 
@@ -101,17 +130,17 @@ namespace RemoteViewing.Example
             }
         }
 
-        private void vncControl_Connected(object sender, EventArgs e)
+        private void OnConnected(object sender, EventArgs e)
         {
             this.btnConnect.Text = "Close";
         }
 
-        private void vncControl_Closed(object sender, EventArgs e)
+        private void OnClosed(object sender, EventArgs e)
         {
             this.btnConnect.Text = "Connect";
         }
 
-        private void vncControl_ConnectionFailed(object sender, EventArgs e)
+        private void OnConnectionFailed(object sender, EventArgs e)
         {
         }
     }

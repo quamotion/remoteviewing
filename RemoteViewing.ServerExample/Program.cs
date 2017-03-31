@@ -36,36 +36,36 @@ using RemoteViewing.Windows.Forms.Server;
 
 namespace RemoteViewing.ServerExample
 {
-    class Program
+    internal class Program
     {
-        static string Password = "test";
-        static VncServerSession Session;
+        private static string password = "test";
+        private static VncServerSession session;
 
-        static void HandleConnected(object sender, EventArgs e)
+        private static void HandleConnected(object sender, EventArgs e)
         {
             Console.WriteLine("Connected");
         }
 
-        static void HandleConnectionFailed(object sender, EventArgs e)
+        private static void HandleConnectionFailed(object sender, EventArgs e)
         {
             Console.WriteLine("Connection Failed");
         }
 
-        static void HandleClosed(object sender, EventArgs e)
+        private static void HandleClosed(object sender, EventArgs e)
         {
             Console.WriteLine("Closed");
         }
 
-        static void HandlePasswordProvided(object sender, PasswordProvidedEventArgs e)
+        private static void HandlePasswordProvided(object sender, PasswordProvidedEventArgs e)
         {
-            e.Accept(Password.ToCharArray());
+            e.Accept(password.ToCharArray());
         }
 
         [STAThread]
-        static void Main(string[] args)
+        private static void Main(string[] args)
         {
             Console.WriteLine("Listening on local port 5900.");
-            Console.WriteLine("Try to connect! The password is: {0}", Password);
+            Console.WriteLine("Try to connect! The password is: {0}", password);
 
             // Wait for a connection.
             var listener = new TcpListener(IPAddress.Any, 5900);
@@ -80,14 +80,14 @@ namespace RemoteViewing.ServerExample
             var mouse = new VncMouse();
 
             // Create a session.
-            Session = new VncServerSession();
-            Session.Connected += HandleConnected;
-            Session.ConnectionFailed += HandleConnectionFailed;
-            Session.Closed += HandleClosed;
-            Session.PasswordProvided += HandlePasswordProvided;
-            Session.SetFramebufferSource(new VncScreenFramebufferSource("Hello World", Screen.PrimaryScreen));
-            Session.PointerChanged += mouse.OnMouseUpdate;
-            Session.Connect(client.GetStream(), options);
+            session = new VncServerSession();
+            session.Connected += HandleConnected;
+            session.ConnectionFailed += HandleConnectionFailed;
+            session.Closed += HandleClosed;
+            session.PasswordProvided += HandlePasswordProvided;
+            session.SetFramebufferSource(new VncScreenFramebufferSource("Hello World", Screen.PrimaryScreen));
+            session.PointerChanged += mouse.OnMouseUpdate;
+            session.Connect(client.GetStream(), options);
 
             // Let's go.
             Application.Run();

@@ -116,7 +116,7 @@
             this.btnConnect.TabIndex = 0;
             this.btnConnect.Text = "Connect";
             this.btnConnect.UseVisualStyleBackColor = true;
-            this.btnConnect.Click += new System.EventHandler(this.btnConnect_Click);
+            this.btnConnect.Click += new System.EventHandler(this.OnClick);
             // 
             // lblHostname
             // 
@@ -175,9 +175,9 @@
             this.vncControl.Name = "vncControl";
             this.vncControl.Size = new System.Drawing.Size(234, 173);
             this.vncControl.TabIndex = 4;
-            this.vncControl.Connected += new System.EventHandler(this.vncControl_Connected);
-            this.vncControl.ConnectionFailed += new System.EventHandler(this.vncControl_ConnectionFailed);
-            this.vncControl.Closed += new System.EventHandler(this.vncControl_Closed);
+            this.vncControl.Connected += new System.EventHandler(this.OnConnected);
+            this.vncControl.ConnectionFailed += new System.EventHandler(this.OnConnectionFailed);
+            this.vncControl.Closed += new System.EventHandler(this.OnClosed);
             // 
             // MainForm
             // 

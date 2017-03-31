@@ -46,8 +46,12 @@ namespace RemoteViewing.Windows.Forms
         /// <param name="target">The framebuffer to copy into.</param>
         /// <param name="targetX">The leftmost X coordinate of the framebuffer to draw to.</param>
         /// <param name="targetY">The topmost Y coordinate of the framebuffer to draw to.</param>
-        public unsafe static void CopyToFramebuffer(Bitmap source, VncRectangle sourceRectangle,
-                                                    VncFramebuffer target, int targetX, int targetY)
+        public static unsafe void CopyToFramebuffer(
+            Bitmap source,
+            VncRectangle sourceRectangle,
+            VncFramebuffer target,
+            int targetX,
+            int targetY)
         {
             if (source == null)
             {
@@ -59,7 +63,10 @@ namespace RemoteViewing.Windows.Forms
                 throw new ArgumentNullException(nameof(target));
             }
 
-            if (sourceRectangle.IsEmpty) { return; }
+            if (sourceRectangle.IsEmpty)
+            {
+                return;
+            }
 
             var winformsRect = new Rectangle(sourceRectangle.X, sourceRectangle.Y, sourceRectangle.Width, sourceRectangle.Height);
             var data = source.LockBits(winformsRect, ImageLockMode.ReadOnly, PixelFormat.Format32bppRgb);
@@ -67,8 +74,16 @@ namespace RemoteViewing.Windows.Forms
             {
                 fixed (byte* framebufferData = target.GetBuffer())
                 {
-                    VncPixelFormat.Copy(data.Scan0, data.Stride, new VncPixelFormat(), sourceRectangle,
-                                        (IntPtr)framebufferData, target.Stride, target.PixelFormat, targetX, targetY);
+                    VncPixelFormat.Copy(
+                        data.Scan0,
+                        data.Stride,
+                        new VncPixelFormat(),
+                        sourceRectangle,
+                        (IntPtr)framebufferData,
+                        target.Stride,
+                        target.PixelFormat,
+                        targetX,
+                        targetY);
                 }
             }
             finally
@@ -85,8 +100,12 @@ namespace RemoteViewing.Windows.Forms
         /// <param name="target">The bitmap to copy into.</param>
         /// <param name="targetX">The leftmost X coordinate of the bitmap to draw to.</param>
         /// <param name="targetY">The topmost Y coordinate of the bitmap to draw to.</param>
-        public unsafe static void CopyFromFramebuffer(VncFramebuffer source, VncRectangle sourceRectangle,
-                                                      Bitmap target, int targetX, int targetY)
+        public static unsafe void CopyFromFramebuffer(
+            VncFramebuffer source,
+            VncRectangle sourceRectangle,
+            Bitmap target,
+            int targetX,
+            int targetY)
         {
             if (source == null)
             {
@@ -98,7 +117,10 @@ namespace RemoteViewing.Windows.Forms
                 throw new ArgumentNullException(nameof(target));
             }
 
-            if (sourceRectangle.IsEmpty) { return; }
+            if (sourceRectangle.IsEmpty)
+            {
+                return;
+            }
 
             var winformsRect = new Rectangle(targetX, targetY, sourceRectangle.Width, sourceRectangle.Height);
             var data = target.LockBits(winformsRect, ImageLockMode.WriteOnly, PixelFormat.Format32bppRgb);
@@ -106,8 +128,14 @@ namespace RemoteViewing.Windows.Forms
             {
                 fixed (byte* framebufferData = source.GetBuffer())
                 {
-                    VncPixelFormat.Copy((IntPtr)framebufferData, source.Stride, source.PixelFormat, sourceRectangle,
-                                        data.Scan0, data.Stride, new VncPixelFormat());
+                    VncPixelFormat.Copy(
+                        (IntPtr)framebufferData,
+                        source.Stride,
+                        source.PixelFormat,
+                        sourceRectangle,
+                        data.Scan0,
+                        data.Stride,
+                        new VncPixelFormat());
                 }
             }
             finally

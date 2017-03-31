@@ -125,7 +125,7 @@ namespace RemoteViewing.Vnc.Server
         /// </summary>
         /// <param name="sender">Sender</param>
         /// <param name="e">EventArgs</param>
-        public void OnMouseUpdate (object sender, PointerChangedEventArgs e)
+        public void OnMouseUpdate(object sender, PointerChangedEventArgs e)
         {
             byte newState = (byte)e.PressedButtons;
 
