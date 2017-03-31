@@ -10,3 +10,4 @@ on_success:
   - cmd: dotnet pack -c Release --version-suffix r%APPVEYOR_BUILD_NUMBER%
   - ps: Push-AppveyorArtifact "RemoteViewing\bin\Release\Quamotion.RemoteViewing.1.0.8-r$($env:APPVEYOR_BUILD_NUMBER).nupkg"
   - ps: Push-AppveyorArtifact "RemoteViewing.Windows.Forms\bin\Release\Quamotion.RemoteViewing.Windows.Forms.1.0.8-r$($env:APPVEYOR_BUILD_NUMBER).nupkg"
+  - ps: Push-AppveyorArtifact "RemoteViewing.AspNetCore\bin\Release\Quamotion.RemoteViewing.AspNetCore.1.0.8-r$($env:APPVEYOR_BUILD_NUMBER).nupkg"
