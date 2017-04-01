@@ -1,0 +1,26 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net462</TargetFramework>
+    <CodeAnalysisRuleSet>..\RemoteViewing.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Content Include="wwwroot\index.html">
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.0.0" />
+    <PackageReference Include="Microsoft.AspNetCore" Version="1.1.1" />
+    <PackageReference Include="Microsoft.AspNetCore.StaticFiles" Version="1.1.1" />
+    <PackageReference Include="Microsoft.AspNetCore.WebSockets.Server" Version="0.1.0" />
+    <PackageReference Include="Nito.AsyncEx" Version="4.0.1" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\RemoteViewing.AspNetCore\RemoteViewing.AspNetCore.csproj" />
+    <ProjectReference Include="..\RemoteViewing.Windows.Forms\RemoteViewing.Windows.Forms.csproj" />
+    <ProjectReference Include="..\RemoteViewing\RemoteViewing.csproj" />
+  </ItemGroup>
+
+</Project>

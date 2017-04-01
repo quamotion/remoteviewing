@@ -1,7 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <Description>RemoteViewing is a .NET-native VNC client and server library. It supports Raw, Hextile, Copyrect, and Zlib encodings.</Description>
-    <AssemblyTitle>RemoteViewing for Windows Forms - A .NET VNC client and server library.</AssemblyTitle>
+    <AssemblyTitle>RemoteViewing.Windows.Forms</AssemblyTitle>
+    <Copyright>Copyright © 2013 James F. Bellinger &lt;http://www.zer7.com/software/remoteviewing&gt;</Copyright>
     <VersionPrefix>1.0.8</VersionPrefix>
     <Authors>James F. Bellinger, Frederik Carlier</Authors>
     <TargetFrameworks>net45</TargetFrameworks>
@@ -13,13 +14,14 @@
     <PackageProjectUrl>https://github.com/qmfrederik/remoteviewing/</PackageProjectUrl>
     <PackageLicenseUrl>https://github.com/qmfrederik/remoteviewing/blob/master/License.txt</PackageLicenseUrl>
     <PackageTags>VNC RFB remote desktop client server Hextile Copyrect Zlib</PackageTags>
-    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <DocumentationFile>bin\$(Configuration)\$(TargetFramework)\$(AssemblyName).xml</DocumentationFile>
     <CodeAnalysisRuleSet>..\RemoteViewing.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="StyleCop.Analyzers" Version="1.0.0" />
+    <PackageReference Include="StyleCop.Analyzers" Version="1.0.0">
+      <PrivateAssets>All</PrivateAssets>
+    </PackageReference>
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'net45' ">
@@ -41,5 +43,9 @@
     <Compile Update="VncControl.Designer.cs">
       <SubType>UserControl</SubType>
     </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Properties\" />
   </ItemGroup>
 </Project>
