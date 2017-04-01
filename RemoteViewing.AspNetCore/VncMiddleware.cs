@@ -38,7 +38,19 @@ namespace RemoteViewing.AspNetCore
         /// </returns>
         public async Task Invoke(HttpContext context)
         {
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
             if (!context.WebSockets.IsWebSocketRequest)
+            {
+                return;
+            }
+
+            var vncContext = this.vncContextFactory(context);
+
+            if (vncContext == null)
             {
                 return;
             }
@@ -46,8 +58,6 @@ namespace RemoteViewing.AspNetCore
             if (context.WebSockets.IsWebSocketRequest)
             {
                 var socket = await context.WebSockets.AcceptWebSocketAsync("binary").ConfigureAwait(false);
-
-                var vncContext = this.vncContextFactory(context);
 
                 VncHandler sockethandler = new VncHandler(socket, vncContext);
                 await sockethandler.Listen().ConfigureAwait(false);
