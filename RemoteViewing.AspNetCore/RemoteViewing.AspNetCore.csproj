@@ -12,7 +12,6 @@
     <PackageProjectUrl>https://github.com/qmfrederik/remoteviewing/</PackageProjectUrl>
     <PackageLicenseUrl>https://github.com/qmfrederik/remoteviewing/blob/master/License.txt</PackageLicenseUrl>
     <PackageTags>VNC RFB remote desktop client server Hextile Copyrect Zlib asp aspnet aspnetcore noVNC</PackageTags>
-    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <DocumentationFile>bin\$(Configuration)\$(TargetFramework)\$(AssemblyName).xml</DocumentationFile>
     <CodeAnalysisRuleSet>..\RemoteViewing.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>

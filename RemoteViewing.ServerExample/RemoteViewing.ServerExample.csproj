@@ -1,12 +1,12 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <Description>RemoteViewing is a .NET-native VNC client and server library. It supports Raw, Hextile, Copyrect, and Zlib encodings.</Description>
-    <AssemblyTitle>RemoteViewing for Windows Forms - A .NET VNC client and server library.</AssemblyTitle>
+    <Description>C# VNC server example.</Description>
+    <AssemblyTitle>RemoteViewing.ServerExample</AssemblyTitle>
+    <Copyright>Copyright © 2013 James F. Bellinger &lt;http://www.zer7.com/software/remoteviewing&gt;</Copyright>
     <VersionPrefix>1.0.8</VersionPrefix>
     <Authors>James F. Bellinger, Frederik Carlier</Authors>
     <TargetFrameworks>net45</TargetFrameworks>
     <AssemblyName>RemoteViewing.ServerExample</AssemblyName>
-    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <OutputType>Exe</OutputType>
     <DocumentationFile>bin\$(Configuration)\$(TargetFramework)\$(AssemblyName).xml</DocumentationFile>
     <CodeAnalysisRuleSet>..\RemoteViewing.ruleset</CodeAnalysisRuleSet>
@@ -27,5 +27,9 @@
 
   <ItemGroup>
     <Reference Include="System.Windows.Forms" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Properties\" />
   </ItemGroup>
 </Project>

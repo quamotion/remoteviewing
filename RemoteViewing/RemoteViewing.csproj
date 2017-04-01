@@ -2,6 +2,7 @@
   <PropertyGroup>
     <Description>RemoteViewing is a .NET-native VNC client and server library. It supports Raw, Hextile, Copyrect, and Zlib encodings.</Description>
     <AssemblyTitle>RemoteViewing - A .NET VNC client and server library.</AssemblyTitle>
+    <Copyright>Copyright © 2013 James F. Bellinger &lt;http://www.zer7.com/software/remoteviewing&gt;</Copyright>
     <VersionPrefix>1.0.8</VersionPrefix>
     <Authors>James F. Bellinger, Frederik Carlier</Authors>
     <TargetFrameworks>netstandard1.5;net45</TargetFrameworks>
@@ -13,7 +14,6 @@
     <PackageProjectUrl>https://github.com/qmfrederik/remoteviewing/</PackageProjectUrl>
     <PackageLicenseUrl>https://github.com/qmfrederik/remoteviewing/blob/master/License.txt</PackageLicenseUrl>
     <PackageTags>VNC RFB remote desktop client server Hextile Copyrect Zlib</PackageTags>
-    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <DocumentationFile>bin\$(Configuration)\$(TargetFramework)\$(AssemblyName).xml</DocumentationFile>
     <CodeAnalysisRuleSet>..\RemoteViewing.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
@@ -36,5 +36,9 @@
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'net45' ">
     <Reference Include="Microsoft.CSharp" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Properties\" />
   </ItemGroup>
 </Project>
