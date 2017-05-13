@@ -339,6 +339,46 @@ namespace RemoteViewing.Vnc
             }
         }
 
+        /// <summary>
+        /// Copies a region of the framebuffer into a bitmap.
+        /// </summary>
+        /// <param name="source">The framebuffer to read.</param>
+        /// <param name="sourceRectangle">The framebuffer region to copy.</param>
+        /// <param name="scan0">The bitmap buffer start address</param>
+        /// <param name="stride">The bitmap width stride</param>
+        /// <param name="targetX">The leftmost X coordinate of the bitmap to draw to.</param>
+        /// <param name="targetY">The topmost Y coordinate of the bitmap to draw to.</param>
+        public static unsafe void CopyFromFramebuffer(
+            VncFramebuffer source,
+            VncRectangle sourceRectangle,
+            IntPtr scan0,
+            int stride,
+            int targetX,
+            int targetY)
+        {
+            if (source == null)
+            {
+                throw new ArgumentNullException(nameof(source));
+            }
+
+            if (sourceRectangle.IsEmpty)
+            {
+                return;
+            }
+
+            fixed (byte* framebufferData = source.GetBuffer())
+            {
+                VncPixelFormat.Copy(
+                    (IntPtr) framebufferData,
+                    source.Stride,
+                    source.PixelFormat,
+                    sourceRectangle,
+                    scan0,
+                    stride,
+                    new VncPixelFormat());
+            }
+        }
+
         /// <inheritdoc />
         public override bool Equals(object obj)
         {

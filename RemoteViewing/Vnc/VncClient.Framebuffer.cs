@@ -54,13 +54,13 @@ namespace RemoteViewing.Vnc
             return VncUtility.AllocateScratch(bytes, ref this.framebufferScratch);
         }
 
-        private void HandleFramebufferUpdate()
+        private bool HandleFramebufferUpdate()
         {
             this.c.ReceiveByte(); // padding
 
             var numRects = this.c.ReceiveUInt16BE();
             var rects = new List<VncRectangle>();
-
+            var encoding = VncEncoding.DesktopSize;
             for (int i = 0; i < numRects; i++)
             {
                 var r = this.c.ReceiveRectangle();
@@ -72,7 +72,7 @@ namespace RemoteViewing.Vnc
                 var inRange = w <= fbW && h <= fbH && x <= fbW - w && y <= fbH - h;
                 byte[] pixels;
 
-                var encoding = (VncEncoding)this.c.ReceiveUInt32BE();
+                encoding = (VncEncoding)this.c.ReceiveUInt32BE();
                 switch (encoding)
                 {
                     case VncEncoding.Hextile: // KVM seems to avoid this now that I support Zlib.
@@ -278,6 +278,8 @@ namespace RemoteViewing.Vnc
             {
                 this.OnFramebufferChanged(new FramebufferChangedEventArgs(rects));
             }
+
+            return encoding != VncEncoding.DesktopSize;
         }
     }
 }

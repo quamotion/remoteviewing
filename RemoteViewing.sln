@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26228.10
+VisualStudioVersion = 15.0.26430.6
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RemoteViewing", "RemoteViewing\RemoteViewing.csproj", "{89569346-2C71-4A85-99B9-D3EB71FDE87A}"
 EndProject
@@ -14,6 +14,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RemoteViewing.NoVncExample", "RemoteViewing.NoVncExample\RemoteViewing.NoVncExample.csproj", "{59A4B4EA-3B07-4D92-ACD6-A2D80C08D823}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RemoteViewing.AspNetCore", "RemoteViewing.AspNetCore\RemoteViewing.AspNetCore.csproj", "{4E38F24D-C09B-4739-BD9E-E97FF70B93D3}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RemoteViewing.Tests", "RemoteViewing.Tests\RemoteViewing.Tests.csproj", "{443275F4-DA96-4015-BA5B-C1EBE908EDFA}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -93,6 +95,18 @@ Global
 		{4E38F24D-C09B-4739-BD9E-E97FF70B93D3}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{4E38F24D-C09B-4739-BD9E-E97FF70B93D3}.Release|x86.ActiveCfg = Release|Any CPU
 		{4E38F24D-C09B-4739-BD9E-E97FF70B93D3}.Release|x86.Build.0 = Release|Any CPU
+		{443275F4-DA96-4015-BA5B-C1EBE908EDFA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{443275F4-DA96-4015-BA5B-C1EBE908EDFA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{443275F4-DA96-4015-BA5B-C1EBE908EDFA}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{443275F4-DA96-4015-BA5B-C1EBE908EDFA}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{443275F4-DA96-4015-BA5B-C1EBE908EDFA}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{443275F4-DA96-4015-BA5B-C1EBE908EDFA}.Debug|x86.Build.0 = Debug|Any CPU
+		{443275F4-DA96-4015-BA5B-C1EBE908EDFA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{443275F4-DA96-4015-BA5B-C1EBE908EDFA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{443275F4-DA96-4015-BA5B-C1EBE908EDFA}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{443275F4-DA96-4015-BA5B-C1EBE908EDFA}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{443275F4-DA96-4015-BA5B-C1EBE908EDFA}.Release|x86.ActiveCfg = Release|Any CPU
+		{443275F4-DA96-4015-BA5B-C1EBE908EDFA}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

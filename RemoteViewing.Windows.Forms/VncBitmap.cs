@@ -107,36 +107,16 @@ namespace RemoteViewing.Windows.Forms
             int targetX,
             int targetY)
         {
-            if (source == null)
-            {
-                throw new ArgumentNullException(nameof(source));
-            }
-
             if (target == null)
             {
                 throw new ArgumentNullException(nameof(target));
-            }
-
-            if (sourceRectangle.IsEmpty)
-            {
-                return;
             }
 
             var winformsRect = new Rectangle(targetX, targetY, sourceRectangle.Width, sourceRectangle.Height);
             var data = target.LockBits(winformsRect, ImageLockMode.WriteOnly, PixelFormat.Format32bppRgb);
             try
             {
-                fixed (byte* framebufferData = source.GetBuffer())
-                {
-                    VncPixelFormat.Copy(
-                        (IntPtr)framebufferData,
-                        source.Stride,
-                        source.PixelFormat,
-                        sourceRectangle,
-                        data.Scan0,
-                        data.Stride,
-                        new VncPixelFormat());
-                }
+                VncPixelFormat.CopyFromFramebuffer(source, sourceRectangle, data.Scan0, data.Stride, targetX, targetY);
             }
             finally
             {
