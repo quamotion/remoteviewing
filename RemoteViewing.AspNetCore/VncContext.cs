@@ -19,6 +19,15 @@ namespace RemoteViewing.AspNetCore
         }
 
         /// <summary>
+        /// Gets or sets the <see cref="IVncRemoteController"/> which allows you to remotely control the VNC server.
+        /// </summary>
+        public IVncRemoteController RemoteController
+        {
+            get;
+            set;
+        }
+
+        /// <summary>
         /// Gets or sets the password required to connect to the noVNC endpoint.
         /// </summary>
         public string Password

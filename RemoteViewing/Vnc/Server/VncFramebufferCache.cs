@@ -38,11 +38,11 @@ namespace RemoteViewing.Vnc.Server
     /// </summary>
     internal sealed class VncFramebufferCache
     {
-        private static readonly ILog Logger = LogProvider.GetLogger(nameof(VncServerSession));
-
         // The size of the tiles which will be invalidated. So we're basically
         // dividing the framebuffer in blocks of 32x32 and are invalidating them one at a time.
         private const int TileSize = 64;
+
+        private static readonly ILog Logger = LogProvider.GetLogger(nameof(VncServerSession));
 
         private readonly bool[] isLineInvalid;
 

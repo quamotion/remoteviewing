@@ -56,6 +56,11 @@ namespace RemoteViewing.AspNetCore
             this.Vnc.Closed += this.OnClosed;
             this.Vnc.PasswordProvided += this.OnPasswordProvided;
             this.Vnc.SetFramebufferSource(vncContext.FramebufferSource);
+
+            if (vncContext.RemoteController != null)
+            {
+                this.Vnc.PointerChanged += vncContext.RemoteController.HandleTouchEvent;
+            }
         }
 
         /// <summary>
