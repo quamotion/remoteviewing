@@ -71,6 +71,11 @@ namespace RemoteViewing.Windows.Forms
         }
 
         /// <summary>
+        /// Gets or sets a value indicating whether the local cursor is shown, when showing the remote cursor is activated. (false by default)
+        /// </summary>
+        public bool HideLocalCursor { get; set; } = true;
+
+        /// <summary>
         /// Occurs when the VNC client has successfully connected to the remote server.
         /// </summary>
         public event EventHandler Connected;
@@ -172,6 +177,8 @@ namespace RemoteViewing.Windows.Forms
             set;
         }
 
+        private float ScaleFactor { get; set; } = 1.0f;
+
         /// <inheritdoc/>
         protected override void OnLoad(EventArgs e)
         {
@@ -260,6 +267,18 @@ namespace RemoteViewing.Windows.Forms
             }
         }
 
+        /// <summary>
+        /// Invalidate the graphic to avoid strange artifacts when resizing the control.
+        /// </summary>
+        /// <param name="e">The empty event args.</param>
+        protected override void OnResize(EventArgs e)
+        {
+            base.OnResize(e);
+            this.ScaleFactor = this.GetScaleFactor(this.client?.Framebuffer);
+
+            this.Invalidate();
+        }
+
         [DllImport("user32", EntryPoint = "AddClipboardFormatListener", SetLastError = true)]
         [return: MarshalAs(UnmanagedType.Bool)]
         private static extern bool AddClipboardFormatListener(IntPtr handle);
@@ -303,10 +322,12 @@ namespace RemoteViewing.Windows.Forms
             {
                 this.bitmap = new Bitmap(w, h, PixelFormat.Format32bppRgb);
                 VncBitmap.CopyFromFramebuffer(framebuffer, new VncRectangle(0, 0, w, h), this.bitmap, 0, 0);
-                this.ClientSize = new Size(w, h);
+
+                this.ScaleFactor = this.GetScaleFactor(framebuffer);
                 this.Invalidate();
             }
         }
+
 
         private void UpdateFramebuffer(bool force)
         {
@@ -404,7 +425,10 @@ namespace RemoteViewing.Windows.Forms
                     for (int i = 0; i < e.RectangleCount; i++)
                     {
                         var rect = e.GetRectangle(i);
-                        this.Invalidate(new Rectangle(rect.X, rect.Y, rect.Width, rect.Height));
+                        var transformedRect = this.Transform(
+                            new Rectangle(rect.X, rect.Y, rect.Width, rect.Height),
+                            TransformDirection.FromDevice);
+                        this.Invalidate(transformedRect);
                     }
                 }));
         }
@@ -439,8 +463,55 @@ namespace RemoteViewing.Windows.Forms
         {
             if (this.client != null && this.AllowInput)
             {
-                this.client.SendPointerEvent(this.x, this.y, this.buttons);
+                var devicePoint = this.TransformPoint(this.x, this.y, TransformDirection.ToDevice);
+                this.client.SendPointerEvent(devicePoint.X, devicePoint.Y, this.buttons);
             }
+        }
+
+        private enum TransformDirection
+        {
+            FromDevice,
+            ToDevice
+        }
+        private Rectangle Transform(Rectangle rectangle, TransformDirection direction)
+        {
+            var upperLeft = this.TransformPoint(rectangle.Left, rectangle.Top, direction);
+            var bottomRight = this.TransformPoint(rectangle.Right, rectangle.Bottom, direction);
+            return Rectangle.FromLTRB(upperLeft.X, upperLeft.Y, bottomRight.X, bottomRight.Y);
+        }
+
+        private Point TransformPoint(int xPosition, int yPosition, TransformDirection direction)
+        {
+            var scaleFactor = this.ScaleFactor;
+            if (scaleFactor >= 1.0f)
+            {
+                return new Point(xPosition, yPosition);
+            }
+
+            scaleFactor = direction == TransformDirection.ToDevice ? 1.0f / scaleFactor : scaleFactor;
+
+            var transformedPoint = new Point((int)(xPosition * scaleFactor), (int)(yPosition * scaleFactor));
+            return transformedPoint;
+
+        }
+
+        private float GetScaleFactor(VncFramebuffer framebuffer)
+        {
+            if (framebuffer == null)
+            {
+                return 1.0f;
+            }
+            var scaleFactor = this.GetScaleFactor(framebuffer.Width, framebuffer.Height, this.Width, this.Height);
+            return scaleFactor;
+        }
+
+        private float GetScaleFactor(int remoteWidth, int remoteHeight, int controlWidth, int controlHeight)
+        {
+            var widthScaleFactor = (float) controlWidth / remoteWidth;
+            var heightScaleFactor = (float)controlHeight / remoteHeight;
+            var scaleFactor = Math.Min(widthScaleFactor, heightScaleFactor);
+            var decreaseScaleFactor = scaleFactor > 1.0f ? 1.0f : scaleFactor;
+            return decreaseScaleFactor;
         }
 
         private void VncControl_PreviewKeyDown(object sender, PreviewKeyDownEventArgs e)
@@ -477,7 +548,7 @@ namespace RemoteViewing.Windows.Forms
 
         private void VncControl_MouseEnter(object sender, EventArgs e)
         {
-            if (this.AllowRemoteCursor)
+            if (this.AllowRemoteCursor && this.HideLocalCursor)
             {
                 Cursor.Hide();
             }
@@ -516,7 +587,7 @@ namespace RemoteViewing.Windows.Forms
 
         private void SendMouseScroll(bool down)
         {
-            int mask = down ? (1 << 4) : (1 << 3);
+            int mask = down ? 1 << 4 : 1 << 3;
             this.buttons |= mask;
             this.SendMouseUpdate();
             this.buttons &= ~mask;
@@ -530,7 +601,15 @@ namespace RemoteViewing.Windows.Forms
                 return;
             }
 
+            var scaleFactor = this.ScaleFactor;
+            if (scaleFactor < 1.0)
+            {
+                e.Graphics.ScaleTransform((float)scaleFactor, (float)scaleFactor);
+            }
+
             e.Graphics.DrawImageUnscaled(this.bitmap, 0, 0);
         }
+
+
     }
 }

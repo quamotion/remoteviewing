@@ -166,7 +166,9 @@
             this.vncControl.AllowClipboardSharingToServer = true;
             this.vncControl.AllowInput = true;
             this.vncControl.AllowRemoteCursor = true;
-            this.vncControl.Anchor = System.Windows.Forms.AnchorStyles.None;
+            this.vncControl.HideLocalCursor = false;
+            //this.vncControl.Anchor = System.Windows.Forms.AnchorStyles.None;
+            this.vncControl.Dock = System.Windows.Forms.DockStyle.Fill;
             this.vncControl.BackColor = System.Drawing.Color.Black;
             vncClient1.MaxUpdateRate = 15D;
             vncClient1.UserData = null;

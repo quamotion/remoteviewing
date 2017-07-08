@@ -32,13 +32,14 @@ using System.IO;
 using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
+using RemoteViewing.Utility;
 
 namespace RemoteViewing.Vnc
 {
     /// <summary>
     /// Connects to a remote VNC server and interacts with it.
     /// </summary>
-    public partial class VncClient
+    public partial class VncClient : IDisposable
     {
         private VncStream c = new VncStream();
         private VncClientConnectOptions options;
@@ -159,9 +160,12 @@ namespace RemoteViewing.Vnc
         {
             var thread = this.threadMain;
             this.c.Close();
-            if (thread != null)
+            thread?.Join();
+
+            if (this.options?.OnDemandMode ?? false)
             {
-                thread.Join();
+                this.IsConnected = false;
+                this.OnClosed();
             }
         }
 
@@ -224,7 +228,18 @@ namespace RemoteViewing.Vnc
                     this.NegotiateDesktop();
                     this.NegotiateEncodings();
                     this.InitFramebufferDecoder();
-                    this.SendFramebufferUpdateRequest(false);
+
+                    if (this.options.OnDemandMode)
+                    {
+                        this.IsConnected = true;
+                    }
+                    else
+                    {
+                        this.SendFramebufferUpdateRequest(false);
+                        this.threadMain = new Thread(this.ThreadMain);
+                        this.threadMain.IsBackground = true;
+                        this.threadMain.Start();
+                    }
                 }
                 catch (IOException e)
                 {
@@ -241,10 +256,6 @@ namespace RemoteViewing.Vnc
                     this.OnConnectionFailed();
                     throw new VncException("Connection failed.", VncFailureReason.NetworkError, e);
                 }
-
-                this.threadMain = new Thread(this.ThreadMain);
-                this.threadMain.IsBackground = true;
-                this.threadMain.Start();
             }
         }
 
@@ -419,34 +430,7 @@ namespace RemoteViewing.Vnc
 
                 while (true)
                 {
-                    var command = this.c.ReceiveByte();
-
-                    switch (command)
-                    {
-                        case 0:
-                            requester.Signal();
-                            this.HandleFramebufferUpdate();
-                            break;
-
-                        case 1:
-                            this.HandleSetColorMapEntries();
-                            break;
-
-                        case 2:
-                            this.HandleBell();
-                            break;
-
-                        case 3:
-                            this.HandleReceiveClipboardData();
-                            break;
-
-                        default:
-                            VncStream.Require(
-                                false,
-                                "Unsupported command.",
-                                VncFailureReason.UnrecognizedProtocolElement);
-                            break;
-                    }
+                    this.HandleResponse(requester);
                 }
             }
             catch (ObjectDisposedException)
@@ -464,6 +448,52 @@ namespace RemoteViewing.Vnc
             this.c.Stream = null;
             this.IsConnected = false;
             this.OnClosed();
+        }
+
+        private enum ResponseType : byte
+        {
+            FramebufferUpdate = 0,
+            SetColorMapEntries = 1,
+            Bell = 2,
+            ReceiveClipboardData = 3,
+            DesktopSize = 200,
+        }
+
+        private ResponseType HandleResponse(PeriodicThread requester = null)
+        {
+            var command = (ResponseType)this.c.ReceiveByte();
+
+            switch (command)
+            {
+                case ResponseType.FramebufferUpdate:
+                    requester?.Signal();
+                    if (!this.HandleFramebufferUpdate())
+                    {
+                        command = ResponseType.DesktopSize;
+                    }
+                    break;
+
+                case ResponseType.SetColorMapEntries:
+                    this.HandleSetColorMapEntries();
+                    break;
+
+                case ResponseType.Bell:
+                    this.HandleBell();
+                    break;
+
+                case ResponseType.ReceiveClipboardData:
+                    this.HandleReceiveClipboardData();
+                    break;
+
+                default:
+                    VncStream.Require(
+                        false,
+                        "Unsupported command.",
+                        VncFailureReason.UnrecognizedProtocolElement);
+                    break;
+            }
+
+            return command;
         }
 
         private void NegotiateVersion()
@@ -588,17 +618,55 @@ namespace RemoteViewing.Vnc
 
         private void SendFramebufferUpdateRequest(bool incremental)
         {
+            this.SendFramebufferUpdateRequest(incremental, 0, 0, this.Framebuffer.Width, this.Framebuffer.Height);
+        }
+
+
+        /// <summary>
+        /// Loads the framebuffer from the specified location and returns a function that can be used to copy the data to a bitmap.
+        /// </summary>
+        /// <param name="x">The x offset. (0 if null)</param>
+        /// <param name="y">The y offset. (0 if null)</param>
+        /// <param name="width">The width. (Framebuffer.Width if null)</param>
+        /// <param name="height">The height (Framebuffer.Height if null)</param>
+        /// <returns>An action with 2 parameters (BitmapData.Scan0 and BitmapData.Stride) that copies the framebuffer data to the specfied address</returns>
+        public Action<IntPtr, int> GetFramebuffer(int? x = null, int? y = null, int? width = null, int? height = null)
+        {
+            var xValue = x ?? 0;
+            var yValue = y ?? 0;
+            var widthValue = width ?? this.Framebuffer.Width;
+            var heightValue = height ?? this.Framebuffer.Height;
+
+            this.SendFramebufferUpdateRequest(false, xValue, yValue, widthValue, heightValue);
+
+            ResponseType handledResponse;
+            do
+            {
+                handledResponse = this.HandleResponse();
+                if (handledResponse == ResponseType.DesktopSize)
+                {
+                    this.SendFramebufferUpdateRequest(false, xValue, yValue, widthValue, heightValue);
+                }
+            } while (handledResponse != ResponseType.FramebufferUpdate);
+
+            return (scan0, stride) => VncPixelFormat.CopyFromFramebuffer(
+                this.Framebuffer, new VncRectangle(xValue, yValue, widthValue, heightValue), scan0, stride, 0, 0);
+        }
+
+        private void SendFramebufferUpdateRequest(bool incremental, int x, int y, int width, int height)
+        {
             var p = new byte[10];
 
             p[0] = (byte)3;
             p[1] = (byte)(incremental ? 1 : 0);
-            VncUtility.EncodeUInt16BE(p, 2, (ushort)0);
-            VncUtility.EncodeUInt16BE(p, 4, (ushort)0);
-            VncUtility.EncodeUInt16BE(p, 6, (ushort)this.Framebuffer.Width);
-            VncUtility.EncodeUInt16BE(p, 8, (ushort)this.Framebuffer.Height);
+            VncUtility.EncodeUInt16BE(p, 2, (ushort)x);
+            VncUtility.EncodeUInt16BE(p, 4, (ushort)y);
+            VncUtility.EncodeUInt16BE(p, 6, (ushort)width);
+            VncUtility.EncodeUInt16BE(p, 8, (ushort)height);
 
             this.c.Send(p);
         }
+
 
         private void CopyToGeneral(
             int tx,
@@ -651,6 +719,14 @@ namespace RemoteViewing.Vnc
             var clipboard = this.c.ReceiveString(0xffffff);
 
             this.OnRemoteClipboardChanged(new RemoteClipboardChangedEventArgs(clipboard));
+        }
+
+        /// <summary>
+        /// Disposes the client.
+        /// </summary>
+        public void Dispose()
+        {
+            this.Close();
         }
     }
 }

@@ -68,6 +68,12 @@ namespace RemoteViewing.Vnc
         }
 
         /// <summary>
+        /// Gets or sets a value indicating whether a polling thread should be started and frame buffer updates
+        /// are published via events or the frame buffer updates are triggered manually (on demand) by calling the respective functions.
+        /// </summary>
+        public bool OnDemandMode { get; set; }
+
+        /// <summary>
         /// Gets or sets a callback which is called when a password is required and
         /// <see cref="VncClientConnectOptions.Password"/> is <see langword="null"/>.
         /// </summary>
