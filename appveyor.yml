@@ -1,7 +1,8 @@
 image: Visual Studio 2017
 
 before_build:
-  - cmd: dotnet restore
+# See https://github.com/NuGet/Home/issues/4337
+  - cmd: dotnet restore /p:VersionSuffix=r%APPVEYOR_BUILD_NUMBER%
 
 build_script:
   - cmd: dotnet build -c Release --version-suffix r%APPVEYOR_BUILD_NUMBER%
