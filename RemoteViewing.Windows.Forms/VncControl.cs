@@ -71,11 +71,6 @@ namespace RemoteViewing.Windows.Forms
         }
 
         /// <summary>
-        /// Gets or sets a value indicating whether the local cursor is shown, when showing the remote cursor is activated. (false by default)
-        /// </summary>
-        public bool HideLocalCursor { get; set; } = true;
-
-        /// <summary>
         /// Occurs when the VNC client has successfully connected to the remote server.
         /// </summary>
         public event EventHandler Connected;
@@ -89,6 +84,17 @@ namespace RemoteViewing.Windows.Forms
         /// Occurs when the VNC client is disconnected.
         /// </summary>
         public event EventHandler Closed;
+
+        private enum TransformDirection
+        {
+            FromDevice,
+            ToDevice
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the local cursor is shown, when showing the remote cursor is activated. (false by default)
+        /// </summary>
+        public bool HideLocalCursor { get; set; } = true;
 
         /// <summary>
         /// Gets or sets the <see cref="VncClient"/> being interacted with.
@@ -328,7 +334,6 @@ namespace RemoteViewing.Windows.Forms
             }
         }
 
-
         private void UpdateFramebuffer(bool force)
         {
             if (this.client == null)
@@ -468,11 +473,6 @@ namespace RemoteViewing.Windows.Forms
             }
         }
 
-        private enum TransformDirection
-        {
-            FromDevice,
-            ToDevice
-        }
         private Rectangle Transform(Rectangle rectangle, TransformDirection direction)
         {
             var upperLeft = this.TransformPoint(rectangle.Left, rectangle.Top, direction);
@@ -492,7 +492,6 @@ namespace RemoteViewing.Windows.Forms
 
             var transformedPoint = new Point((int)(xPosition * scaleFactor), (int)(yPosition * scaleFactor));
             return transformedPoint;
-
         }
 
         private float GetScaleFactor(VncFramebuffer framebuffer)
@@ -501,13 +500,14 @@ namespace RemoteViewing.Windows.Forms
             {
                 return 1.0f;
             }
+
             var scaleFactor = this.GetScaleFactor(framebuffer.Width, framebuffer.Height, this.Width, this.Height);
             return scaleFactor;
         }
 
         private float GetScaleFactor(int remoteWidth, int remoteHeight, int controlWidth, int controlHeight)
         {
-            var widthScaleFactor = (float) controlWidth / remoteWidth;
+            var widthScaleFactor = (float)controlWidth / remoteWidth;
             var heightScaleFactor = (float)controlHeight / remoteHeight;
             var scaleFactor = Math.Min(widthScaleFactor, heightScaleFactor);
             var decreaseScaleFactor = scaleFactor > 1.0f ? 1.0f : scaleFactor;
@@ -609,7 +609,5 @@ namespace RemoteViewing.Windows.Forms
 
             e.Graphics.DrawImageUnscaled(this.bitmap, 0, 0);
         }
-
-
     }
 }

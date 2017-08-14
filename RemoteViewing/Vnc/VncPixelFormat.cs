@@ -369,7 +369,7 @@ namespace RemoteViewing.Vnc
             fixed (byte* framebufferData = source.GetBuffer())
             {
                 VncPixelFormat.Copy(
-                    (IntPtr) framebufferData,
+                    (IntPtr)framebufferData,
                     source.Stride,
                     source.PixelFormat,
                     sourceRectangle,

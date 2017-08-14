@@ -109,7 +109,7 @@ namespace RemoteViewing.Vnc.Server
 
         /// <summary>
         /// Occurs when the framebuffer needs to be updated.
-        /// If you do not set <see cref="HandledEventArgs.Handled"/> on <see cref="FramebufferUpdatingEventArgs"/>,
+        /// If you do not set <see cref="FramebufferUpdatingEventArgs.Handled"/>,
         /// <see cref="VncServerSession"/> will determine the updated regions itself.
         ///
         /// <see cref="VncServerSession.FramebufferUpdateRequestLock"/> is held automatically while this event is raised.
