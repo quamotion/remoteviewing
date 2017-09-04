@@ -1,4 +1,5 @@
-﻿using RemoteViewing.Vnc;
+﻿using RemoteViewing.Logging;
+using RemoteViewing.Vnc;
 using RemoteViewing.Vnc.Server;
 using System;
 
@@ -41,6 +42,26 @@ namespace RemoteViewing.AspNetCore
         /// has been created.
         /// </summary>
         public Action<VncServerSession> SessionConfiguration
+        {
+            get;
+            set;
+        }
+
+        /// <summary>
+        /// Gets or sets the logger to use when logging diagnostic messages. No logging will happen when
+        /// set to <see langword="null"/>.
+        /// </summary>
+        public ILog Logger
+        {
+            get;
+            set;
+        }
+
+        /// <summary>
+        /// Gets or sets the <see cref="IVncPasswordChallenge"/> to use when creating or validating VNC passwords.
+        /// The default <see cref="VncPasswordChallenge"/> will be used when set to <see langword="null"/>.
+        /// </summary>
+        public IVncPasswordChallenge PasswordChallenge
         {
             get;
             set;
