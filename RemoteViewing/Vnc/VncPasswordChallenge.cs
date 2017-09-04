@@ -1,7 +1,8 @@
 ﻿#region License
 /*
-RemoteViewing VNC Client/Server Library for .NET
+RemoteViewing VNC Client/Server Library for .
 Copyright (c) 2013 James F. Bellinger <http://www.zer7.com/software/remoteviewing>
+Copyright (c) 2017 Frederik Carlier <http://github.com/qmfrederik/remoteviewing>
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -34,61 +35,58 @@ namespace RemoteViewing.Vnc
     /// <summary>
     /// Provides helper methods which implement the VNC password challenge protocol.
     /// </summary>
-    internal static class VncPasswordChallenge
+    public class VncPasswordChallenge : IVncPasswordChallenge
     {
-        /// <summary>
-        /// Generates a 16-byte challenge.
-        /// </summary>
-        /// <returns>
-        /// A ,<see cref="byte"/> array which contains the 16-byte challenge.
-        /// </returns>
-        public static byte[] GenerateChallenge()
+        /// <inheritdoc/>
+        public virtual byte[] GenerateChallenge()
         {
             var challenge = new byte[16];
             RandomNumberGenerator.Create().GetBytes(challenge);
             return challenge;
         }
 
-        /// <summary>
-        /// Calculates a response for a password challenge, using a password.
-        /// </summary>
-        /// <param name="challenge">
-        /// The challenge received from the server.
-        /// </param>
-        /// <param name="password">
-        /// The password to encrypt the challenge with.
-        /// </param>
-        /// <param name="response">
-        /// The response to send back to the server.
-        /// </param>
-        public static void GetChallengeResponse(byte[] challenge, char[] password, byte[] response)
+        /// <inheritdoc/>
+        public virtual void GetChallengeResponse(byte[] challenge, char[] password, byte[] response)
         {
-            Throw.If.Null(password, "password");
+            if (password == null)
+            {
+                throw new ArgumentNullException(nameof(password));
+            }
 
             var passwordBytes = VncStream.EncodeString(password, 0, password.Length);
             using (new Utility.AutoClear(passwordBytes))
             {
-                GetChallengeResponse(challenge, passwordBytes, response);
+                this.GetChallengeResponse(challenge, passwordBytes, response);
             }
         }
 
-        /// <summary>
-        /// Calculates a response for a password challenge, using a password.
-        /// </summary>
-        /// <param name="challenge">
-        /// The challenge received from the server.
-        /// </param>
-        /// <param name="password">
-        /// The password to encrypt the challenge with.
-        /// </param>
-        /// <param name="response">
-        /// The response to send back to the server.
-        /// </param>
-        public static void GetChallengeResponse(byte[] challenge, byte[] password, byte[] response)
+        /// <inheritdoc/>
+        public virtual void GetChallengeResponse(byte[] challenge, byte[] password, byte[] response)
         {
-            Throw.If.Null(challenge, "challenge").Null(password, "password").Null(response, "response");
-            Throw.If.False(challenge.Length == 16, "Challenge must be 16 bytes.");
-            Throw.If.False(response.Length == 16, "Response must be 16 bytes.");
+            if (challenge == null)
+            {
+                throw new ArgumentNullException(nameof(challenge));
+            }
+
+            if (password == null)
+            {
+                throw new ArgumentNullException(nameof(password));
+            }
+
+            if (response == null)
+            {
+                throw new ArgumentNullException(nameof(response));
+            }
+
+            if (challenge.Length != 16)
+            {
+                throw new ArgumentOutOfRangeException(nameof(challenge), "Challenge must be 16 bytes.");
+            }
+
+            if (response.Length != 16)
+            {
+                throw new ArgumentOutOfRangeException(nameof(response), "Response must be 16 bytes.");
+            }
 
             var key = new byte[8];
             using (new Utility.AutoClear(key))

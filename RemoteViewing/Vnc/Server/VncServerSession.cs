@@ -43,6 +43,7 @@ namespace RemoteViewing.Vnc.Server
     {
         private static readonly ILog Logger = LogProvider.GetLogger(nameof(VncServerSession));
 
+        private readonly IVncPasswordChallenge passwordChallenge;
         private VncStream c = new VncStream();
         private VncEncoding[] clientEncoding = new VncEncoding[0];
         private VncPixelFormat clientPixelFormat;
@@ -67,7 +68,24 @@ namespace RemoteViewing.Vnc.Server
         /// Initializes a new instance of the <see cref="VncServerSession"/> class.
         /// </summary>
         public VncServerSession()
+            : this(new VncPasswordChallenge())
         {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="VncServerSession"/> class.
+        /// </summary>
+        /// <param name="passwordChallenge">
+        /// The <see cref="IVncPasswordChallenge"/> to use to generate password challenges.
+        /// </param>
+        public VncServerSession(IVncPasswordChallenge passwordChallenge)
+        {
+            if (passwordChallenge == null)
+            {
+                throw new ArgumentNullException(nameof(passwordChallenge));
+            }
+
+            this.passwordChallenge = passwordChallenge;
             this.MaxUpdateRate = 15;
         }
 
@@ -759,7 +777,7 @@ namespace RemoteViewing.Vnc.Server
             bool success = true;
             if (selectedMethod == AuthenticationMethod.Password)
             {
-                var challenge = VncPasswordChallenge.GenerateChallenge();
+                var challenge = this.passwordChallenge.GenerateChallenge();
                 using (new Utility.AutoClear(challenge))
                 {
                     this.c.Send(challenge);
@@ -767,7 +785,7 @@ namespace RemoteViewing.Vnc.Server
                     var response = this.c.Receive(16);
                     using (new Utility.AutoClear(response))
                     {
-                        var e = new PasswordProvidedEventArgs(challenge, response);
+                        var e = new PasswordProvidedEventArgs(this.passwordChallenge, challenge, response);
                         this.OnPasswordProvided(e);
                         success = e.IsAuthenticated;
                     }
