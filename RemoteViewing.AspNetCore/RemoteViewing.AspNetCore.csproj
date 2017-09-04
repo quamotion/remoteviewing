@@ -4,8 +4,7 @@
     <AssemblyTitle>RemoteViewing - ASP.NET Core noVNC Server.</AssemblyTitle>
     <VersionPrefix>1.0.8</VersionPrefix>
     <Authors>James F. Bellinger, Frederik Carlier</Authors>
-    <TargetFrameworks>netstandard1.5;net451</TargetFrameworks>
-    <PackageTargetFallback>$(PackageTargetFallback);portable-net45</PackageTargetFallback>
+    <TargetFrameworks>netstandard1.5;net46</TargetFrameworks>
     <AssemblyName>RemoteViewing.AspNetCore</AssemblyName>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <PackageId>Quamotion.RemoteViewing.AspNetCore</PackageId>
@@ -21,6 +20,6 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.WebSockets.Server" Version="0.1.0" />
-    <PackageReference Include="Nito.AsyncEx" Version="4.0.1" />
+    <PackageReference Include="Nito.AsyncEx" Version="5.0.0-pre-04" />
   </ItemGroup>
 </Project>

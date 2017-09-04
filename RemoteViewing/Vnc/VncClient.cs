@@ -86,6 +86,15 @@ namespace RemoteViewing.Vnc
         /// </summary>
         public event EventHandler<RemoteClipboardChangedEventArgs> RemoteClipboardChanged;
 
+        private enum ResponseType : byte
+        {
+            FramebufferUpdate = 0,
+            SetColorMapEntries = 1,
+            Bell = 2,
+            ReceiveClipboardData = 3,
+            DesktopSize = 200,
+        }
+
         /// <summary>
         /// Gets the framebuffer for the VNC session.
         /// </summary>
@@ -326,6 +335,46 @@ namespace RemoteViewing.Vnc
         }
 
         /// <summary>
+        /// Loads the framebuffer from the specified location and returns a function that can be used to copy the data to a bitmap.
+        /// </summary>
+        /// <param name="x">The x offset. (0 if null)</param>
+        /// <param name="y">The y offset. (0 if null)</param>
+        /// <param name="width">The width. (Framebuffer.Width if null)</param>
+        /// <param name="height">The height (Framebuffer.Height if null)</param>
+        /// <returns>An action with 2 parameters (BitmapData.Scan0 and BitmapData.Stride) that copies the framebuffer data to the specfied address</returns>
+        public Action<IntPtr, int> GetFramebuffer(int? x = null, int? y = null, int? width = null, int? height = null)
+        {
+            var xValue = x ?? 0;
+            var yValue = y ?? 0;
+            var widthValue = width ?? this.Framebuffer.Width;
+            var heightValue = height ?? this.Framebuffer.Height;
+
+            this.SendFramebufferUpdateRequest(false, xValue, yValue, widthValue, heightValue);
+
+            ResponseType handledResponse;
+            do
+            {
+                handledResponse = this.HandleResponse();
+                if (handledResponse == ResponseType.DesktopSize)
+                {
+                    this.SendFramebufferUpdateRequest(false, xValue, yValue, widthValue, heightValue);
+                }
+            }
+            while (handledResponse != ResponseType.FramebufferUpdate);
+
+            return (scan0, stride) => VncPixelFormat.CopyFromFramebuffer(
+                this.Framebuffer, new VncRectangle(xValue, yValue, widthValue, heightValue), scan0, stride, 0, 0);
+        }
+
+        /// <summary>
+        /// Disposes the client.
+        /// </summary>
+        public void Dispose()
+        {
+            this.Close();
+        }
+
+        /// <summary>
         /// Raises the <see cref="Bell"/> event
         /// </summary>
         protected virtual void OnBell()
@@ -450,15 +499,6 @@ namespace RemoteViewing.Vnc
             this.OnClosed();
         }
 
-        private enum ResponseType : byte
-        {
-            FramebufferUpdate = 0,
-            SetColorMapEntries = 1,
-            Bell = 2,
-            ReceiveClipboardData = 3,
-            DesktopSize = 200,
-        }
-
         private ResponseType HandleResponse(PeriodicThread requester = null)
         {
             var command = (ResponseType)this.c.ReceiveByte();
@@ -471,6 +511,7 @@ namespace RemoteViewing.Vnc
                     {
                         command = ResponseType.DesktopSize;
                     }
+
                     break;
 
                 case ResponseType.SetColorMapEntries:
@@ -621,38 +662,6 @@ namespace RemoteViewing.Vnc
             this.SendFramebufferUpdateRequest(incremental, 0, 0, this.Framebuffer.Width, this.Framebuffer.Height);
         }
 
-
-        /// <summary>
-        /// Loads the framebuffer from the specified location and returns a function that can be used to copy the data to a bitmap.
-        /// </summary>
-        /// <param name="x">The x offset. (0 if null)</param>
-        /// <param name="y">The y offset. (0 if null)</param>
-        /// <param name="width">The width. (Framebuffer.Width if null)</param>
-        /// <param name="height">The height (Framebuffer.Height if null)</param>
-        /// <returns>An action with 2 parameters (BitmapData.Scan0 and BitmapData.Stride) that copies the framebuffer data to the specfied address</returns>
-        public Action<IntPtr, int> GetFramebuffer(int? x = null, int? y = null, int? width = null, int? height = null)
-        {
-            var xValue = x ?? 0;
-            var yValue = y ?? 0;
-            var widthValue = width ?? this.Framebuffer.Width;
-            var heightValue = height ?? this.Framebuffer.Height;
-
-            this.SendFramebufferUpdateRequest(false, xValue, yValue, widthValue, heightValue);
-
-            ResponseType handledResponse;
-            do
-            {
-                handledResponse = this.HandleResponse();
-                if (handledResponse == ResponseType.DesktopSize)
-                {
-                    this.SendFramebufferUpdateRequest(false, xValue, yValue, widthValue, heightValue);
-                }
-            } while (handledResponse != ResponseType.FramebufferUpdate);
-
-            return (scan0, stride) => VncPixelFormat.CopyFromFramebuffer(
-                this.Framebuffer, new VncRectangle(xValue, yValue, widthValue, heightValue), scan0, stride, 0, 0);
-        }
-
         private void SendFramebufferUpdateRequest(bool incremental, int x, int y, int width, int height)
         {
             var p = new byte[10];
@@ -666,7 +675,6 @@ namespace RemoteViewing.Vnc
 
             this.c.Send(p);
         }
-
 
         private void CopyToGeneral(
             int tx,
@@ -719,14 +727,6 @@ namespace RemoteViewing.Vnc
             var clipboard = this.c.ReceiveString(0xffffff);
 
             this.OnRemoteClipboardChanged(new RemoteClipboardChangedEventArgs(clipboard));
-        }
-
-        /// <summary>
-        /// Disposes the client.
-        /// </summary>
-        public void Dispose()
-        {
-            this.Close();
         }
     }
 }
