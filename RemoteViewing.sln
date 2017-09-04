@@ -1,19 +1,21 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26430.6
+VisualStudioVersion = 15.0.26730.12
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RemoteViewing", "RemoteViewing\RemoteViewing.csproj", "{89569346-2C71-4A85-99B9-D3EB71FDE87A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RemoteViewing", "RemoteViewing\RemoteViewing.csproj", "{89569346-2C71-4A85-99B9-D3EB71FDE87A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RemoteViewing.Example", "RemoteViewing.Example\RemoteViewing.Example.csproj", "{D6771918-A3DF-4EC6-86DF-11E02DDA2780}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RemoteViewing.Example", "RemoteViewing.Example\RemoteViewing.Example.csproj", "{D6771918-A3DF-4EC6-86DF-11E02DDA2780}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RemoteViewing.Windows.Forms", "RemoteViewing.Windows.Forms\RemoteViewing.Windows.Forms.csproj", "{4FE8AC04-3825-4CFC-8F1D-4C4064FB5727}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RemoteViewing.Windows.Forms", "RemoteViewing.Windows.Forms\RemoteViewing.Windows.Forms.csproj", "{4FE8AC04-3825-4CFC-8F1D-4C4064FB5727}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RemoteViewing.ServerExample", "RemoteViewing.ServerExample\RemoteViewing.ServerExample.csproj", "{06464BF4-9691-4391-9783-3891585631D2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RemoteViewing.ServerExample", "RemoteViewing.ServerExample\RemoteViewing.ServerExample.csproj", "{06464BF4-9691-4391-9783-3891585631D2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RemoteViewing.NoVncExample", "RemoteViewing.NoVncExample\RemoteViewing.NoVncExample.csproj", "{59A4B4EA-3B07-4D92-ACD6-A2D80C08D823}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RemoteViewing.NoVncExample", "RemoteViewing.NoVncExample\RemoteViewing.NoVncExample.csproj", "{59A4B4EA-3B07-4D92-ACD6-A2D80C08D823}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RemoteViewing.AspNetCore", "RemoteViewing.AspNetCore\RemoteViewing.AspNetCore.csproj", "{4E38F24D-C09B-4739-BD9E-E97FF70B93D3}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RemoteViewing.Tests", "RemoteViewing.Tests\RemoteViewing.Tests.csproj", "{3B608B91-5360-4536-90B6-D9CC353FCADE}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -93,8 +95,23 @@ Global
 		{4E38F24D-C09B-4739-BD9E-E97FF70B93D3}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{4E38F24D-C09B-4739-BD9E-E97FF70B93D3}.Release|x86.ActiveCfg = Release|Any CPU
 		{4E38F24D-C09B-4739-BD9E-E97FF70B93D3}.Release|x86.Build.0 = Release|Any CPU
+		{3B608B91-5360-4536-90B6-D9CC353FCADE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3B608B91-5360-4536-90B6-D9CC353FCADE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3B608B91-5360-4536-90B6-D9CC353FCADE}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{3B608B91-5360-4536-90B6-D9CC353FCADE}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{3B608B91-5360-4536-90B6-D9CC353FCADE}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{3B608B91-5360-4536-90B6-D9CC353FCADE}.Debug|x86.Build.0 = Debug|Any CPU
+		{3B608B91-5360-4536-90B6-D9CC353FCADE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3B608B91-5360-4536-90B6-D9CC353FCADE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3B608B91-5360-4536-90B6-D9CC353FCADE}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{3B608B91-5360-4536-90B6-D9CC353FCADE}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{3B608B91-5360-4536-90B6-D9CC353FCADE}.Release|x86.ActiveCfg = Release|Any CPU
+		{3B608B91-5360-4536-90B6-D9CC353FCADE}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {DDF1B35F-0FDC-479E-8BFD-DCFD9B2C4F04}
 	EndGlobalSection
 EndGlobal
