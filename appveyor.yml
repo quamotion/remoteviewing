@@ -7,6 +7,9 @@ before_build:
 build_script:
   - cmd: dotnet build -c Release --version-suffix r%APPVEYOR_BUILD_NUMBER%
 
+test_script:
+  - dotnet test RemoteViewing.Tests\RemoteViewing.Tests.csproj
+
 on_success:
   - cmd: dotnet pack -c Release --version-suffix r%APPVEYOR_BUILD_NUMBER%
   - ps: Push-AppveyorArtifact "RemoteViewing\bin\Release\Quamotion.RemoteViewing.1.0.8-r$($env:APPVEYOR_BUILD_NUMBER).nupkg"
