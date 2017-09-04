@@ -36,6 +36,7 @@ namespace RemoteViewing.Vnc.Server
     /// </summary>
     public sealed class PasswordProvidedEventArgs : EventArgs
     {
+        private readonly IVncPasswordChallenge passwordChallenge;
         private byte[] challenge;
         private byte[] response;
 
@@ -44,14 +45,39 @@ namespace RemoteViewing.Vnc.Server
         /// </summary>
         /// <param name="challenge">The VNC the server sent.</param>
         /// <param name="response">The bytes of the response from the client.</param>
-        public PasswordProvidedEventArgs(byte[] challenge, byte[] response)
+        /// <param name="passwordChallenge">
+        /// A class which implements the <see cref="IVncPasswordChallenge"/> interface, which is able to validate the password.
+        /// </param>
+        public PasswordProvidedEventArgs(IVncPasswordChallenge passwordChallenge, byte[] challenge, byte[] response)
         {
-            Throw.If.Null(challenge, "challenge").Null(response, "response");
-            Throw.If.False(challenge.Length == 16, "Challenge must be 16 bytes.");
-            Throw.If.False(response.Length == 16, "Response must be 16 bytes.");
+            if (challenge == null)
+            {
+                throw new ArgumentNullException(nameof(challenge));
+            }
+
+            if (response == null)
+            {
+                throw new ArgumentNullException(nameof(response));
+            }
+
+            if (challenge.Length != 16)
+            {
+                throw new ArgumentOutOfRangeException(nameof(challenge), "Challenge must be 16 bytes.");
+            }
+
+            if (response.Length != 16)
+            {
+                throw new ArgumentOutOfRangeException(nameof(response), "Response must be 16 bytes.");
+            }
+
+            if (passwordChallenge == null)
+            {
+                throw new ArgumentNullException(nameof(passwordChallenge));
+            }
 
             this.challenge = challenge;
             this.response = response;
+            this.passwordChallenge = passwordChallenge;
         }
 
         /// <summary>
@@ -83,10 +109,13 @@ namespace RemoteViewing.Vnc.Server
         /// <returns><c>true</c> if authentication succeeded.</returns>
         public bool Accept(byte[] password)
         {
-            Throw.If.Null(password, "password");
+            if (password == null)
+            {
+                throw new ArgumentNullException(nameof(password));
+            }
 
             var response = new byte[16];
-            VncPasswordChallenge.GetChallengeResponse(this.challenge, password, response);
+            this.passwordChallenge.GetChallengeResponse(this.challenge, password, response);
             return this.Test(response);
         }
 
@@ -97,10 +126,13 @@ namespace RemoteViewing.Vnc.Server
         /// <returns><c>true</c> if authentication succeeded.</returns>
         public bool Accept(char[] password)
         {
-            Throw.If.Null(password, "password");
+            if (password == null)
+            {
+                throw new ArgumentNullException(nameof(password));
+            }
 
             var response = new byte[16];
-            VncPasswordChallenge.GetChallengeResponse(this.challenge, password, response);
+            this.passwordChallenge.GetChallengeResponse(this.challenge, password, response);
             return this.Test(response);
         }
 

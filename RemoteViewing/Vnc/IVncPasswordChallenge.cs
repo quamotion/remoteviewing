@@ -1,7 +1,8 @@
 ﻿#region License
 /*
-RemoteViewing VNC Client/Server Library for .NET
+RemoteViewing VNC Client/Server Library for .
 Copyright (c) 2013 James F. Bellinger <http://www.zer7.com/software/remoteviewing>
+Copyright (c) 2017 Frederik Carlier <http://github.com/qmfrederik/remoteviewing>
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -26,46 +27,47 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 #endregion
 
-using System.ComponentModel;
-
-namespace RemoteViewing.Vnc.Server
+namespace RemoteViewing.Vnc
 {
     /// <summary>
-    /// Provides data for the <see cref="VncServerSession.FramebufferUpdating"/> event.
+    /// A common interface for classes which implement the VNC password challenge protocol.
     /// </summary>
-    public class FramebufferUpdatingEventArgs
-#if !NETSTANDARD1_5
-        : HandledEventArgs
-#endif
+    public interface IVncPasswordChallenge
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="FramebufferUpdatingEventArgs"/> class.
+        /// Generates a 16-byte challenge.
         /// </summary>
-        public FramebufferUpdatingEventArgs()
-        {
-        }
-
-#if NETSTANDARD1_5
-        /// <summary>
-        /// Gets or sets a value indicating whether the event is handled.
-        /// </summary>
-        public bool Handled
-        {
-            get;
-            set;
-        }
-#endif
+        /// <returns>
+        /// A <see cref="byte"/> array which contains the 16-byte challenge.
+        /// </returns>
+        byte[] GenerateChallenge();
 
         /// <summary>
-        /// Gets or sets a value indicating whether you send an update in response to this event.
+        /// Calculates a response for a password challenge, using a password.
         /// </summary>
-        /// <value>
-        /// Set this to <c>true</c> if you send an update in response to this event.
-        /// </value>
-        public bool SentChanges
-        {
-            get;
-            set;
-        }
+        /// <param name="challenge">
+        /// The challenge received from the server.
+        /// </param>
+        /// <param name="password">
+        /// The password to encrypt the challenge with.
+        /// </param>
+        /// <param name="response">
+        /// The response to send back to the server.
+        /// </param>
+        void GetChallengeResponse(byte[] challenge, char[] password, byte[] response);
+
+        /// <summary>
+        /// Calculates a response for a password challenge, using a password.
+        /// </summary>
+        /// <param name="challenge">
+        /// The challenge received from the server.
+        /// </param>
+        /// <param name="password">
+        /// The password to encrypt the challenge with.
+        /// </param>
+        /// <param name="response">
+        /// The response to send back to the server.
+        /// </param>
+        void GetChallengeResponse(byte[] challenge, byte[] password, byte[] response);
     }
 }

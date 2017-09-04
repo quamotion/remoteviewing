@@ -41,6 +41,7 @@ namespace RemoteViewing.Vnc
     /// </summary>
     public partial class VncClient : IDisposable
     {
+        private readonly IVncPasswordChallenge passwordChallenge;
         private VncStream c = new VncStream();
         private VncClientConnectOptions options;
         private double maxUpdateRate;
@@ -51,7 +52,24 @@ namespace RemoteViewing.Vnc
         /// Initializes a new instance of the <see cref="VncClient"/> class.
         /// </summary>
         public VncClient()
+            : this(new VncPasswordChallenge())
         {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="VncClient"/> class.
+        /// </summary>
+        /// <param name="passwordChallenge">
+        /// A <see cref="IVncPasswordChallenge"/> which can generate password challenges.
+        /// </param>
+        public VncClient(IVncPasswordChallenge passwordChallenge)
+        {
+            if (passwordChallenge == null)
+            {
+                throw new ArgumentNullException(nameof(passwordChallenge));
+            }
+
+            this.passwordChallenge = passwordChallenge;
             this.MaxUpdateRate = 15;
         }
 
@@ -592,7 +610,7 @@ namespace RemoteViewing.Vnc
                 using (new Utility.AutoClear(challenge))
                 using (new Utility.AutoClear(response))
                 {
-                    VncPasswordChallenge.GetChallengeResponse(challenge, this.options.Password, response);
+                    this.passwordChallenge.GetChallengeResponse(challenge, this.options.Password, response);
                     this.c.Send(response);
                 }
             }
