@@ -34,7 +34,7 @@ namespace RemoteViewing.Vnc.Server
     /// Provides data for the <see cref="VncServerSession.FramebufferUpdating"/> event.
     /// </summary>
     public class FramebufferUpdatingEventArgs
-#if !CORECLR
+#if !NETSTANDARD1_5
         : HandledEventArgs
 #endif
     {
@@ -45,7 +45,7 @@ namespace RemoteViewing.Vnc.Server
         {
         }
 
-#if CORECLR
+#if NETSTANDARD1_5
         /// <summary>
         /// Gets or sets a value indicating whether the event is handled.
         /// </summary>

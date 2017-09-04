@@ -97,14 +97,14 @@ namespace RemoteViewing.Vnc
                     key[i] = ReverseBits(key[i]);
                 }
 
-#if !CORECLR
+#if !NETSTANDARD1_5
                 using (var des = new DESCryptoServiceProvider() { Key = key, Mode = CipherMode.ECB })
                 using (var encryptor = des.CreateEncryptor())
                 {
                     encryptor.TransformBlock(challenge, 0, 16, response, 0);
                 }
 #else
-                throw new NotImplementedException("DES encryption is currently not supported on .NET Core");
+                throw new NotImplementedException("DES encryption is not supported on .NET Core 1.x");
 #endif
             }
         }
