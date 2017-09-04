@@ -26,6 +26,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 #endregion
 
+#if !NETSTANDARD1_5
 using RemoteViewing.Vnc;
 using System;
 using System.Collections.Generic;
@@ -611,3 +612,4 @@ namespace RemoteViewing.Windows.Forms
         }
     }
 }
+#endif
