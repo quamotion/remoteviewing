@@ -42,7 +42,7 @@ namespace RemoteViewing.Vnc.Server
         // dividing the framebuffer in blocks of 32x32 and are invalidating them one at a time.
         private const int TileSize = 64;
 
-        private static readonly ILog Logger = LogProvider.GetLogger(nameof(VncServerSession));
+        private readonly ILog logger;
 
         private readonly bool[] isLineInvalid;
 
@@ -57,12 +57,20 @@ namespace RemoteViewing.Vnc.Server
         /// <param name="framebuffer">
         /// The <see cref="VncFramebuffer"/> to cache.
         /// </param>
-        public VncFramebufferCache(VncFramebuffer framebuffer)
+        /// <param name="logger">
+        /// The <see cref="ILog"/> logger to use when logging diagnostic messages.
+        /// </param>
+        public VncFramebufferCache(VncFramebuffer framebuffer, ILog logger)
         {
-            Throw.If.Null(framebuffer, "framebuffer");
+            if (framebuffer == null)
+            {
+                throw new ArgumentNullException(nameof(framebuffer));
+            }
+
             this.Framebuffer = framebuffer;
             this.cachedFramebuffer = new VncFramebuffer(framebuffer.Name, framebuffer.Width, framebuffer.Height, framebuffer.PixelFormat);
 
+            this.logger = logger;
             this.isLineInvalid = new bool[this.Framebuffer.Height];
         }
 
@@ -100,7 +108,7 @@ namespace RemoteViewing.Vnc.Server
             var region = fbr.Region;
             int bpp = fb.PixelFormat.BytesPerPixel;
 
-            Logger.Debug($"Responding to an update request for region {region}.");
+            this.logger?.Log(LogLevel.Debug, () => $"Responding to an update request for region {region}.");
 
             session.FramebufferManualBeginUpdate();
 
