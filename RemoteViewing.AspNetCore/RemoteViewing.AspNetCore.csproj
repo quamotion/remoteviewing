@@ -20,6 +20,6 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.WebSockets.Server" Version="0.1.0" />
-    <PackageReference Include="Nito.AsyncEx" Version="5.0.0-pre-02" />
+    <PackageReference Include="Nito.AsyncEx" Version="5.0.0-pre-04" />
   </ItemGroup>
 </Project>
