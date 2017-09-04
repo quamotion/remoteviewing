@@ -44,11 +44,11 @@ namespace RemoteViewing.AspNetCore
                     this.logger.LogInformation(messageFunc(), formatParameters);
                     return true;
 
-                case VncLogLevel.Trace;
+                case VncLogLevel.Trace:
                     this.logger.LogTrace(messageFunc(), formatParameters);
                     return true;
 
-                case VncLogLevel.Warn;
+                case VncLogLevel.Warn:
                     this.logger.LogWarning(messageFunc(), formatParameters);
                     return true;
             }
