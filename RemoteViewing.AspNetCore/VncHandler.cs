@@ -61,6 +61,11 @@ namespace RemoteViewing.AspNetCore
             {
                 this.Vnc.PointerChanged += vncContext.RemoteController.HandleTouchEvent;
             }
+
+            if (vncContext.RemoteKeyboard != null)
+            {
+                this.Vnc.KeyChanged += vncContext.RemoteKeyboard.HandleKeyEvent;
+            }
         }
 
         /// <summary>
