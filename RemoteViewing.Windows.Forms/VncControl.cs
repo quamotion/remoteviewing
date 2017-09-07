@@ -57,7 +57,7 @@ namespace RemoteViewing.Windows.Forms
         private Bitmap bitmap;
         private VncClient client;
         private string expectedClipboard = string.Empty;
-        private HashSet<int> keysyms = new HashSet<int>();
+        private HashSet<KeySym> keysyms = new HashSet<KeySym>();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="VncControl"/> class.
@@ -457,7 +457,7 @@ namespace RemoteViewing.Windows.Forms
             }
         }
 
-        private void SendKeyUpdate(int keysym, bool pressed)
+        private void SendKeyUpdate(KeySym keysym, bool pressed)
         {
             if (this.client != null && this.AllowInput)
             {
@@ -525,7 +525,7 @@ namespace RemoteViewing.Windows.Forms
 
         private void VncControl_KeyDown(object sender, KeyEventArgs e)
         {
-            int keysym = VncKeysym.FromKeyCode(e.KeyCode);
+            var keysym = VncKeysym.FromKeyCode(e.KeyCode);
             if (keysym < 0)
             {
                 return;
@@ -537,7 +537,7 @@ namespace RemoteViewing.Windows.Forms
 
         private void VncControl_KeyUp(object sender, KeyEventArgs e)
         {
-            int keysym = VncKeysym.FromKeyCode(e.KeyCode);
+            var keysym = VncKeysym.FromKeyCode(e.KeyCode);
             if (keysym < 0)
             {
                 return;
