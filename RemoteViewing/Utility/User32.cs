@@ -15,8 +15,8 @@ namespace RemoteViewing.Utility
         /// <param name="dy">Y-coordinate</param>
         /// <param name="dwData">Data</param>
         /// <param name="dwExtraInfo">Extra info for X buttons</param>
-        [DllImport("user32.dll")]
-        public static extern void mouse_event(int dwFlags, int dx, int dy, int dwData, int dwExtraInfo);
+        [DllImport("user32.dll", EntryPoint = "mouse_event")]
+        public static extern void MouseEvent(int dwFlags, int dx, int dy, int dwData, int dwExtraInfo);
 
         /// <summary>
         /// Function that sets the position of the pointer.

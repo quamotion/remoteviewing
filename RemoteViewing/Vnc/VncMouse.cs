@@ -137,7 +137,7 @@ namespace RemoteViewing.Vnc.Server
             {
                 this.x11MouseState = this.SetButtonDown(this.x11MouseState, X11MouseEventFlags.LEFTDOWN);
 
-                User32.mouse_event((int)WinApiMouseEventFlags.LEFTDOWN, 0, 0, 0, 0);
+                User32.MouseEvent((int)WinApiMouseEventFlags.LEFTDOWN, 0, 0, 0, 0);
             }
 
             // Case left button released
@@ -146,7 +146,7 @@ namespace RemoteViewing.Vnc.Server
             {
                 this.x11MouseState = this.SetButtonUp(this.x11MouseState, X11MouseEventFlags.LEFTDOWN);
 
-                User32.mouse_event((int)WinApiMouseEventFlags.LEFTUP, 0, 0, 0, 0);
+                User32.MouseEvent((int)WinApiMouseEventFlags.LEFTUP, 0, 0, 0, 0);
             }
 
             // Case left button pressed
@@ -155,7 +155,7 @@ namespace RemoteViewing.Vnc.Server
             {
                 this.x11MouseState = this.SetButtonDown(this.x11MouseState, X11MouseEventFlags.RIGHTDOWN);
 
-                User32.mouse_event((int)WinApiMouseEventFlags.RIGHTDOWN, 0, 0, 0, 0);
+                User32.MouseEvent((int)WinApiMouseEventFlags.RIGHTDOWN, 0, 0, 0, 0);
             }
 
             // Case left button released
@@ -164,7 +164,7 @@ namespace RemoteViewing.Vnc.Server
             {
                 this.x11MouseState = this.SetButtonUp(this.x11MouseState, X11MouseEventFlags.RIGHTDOWN);
 
-                User32.mouse_event((int)WinApiMouseEventFlags.RIGHTUP, 0, 0, 0, 0);
+                User32.MouseEvent((int)WinApiMouseEventFlags.RIGHTUP, 0, 0, 0, 0);
             }
 
             // Case middle button pressed
@@ -173,7 +173,7 @@ namespace RemoteViewing.Vnc.Server
             {
                 this.x11MouseState = this.SetButtonDown(this.x11MouseState, X11MouseEventFlags.MIDDLEDOWN);
 
-                User32.mouse_event((int)WinApiMouseEventFlags.MIDDLEDOWN, 0, 0, 0, 0);
+                User32.MouseEvent((int)WinApiMouseEventFlags.MIDDLEDOWN, 0, 0, 0, 0);
             }
 
             // Case middle button released
@@ -182,19 +182,19 @@ namespace RemoteViewing.Vnc.Server
             {
                 this.x11MouseState = this.SetButtonUp(this.x11MouseState, X11MouseEventFlags.MIDDLEDOWN);
 
-                User32.mouse_event((int)WinApiMouseEventFlags.MIDDLEUP, 0, 0, 0, 0);
+                User32.MouseEvent((int)WinApiMouseEventFlags.MIDDLEUP, 0, 0, 0, 0);
             }
 
             // Case scroll up
             if (this.IsButtonDown(newState, X11MouseEventFlags.SCROLLDOWN))
             {
-                User32.mouse_event((int)WinApiMouseEventFlags.WHEEL, 0, 0, 120, 0);
+                User32.MouseEvent((int)WinApiMouseEventFlags.WHEEL, 0, 0, 120, 0);
             }
 
             // Case scroll down
             if (this.IsButtonDown(newState, X11MouseEventFlags.SCROLLUP))
             {
-                User32.mouse_event((int)WinApiMouseEventFlags.WHEEL, 0, 0, -120, 0);
+                User32.MouseEvent((int)WinApiMouseEventFlags.WHEEL, 0, 0, -120, 0);
             }
         }
 
