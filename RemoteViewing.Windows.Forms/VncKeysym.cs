@@ -27,6 +27,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #endregion
 
 #if !NETSTANDARD1_5
+using RemoteViewing.Vnc;
 using System;
 using System.Windows.Forms;
 
@@ -45,51 +46,51 @@ namespace RemoteViewing.Windows.Forms
         /// </summary>
         /// <param name="key">The key.</param>
         /// <returns>The keysym.</returns>
-        public static int FromKeyCode(Keys key)
+        public static KeySym FromKeyCode(Keys key)
         {
             switch (key)
             {
-                case Keys.Back: return 0xff08;
-                case Keys.Tab: return 0xff09;
-                case Keys.Enter: return 0xff0d;
-                case Keys.Escape: return 0xff1b;
-                case Keys.Insert: return 0xff63;
-                case Keys.Delete: return 0xffff;
-                case Keys.Home: return 0xff50;
-                case Keys.End: return 0xff57;
-                case Keys.PageUp: return 0xff55;
-                case Keys.PageDown: return 0xff56;
-                case Keys.Left: return 0xff51;
-                case Keys.Up: return 0xff52;
-                case Keys.Right: return 0xff53;
-                case Keys.Down: return 0xff54;
-                case Keys.F1: return 0xffbe;
-                case Keys.F2: return 0xffbf;
-                case Keys.F3: return 0xffc0;
-                case Keys.F4: return 0xffc1;
-                case Keys.F5: return 0xffc2;
-                case Keys.F6: return 0xffc3;
-                case Keys.F7: return 0xffc4;
-                case Keys.F8: return 0xffc5;
-                case Keys.F9: return 0xffc6;
-                case Keys.F10: return 0xffc7;
-                case Keys.F11: return 0xffc8;
-                case Keys.F12: return 0xffc9;
-                case Keys.F13: return 0xffca;
-                case Keys.F14: return 0xffcb;
-                case Keys.F15: return 0xffcc;
-                case Keys.F16: return 0xffcd;
-                case Keys.F17: return 0xffce;
-                case Keys.F18: return 0xffcf;
-                case Keys.F19: return 0xffd0;
-                case Keys.F20: return 0xffd1;
-                case Keys.F21: return 0xffd2;
-                case Keys.F22: return 0xffd3;
-                case Keys.F23: return 0xffd4;
-                case Keys.F24: return 0xffd5;
-                case Keys.ShiftKey: return 0xffe2;
-                case Keys.ControlKey: return 0xffe4;
-                case Keys.Menu: return 0xffea;
+                case Keys.Back: return KeySym.Backspace;
+                case Keys.Tab: return KeySym.Tab;
+                case Keys.Enter: return KeySym.Return;
+                case Keys.Escape: return KeySym.Escape;
+                case Keys.Insert: return KeySym.Insert;
+                case Keys.Delete: return KeySym.Delete;
+                case Keys.Home: return KeySym.Home;
+                case Keys.End: return KeySym.End;
+                case Keys.PageUp: return KeySym.PageUp;
+                case Keys.PageDown: return KeySym.PageDown;
+                case Keys.Left: return KeySym.Left;
+                case Keys.Up: return KeySym.Up;
+                case Keys.Right: return KeySym.Right;
+                case Keys.Down: return KeySym.Down;
+                case Keys.F1: return KeySym.F1;
+                case Keys.F2: return KeySym.F2;
+                case Keys.F3: return KeySym.F3;
+                case Keys.F4: return KeySym.F4;
+                case Keys.F5: return KeySym.F5;
+                case Keys.F6: return KeySym.F6;
+                case Keys.F7: return KeySym.F7;
+                case Keys.F8: return KeySym.F8;
+                case Keys.F9: return KeySym.F9;
+                case Keys.F10: return KeySym.F10;
+                case Keys.F11: return KeySym.F11;
+                case Keys.F12: return KeySym.F12;
+                case Keys.F13: return KeySym.F13;
+                case Keys.F14: return KeySym.F14;
+                case Keys.F15: return KeySym.F15;
+                case Keys.F16: return KeySym.F16;
+                case Keys.F17: return KeySym.F17;
+                case Keys.F18: return KeySym.F18;
+                case Keys.F19: return KeySym.F19;
+                case Keys.F20: return KeySym.F20;
+                case Keys.F21: return KeySym.F21;
+                case Keys.F22: return KeySym.F22;
+                case Keys.F23: return KeySym.F23;
+                case Keys.F24: return KeySym.F24;
+                case Keys.ShiftKey: return KeySym.ShiftRight;
+                case Keys.ControlKey: return KeySym.ControlRight;
+                case Keys.Menu: return KeySym.AltRight;
                 /* <-- It appears Windows Forms doesn't send LShiftKey and RShiftKey. Instead it only sends ShiftKey...
                 case Keys.LShiftKey: return 0xffe1;
                 case Keys.RShiftKey: return 0xffe2;
@@ -98,35 +99,61 @@ namespace RemoteViewing.Windows.Forms
                 case Keys.LMenu: return 0xffe9;
                 case Keys.RMenu: return 0xffea;
                 */
-                case Keys.OemOpenBrackets: return 0x005b;
-                case Keys.OemCloseBrackets: return 0x005d;
-                case (Keys)220: return 0x005c;
-                case Keys.Oemcomma: return 0x002c;
-                case Keys.OemPeriod: return 0x002e;
-                case Keys.OemSemicolon: return 0x003b;
-                case Keys.OemQuestion: return 0x002f;
+                case Keys.OemOpenBrackets: return KeySym.BracketLeft;
+                case Keys.OemCloseBrackets: return KeySym.Bracketright;
+                case (Keys)220: return KeySym.Backslash;
+                case Keys.Oemcomma: return KeySym.Comma;
+                case Keys.OemPeriod: return KeySym.Period;
+                case Keys.OemSemicolon: return KeySym.Semicolon;
+                case Keys.OemQuestion: return KeySym.Question;
                 case Keys.OemMinus:
-                case Keys.Subtract: return 0x002d;
+                case Keys.Subtract: return KeySym.Minus;
                 case Keys.Oemplus:
-                case Keys.Add: return 0x002b;
-                case Keys.OemQuotes: return 0x0027;
-                case Keys.Oemtilde: return 0x0060;
-                case Keys.Pause: return 0xff13;
-                case Keys.Scroll: return 0xff14;
-                case Keys.PrintScreen: return 0xff15;
-                case Keys.NumPad0: return 0xffb0;
-                case Keys.NumPad1: return 0xffb1;
-                case Keys.NumPad2: return 0xffb2;
-                case Keys.NumPad3: return 0xffb3;
-                case Keys.NumPad4: return 0xffb4;
-                case Keys.NumPad5: return 0xffb5;
-                case Keys.NumPad6: return 0xffb6;
-                case Keys.NumPad7: return 0xffb7;
-                case Keys.NumPad8: return 0xffb8;
-                case Keys.NumPad9: return 0xffb9;
+                case Keys.Add: return KeySym.Plus;
+                case Keys.OemQuotes: return KeySym.Apostrophe;
+                case Keys.Oemtilde: return KeySym.AsciiTilde;
+                case Keys.Pause: return KeySym.Pause;
+                case Keys.Scroll: return KeySym.ScrollLock;
+                case Keys.PrintScreen: return KeySym.Print;
+                case Keys.NumPad0: return KeySym.NumPad0;
+                case Keys.NumPad1: return KeySym.NumPad1;
+                case Keys.NumPad2: return KeySym.NumPad2;
+                case Keys.NumPad3: return KeySym.NumPad3;
+                case Keys.NumPad4: return KeySym.NumPad4;
+                case Keys.NumPad5: return KeySym.NumPad5;
+                case Keys.NumPad6: return KeySym.NumPad6;
+                case Keys.NumPad7: return KeySym.NumPad7;
+                case Keys.NumPad8: return KeySym.NumPad8;
+                case Keys.NumPad9: return KeySym.NumPad9;
+                case Keys.A: return KeySym.A;
+                case Keys.B: return KeySym.B;
+                case Keys.C: return KeySym.C;
+                case Keys.D: return KeySym.D;
+                case Keys.E: return KeySym.E;
+                case Keys.F: return KeySym.F;
+                case Keys.G: return KeySym.G;
+                case Keys.H: return KeySym.H;
+                case Keys.I: return KeySym.I;
+                case Keys.J: return KeySym.J;
+                case Keys.K: return KeySym.K;
+                case Keys.L: return KeySym.L;
+                case Keys.M: return KeySym.M;
+                case Keys.N: return KeySym.N;
+                case Keys.O: return KeySym.O;
+                case Keys.P: return KeySym.P;
+                case Keys.Q: return KeySym.Q;
+                case Keys.R: return KeySym.R;
+                case Keys.S: return KeySym.S;
+                case Keys.T: return KeySym.T;
+                case Keys.U: return KeySym.U;
+                case Keys.V: return KeySym.V;
+                case Keys.W: return KeySym.W;
+                case Keys.X: return KeySym.X;
+                case Keys.Y: return KeySym.Y;
+                case Keys.Z: return KeySym.Z;
                 default:
                     // TODO: This is wildly incomplete.
-                    return (int)key;
+                    return (KeySym)key;
             }
         }
     }
