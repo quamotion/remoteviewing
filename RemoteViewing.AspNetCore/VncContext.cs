@@ -20,6 +20,16 @@ namespace RemoteViewing.AspNetCore
         }
 
         /// <summary>
+        /// Gets or sets the a function which creates a new <see cref="IVncFramebufferCache"/> for use with
+        /// the <see cref="FramebufferSource"/>.
+        /// </summary>
+        public Func<VncFramebuffer, ILog, IVncFramebufferCache> CreateFramebufferCache
+        {
+            get;
+            set;
+        }
+
+        /// <summary>
         /// Gets or sets the <see cref="IVncRemoteController"/> which allows you to remotely control the VNC server.
         /// </summary>
         public IVncRemoteController RemoteController
