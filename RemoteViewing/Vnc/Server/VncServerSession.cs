@@ -896,7 +896,7 @@ namespace RemoteViewing.Vnc.Server
         {
             var pressed = this.c.ReceiveByte() != 0;
             this.c.Receive(2);
-            var keysym = (int)this.c.ReceiveUInt32BE();
+            var keysym = (KeySym)this.c.ReceiveUInt32BE();
 
             this.OnKeyChanged(new KeyChangedEventArgs(keysym, pressed));
         }

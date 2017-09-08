@@ -40,7 +40,8 @@ namespace RemoteViewing.Vnc
         /// </summary>
         /// <param name="keysym">The X11 keysym of the key. For many keys this is the ASCII value.</param>
         /// <param name="pressed"><c>true</c> for a key press event, or <c>false</c> for a key release event.</param>
-        public KeyChangedEventArgs(int keysym, bool pressed)
+        [CLSCompliant(false)]
+        public KeyChangedEventArgs(KeySym keysym, bool pressed)
         {
             this.Keysym = keysym;
             this.Pressed = pressed;
@@ -49,7 +50,8 @@ namespace RemoteViewing.Vnc
         /// <summary>
         /// Gets the X11 keysym of the key. For many keys this is the ASCII value.
         /// </summary>
-        public int Keysym
+        [CLSCompliant(false)]
+        public KeySym Keysym
         {
             get;
             private set;
