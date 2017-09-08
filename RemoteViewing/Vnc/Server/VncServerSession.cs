@@ -51,7 +51,7 @@ namespace RemoteViewing.Vnc.Server
         private int clientHeight;
         private Version clientVersion;
         private VncServerSessionOptions options;
-        private VncFramebufferCache fbuAutoCache;
+        private IVncFramebufferCache fbuAutoCache;
         private List<Rectangle> fbuRectangles = new List<Rectangle>();
         private object fbuSync = new object();
         private IVncFramebufferSource fbSource;
@@ -238,6 +238,13 @@ namespace RemoteViewing.Vnc.Server
             get;
             set;
         }
+
+        /// <summary>
+        /// Gets or sets a function which initializes a new <see cref="IVncFramebufferCache"/> for use by
+        /// this <see cref="VncServerSession"/>.
+        /// </summary>
+        public Func<VncFramebuffer, ILog, IVncFramebufferCache> CreateFramebufferCache
+        { get; set; } = (framebuffer, log) => new VncFramebufferCache(framebuffer, log);
 
         /// <summary>
         /// Closes the connection with the remote client.
@@ -944,7 +951,7 @@ namespace RemoteViewing.Vnc.Server
                     {
                         if (this.fbuAutoCache == null || this.fbuAutoCache.Framebuffer != this.Framebuffer)
                         {
-                            this.fbuAutoCache = new VncFramebufferCache(this.Framebuffer, this.logger);
+                            this.fbuAutoCache = this.CreateFramebufferCache(this.Framebuffer, this.logger);
                         }
 
                         e.Handled = true;

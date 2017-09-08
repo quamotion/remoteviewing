@@ -49,6 +49,11 @@ namespace RemoteViewing.AspNetCore
             this.Socket = socket;
             this.Vnc = new VncServerSession(vncContext.PasswordChallenge ?? new VncPasswordChallenge(), vncContext.Logger);
 
+            if (vncContext.CreateFramebufferCache != null)
+            {
+                this.Vnc.CreateFramebufferCache = vncContext.CreateFramebufferCache;
+            }
+
             this.VncContext.SessionConfiguration?.Invoke(this.Vnc);
 
             this.Vnc.Connected += this.OnConnected;

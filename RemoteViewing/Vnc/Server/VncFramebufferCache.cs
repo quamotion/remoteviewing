@@ -28,7 +28,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 using RemoteViewing.Logging;
 using System;
-using System.Runtime.InteropServices;
 
 namespace RemoteViewing.Vnc.Server
 {
@@ -36,7 +35,7 @@ namespace RemoteViewing.Vnc.Server
     /// Caches the <see cref="VncFramebuffer"/> pixel data and updates them as new
     /// <see cref="VncFramebuffer"/> commands are received.
     /// </summary>
-    internal sealed class VncFramebufferCache
+    internal sealed class VncFramebufferCache : IVncFramebufferCache
     {
         // The size of the tiles which will be invalidated. So we're basically
         // dividing the framebuffer in blocks of 32x32 and are invalidating them one at a time.
