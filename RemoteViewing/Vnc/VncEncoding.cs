@@ -329,6 +329,40 @@ namespace RemoteViewing.Vnc
         /// level 0 is low JPEG quality.
         /// </summary>
         /// <seealso href="https://github.com/rfbproto/rfbproto/blob/master/rfbproto.rst#jpeg-quality-level-pseudo-encoding"/>
-        TightQualityLevel0 = -32
+        TightQualityLevel0 = -32,
+
+        /// <summary>
+        /// When the client indicates support for the Tight PNG encoding, the server will use Tight, but will always send
+        /// encoding pixels using PNG instead of basic compression and indexed tight filters. This means the client does not
+        /// have to handle raw zlib data.
+        /// If the client indicates JPEG support by sending a JPEG quality pseudo-encoding, then the server can send JPEG,
+        /// because PNG will only replace the basic compression type used in normal tight.
+        /// </summary>
+        TightPng = -260,
+
+        /// <summary>
+        /// <para>
+        /// A client which requests the <see cref="ExtendedDesktopSize"/>pseudo-encoding is declaring that it is capable of coping with a
+        /// change in the framebuffer width, height, and/or screen configuration. This encoding is used in conjunction with the
+        /// SetDesktopSize message. If a server supports the <see cref="ExtendedDesktopSize"/> encoding, it must also have basic support for
+        /// the SetDesktopSize message although it may deny all requests to change the screen layout.
+        /// </para>
+        /// <para>
+        /// The <see cref="ExtendedDesktopSize"/> pseudo-encoding is designed to replace the simpler DesktopSize one. Servers and clients should
+        /// support both for maximum compatibility, but a server must only send the extended version to a client asking for both.
+        /// The semantics of DesktopSize are not as well-defined as for <see cref="ExtendedDesktopSize"/> and handling both at the same time
+        /// would require needless complexity in the client.
+        /// </para>
+        /// </summary>
+        /// <seealso href="https://github.com/rfbproto/rfbproto/blob/master/rfbproto.rst#extendeddesktopsize-pseudo-encoding"/>
+        ExtendedDesktopSize = -308,
+
+        /// <summary>
+        /// A client which requests the xvp pseudo-encoding is declaring that it wishes to use the xvp extension. If the server
+        /// supports this, it replies with a message of type xvp Server Message, using an xvp-message-code of XVP_INIT. This
+        /// informs the client that it may then subsequently send messages of type xvp Client Message.
+        /// </summary>
+        /// <seealso href="https://github.com/rfbproto/rfbproto/blob/master/rfbproto.rst#xvp-pseudo-encoding"/>
+        Xvp = -309
     }
 }
