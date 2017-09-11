@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Http;
+using RemoteViewing.Vnc.Server;
 using System;
 using System.Threading.Tasks;
 
@@ -7,7 +8,7 @@ namespace RemoteViewing.AspNetCore
     /// <summary>
     /// The middleware which handles noVNC connections.
     /// </summary>
-    public class VncMiddleware
+    public class VncMiddleware<T> where T : VncServerSession, new()
     {
         private readonly RequestDelegate next;
         private Func<HttpContext, VncContext> vncContextFactory;
@@ -59,7 +60,7 @@ namespace RemoteViewing.AspNetCore
             {
                 var socket = await context.WebSockets.AcceptWebSocketAsync("binary").ConfigureAwait(false);
 
-                VncHandler sockethandler = new VncHandler(socket, vncContext);
+                VncHandler<T> sockethandler = new VncHandler<T>(socket, vncContext);
                 await sockethandler.Listen().ConfigureAwait(false);
             }
         }

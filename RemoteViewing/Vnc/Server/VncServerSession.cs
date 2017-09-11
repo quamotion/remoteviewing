@@ -41,9 +41,8 @@ namespace RemoteViewing.Vnc.Server
     /// </summary>
     public class VncServerSession
     {
-        private readonly ILog logger;
-
-        private readonly IVncPasswordChallenge passwordChallenge;
+        private ILog logger;
+        private IVncPasswordChallenge passwordChallenge;
         private VncStream c = new VncStream();
         private VncEncoding[] clientEncoding = new VncEncoding[0];
         private VncPixelFormat clientPixelFormat;
@@ -179,6 +178,36 @@ namespace RemoteViewing.Vnc.Server
         {
             get;
             private set;
+        }
+
+        /// <summary>
+        /// Gets or sets the <see cref="IVncPasswordChallenge"/> to use when authenticating clients.
+        /// </summary>
+        public IVncPasswordChallenge PasswordChallenge
+        {
+            get
+            {
+                return this.passwordChallenge;
+            }
+
+            set
+            {
+                if (this.securityNegotiated)
+                {
+                    throw new InvalidOperationException("You cannot change the password challenge once the security has been negotiated");
+                }
+
+                this.passwordChallenge = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the <see cref="ILog"/> logger to use when logging.
+        /// </summary>
+        public ILog Logger
+        {
+            get { return this.logger; }
+            set { this.logger = value; }
         }
 
         /// <summary>
@@ -767,6 +796,8 @@ namespace RemoteViewing.Vnc.Server
             this.logger?.Log(LogLevel.Info, () => supportedMethods);
         }
 
+        private bool securityNegotiated = false;
+
         private void NegotiateSecurity(AuthenticationMethod[] methods)
         {
             this.logger?.Log(LogLevel.Info, () => "Negotiating security");
@@ -812,6 +843,7 @@ namespace RemoteViewing.Vnc.Server
                               VncFailureReason.AuthenticationFailed);
 
             this.logger?.Log(LogLevel.Info, () => "The user authenticated successfully.");
+            this.securityNegotiated = true;
         }
 
         private void NegotiateDesktop()

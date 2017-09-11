@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using RemoteViewing.Vnc.Server;
 using System;
 
 namespace RemoteViewing.AspNetCore
@@ -31,7 +32,7 @@ namespace RemoteViewing.AspNetCore
         {
             return app
                 .UseWebSockets()
-                .Map(path, a => a.UseMiddleware<VncMiddleware>(vncContextFactory));
+                .Map(path, a => a.UseMiddleware<VncMiddleware<VncServerSession>>(vncContextFactory));
         }
     }
 }
