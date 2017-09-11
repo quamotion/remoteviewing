@@ -50,6 +50,6 @@ namespace RemoteViewing.Vnc.Server
         /// <see langword="true"/> if the operation completed successfully; otherwise,
         /// <see langword="false"/>.
         /// </returns>
-        bool RespondToUpdateRequest(VncServerSession session);
+        bool RespondToUpdateRequest(IVncServerSession session);
     }
 }

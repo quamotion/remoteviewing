@@ -29,7 +29,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 using RemoteViewing.Logging;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -39,7 +38,7 @@ namespace RemoteViewing.Vnc.Server
     /// <summary>
     /// Serves a VNC client with framebuffer information and receives keyboard and mouse interactions.
     /// </summary>
-    public class VncServerSession
+    public class VncServerSession : IVncServerSession
     {
         private ILog logger;
         private IVncPasswordChallenge passwordChallenge;
@@ -58,6 +57,7 @@ namespace RemoteViewing.Vnc.Server
         private Utility.PeriodicThread requester;
         private object specialSync = new object();
         private Thread threadMain;
+        private bool securityNegotiated = false;
 #if DEFLATESTREAM_FLUSH_WORKS
         MemoryStream _zlibMemoryStream;
         DeflateStream _zlibDeflater;
@@ -170,10 +170,7 @@ namespace RemoteViewing.Vnc.Server
             private set;
         }
 
-        /// <summary>
-        /// Gets information about the client's most recent framebuffer update request.
-        /// This may be <see langword="null"/> if the client has no framebuffer request queued.
-        /// </summary>
+        /// <inheritdoc/>
         public FramebufferUpdateRequest FramebufferUpdateRequest
         {
             get;
@@ -365,11 +362,7 @@ namespace RemoteViewing.Vnc.Server
             this.requester.Signal();
         }
 
-        /// <summary>
-        /// Begins a manual framebuffer update.
-        ///
-        /// Do not call this method without holding <see cref="VncServerSession.FramebufferUpdateRequestLock"/>.
-        /// </summary>
+        /// <inheritdoc/>
         public void FramebufferManualBeginUpdate()
         {
             this.fbuRectangles.Clear();
@@ -415,22 +408,13 @@ namespace RemoteViewing.Vnc.Server
             this.AddRegion(target, VncEncoding.CopyRect, contents);
         }
 
-        /// <summary>
-        /// Queues an update for the entire framebuffer.
-        ///
-        /// Do not call this method without holding <see cref="VncServerSession.FramebufferUpdateRequestLock"/>.
-        /// </summary>
+        /// <inheritdoc/>
         public void FramebufferManualInvalidateAll()
         {
             this.FramebufferManualInvalidate(new VncRectangle(0, 0, this.Framebuffer.Width, this.Framebuffer.Height));
         }
 
-        /// <summary>
-        /// Queues an update for the specified region.
-        ///
-        /// Do not call this method without holding <see cref="VncServerSession.FramebufferUpdateRequestLock"/>.
-        /// </summary>
-        /// <param name="region">The region to invalidate.</param>
+        /// <inheritdoc/>
         public void FramebufferManualInvalidate(VncRectangle region)
         {
             var fb = this.Framebuffer;
@@ -482,12 +466,7 @@ namespace RemoteViewing.Vnc.Server
             }
         }
 
-        /// <summary>
-        /// Queues an update for each of the specified regions.
-        ///
-        /// Do not call this method without holding <see cref="VncServerSession.FramebufferUpdateRequestLock"/>.
-        /// </summary>
-        /// <param name="regions">The regions to invalidate.</param>
+        /// <inheritdoc/>
         public void FramebufferManualInvalidate(VncRectangle[] regions)
         {
             Throw.If.Null(regions, "regions");
@@ -497,16 +476,7 @@ namespace RemoteViewing.Vnc.Server
             }
         }
 
-        /// <summary>
-        /// Completes a manual framebuffer update.
-        /// </summary>
-        /// <returns>
-        /// <see langword="true"/> if the operation completed successfully; otherwise,
-        /// <see langword="false"/>.
-        /// </returns>
-        /// <remarks>
-        /// Do not call this method without holding <see cref="VncServerSession.FramebufferUpdateRequestLock"/>.
-        /// </remarks>
+        /// <inheritdoc/>s
         public bool FramebufferManualEndUpdate()
         {
             var fb = this.Framebuffer;
@@ -795,8 +765,6 @@ namespace RemoteViewing.Vnc.Server
             this.logger?.Log(LogLevel.Info, () => $"The client version is {this.clientVersion}");
             this.logger?.Log(LogLevel.Info, () => supportedMethods);
         }
-
-        private bool securityNegotiated = false;
 
         private void NegotiateSecurity(AuthenticationMethod[] methods)
         {
