@@ -92,7 +92,7 @@ namespace RemoteViewing.Vnc.Server
         /// <see langword="true"/> if the operation completed successfully; otherwise,
         /// <see langword="false"/>.
         /// </returns>
-        public unsafe bool RespondToUpdateRequest(VncServerSession session)
+        public unsafe bool RespondToUpdateRequest(IVncServerSession session)
         {
             VncRectangle subregion = default(VncRectangle);
 

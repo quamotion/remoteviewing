@@ -11,7 +11,7 @@ namespace RemoteViewing.AspNetCore
     /// <summary>
     /// Handles noVNC connections.
     /// </summary>
-    public class VncHandler
+    public class VncHandler<T> where T : VncServerSession, new()
     {
         /// <summary>
         /// This event will be reset when the conection with the client is lost, either because the client logged
@@ -47,7 +47,9 @@ namespace RemoteViewing.AspNetCore
 
             this.VncContext = vncContext;
             this.Socket = socket;
-            this.Vnc = new VncServerSession(vncContext.PasswordChallenge ?? new VncPasswordChallenge(), vncContext.Logger);
+            this.Vnc = new T();
+            this.Vnc.PasswordChallenge = vncContext.PasswordChallenge ?? new VncPasswordChallenge();
+            this.Vnc.Logger = vncContext.Logger;
 
             if (vncContext.CreateFramebufferCache != null)
             {
@@ -85,7 +87,7 @@ namespace RemoteViewing.AspNetCore
         /// <summary>
         /// Gets the current <see cref="VncServerSession"/>.
         /// </summary>
-        public VncServerSession Vnc
+        public T Vnc
         {
             get;
             private set;
