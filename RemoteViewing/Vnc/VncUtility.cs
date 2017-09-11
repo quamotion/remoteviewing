@@ -26,6 +26,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 #endregion
 
+using System.IO;
+
 namespace RemoteViewing.Vnc
 {
     /// <summary>
@@ -163,6 +165,38 @@ namespace RemoteViewing.Vnc
             buffer[offset + 1] = (byte)(value >> 16);
             buffer[offset + 2] = (byte)(value >> 8);
             buffer[offset + 3] = (byte)value;
+        }
+
+        /// <summary>
+        /// Encodes the specified <see cref="uint"/> value with a variable number of
+        /// bytes, and writes the encoded bytes to the specified writer.
+        /// </summary>
+        /// <param name="writer">
+        /// The <see cref="BinaryWriter"/> to write the encoded value to.
+        /// </param>
+        /// <param name="value">
+        /// The <see cref="uint"/> value to encode and write to the <paramref name="writer"/>.
+        /// </param>
+        public static byte[] EncodeUInt32VariableLength(int value)
+        {
+            using (MemoryStream stream = new MemoryStream())
+            {
+                bool first = true;
+                while (first || value > 0)
+                {
+                    first = false;
+                    byte lower7bits = (byte)(value & 0x7f);
+                    value >>= 7;
+                    if (value > 0)
+                    {
+                        lower7bits |= 128;
+                    }
+
+                    stream.WriteByte(lower7bits);
+                }
+
+                return stream.ToArray();
+            }
         }
     }
 }

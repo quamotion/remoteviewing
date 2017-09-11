@@ -29,9 +29,12 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 using RemoteViewing.Logging;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
+using System.Drawing;
+using System.Drawing.Imaging;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Threading;
 
 namespace RemoteViewing.Vnc.Server
@@ -59,10 +62,8 @@ namespace RemoteViewing.Vnc.Server
         private Utility.PeriodicThread requester;
         private object specialSync = new object();
         private Thread threadMain;
-#if DEFLATESTREAM_FLUSH_WORKS
-        MemoryStream _zlibMemoryStream;
-        DeflateStream _zlibDeflater;
-#endif
+        MemoryStream zlibMemoryStream;
+        DeflateStream zlibDeflater;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="VncServerSession"/> class.
@@ -426,28 +427,85 @@ namespace RemoteViewing.Vnc.Server
                 w * bpp,
                 cpf);
 
-#if DEFLATESTREAM_FLUSH_WORKS
-            if (_clientEncoding.Contains(VncEncoding.Zlib))
+            if (this.clientEncoding.Contains(VncEncoding.TightPng))
             {
-                _zlibMemoryStream.Position = 0;
-                _zlibMemoryStream.SetLength(0);
-                _zlibMemoryStream.Write(new byte[4], 0, 4);
-
-                if (_zlibDeflater == null)
+                using (Bitmap bitmap = new Bitmap(region.Width, region.Height, PixelFormat.Format32bppArgb))
+                using (MemoryStream pngStream = new MemoryStream())
+                using (MemoryStream encodedStream = new MemoryStream())
                 {
-                    _zlibMemoryStream.Write(new[] { (byte)120, (byte)218 }, 0, 2);
-                    _zlibDeflater = new DeflateStream(_zlibMemoryStream, CompressionMode.Compress, false);
+                    var bmpData = bitmap.LockBits(
+                        new System.Drawing.Rectangle(0, 0, region.Width, region.Height),
+                        ImageLockMode.WriteOnly,
+                        PixelFormat.Format32bppArgb);
+
+                    IntPtr ptr = bmpData.Scan0;
+
+                    // fill in rgbValues, e.g. with a for loop over an input array
+                    Marshal.Copy(contents, 0, ptr, contents.Length);
+                    bitmap.UnlockBits(bmpData);
+                    bitmap.Save(pngStream, ImageFormat.Png);
+                    pngStream.Position = 0;
+
+                    // First, write the comrpession-control byte indicating we're about to send JPEG data
+                    encodedStream.WriteByte((byte)TightCompcressionControl.PngCompression);
+                    var length = VncUtility.EncodeUInt32VariableLength((int)pngStream.Length);
+                    encodedStream.Write(length, 0, length.Length);
+                    pngStream.CopyTo(encodedStream);
+
+                    this.AddRegion(region, VncEncoding.Tight, encodedStream.ToArray());
+                }
+            }
+            else if (this.clientEncoding.Contains(VncEncoding.Tight))
+            {
+                using (Bitmap bitmap = new Bitmap(region.Width, region.Height, PixelFormat.Format32bppArgb))
+                using (MemoryStream jpegStream = new MemoryStream())
+                using (MemoryStream encodedStream = new MemoryStream())
+                {
+                    var bmpData = bitmap.LockBits(
+                        new System.Drawing.Rectangle(0, 0, region.Width, region.Height),
+                        ImageLockMode.WriteOnly,
+                        PixelFormat.Format32bppArgb);
+
+                    IntPtr ptr = bmpData.Scan0;
+
+                    // fill in rgbValues, e.g. with a for loop over an input array
+                    Marshal.Copy(contents, 0, ptr, contents.Length);
+                    bitmap.UnlockBits(bmpData);
+                    bitmap.Save(jpegStream, ImageFormat.Jpeg);
+                    jpegStream.Position = 0;
+
+                    // First, write the comrpession-control byte indicating we're about to send JPEG data
+                    encodedStream.WriteByte((byte)TightCompcressionControl.JpegCompression);
+                    var length = VncUtility.EncodeUInt32VariableLength((int)jpegStream.Length);
+                    encodedStream.Write(length, 0, length.Length);
+                    jpegStream.CopyTo(encodedStream);
+
+                    this.AddRegion(region, VncEncoding.Tight, encodedStream.ToArray());
+                }
+            }
+#if ZLIB_WORKS
+            else if (this.clientEncoding.Contains(VncEncoding.Zlib))
+            {
+                this.zlibMemoryStream.Position = 0;
+                this.zlibMemoryStream.SetLength(0);
+                this.zlibMemoryStream.Write(new byte[4], 0, 4);
+
+                if (this.zlibDeflater == null)
+                {
+                    this.zlibMemoryStream.Write(new[] { (byte)120, (byte)218 }, 0, 2);
+                    this.zlibDeflater = new DeflateStream(this.zlibMemoryStream, CompressionMode.Compress, false);
                 }
 
-                _zlibDeflater.Write(contents, 0, contents.Length);
-                _zlibDeflater.Flush();
-                contents = _zlibMemoryStream.ToArray();
+                this.zlibDeflater.Write(contents, 0, contents.Length);
+                this.zlibDeflater.Flush();
+                contents = this.zlibMemoryStream.ToArray();
+                this.zlibMemoryStream.SetLength(0);
 
                 VncUtility.EncodeUInt32BE(contents, 0, (uint)(contents.Length - 4));
-                AddRegion(region, VncEncoding.Zlib, contents);
+                this.AddRegion(region, VncEncoding.Zlib, contents);
             }
-            else
 #endif
+            else
             {
                 this.AddRegion(region, VncEncoding.Raw, contents);
             }
