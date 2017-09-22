@@ -26,7 +26,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 #endregion
 
-#if !NETSTANDARD1_5
+#if !NETSTANDARD1_5 && !NETCOREAPP2_0
 using RemoteViewing.Vnc;
 using System;
 using System.Windows.Forms;
