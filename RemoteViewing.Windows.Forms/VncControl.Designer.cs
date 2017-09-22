@@ -1,6 +1,6 @@
 ﻿namespace RemoteViewing.Windows.Forms
 {
-#if !NETSTANDARD1_5
+#if !NETSTANDARD1_5 && !NETCOREAPP2_0
     partial class VncControl
     {
         /// <summary> 
