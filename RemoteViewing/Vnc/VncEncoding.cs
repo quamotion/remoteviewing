@@ -329,6 +329,41 @@ namespace RemoteViewing.Vnc
         /// level 0 is low JPEG quality.
         /// </summary>
         /// <seealso href="https://github.com/rfbproto/rfbproto/blob/master/rfbproto.rst#jpeg-quality-level-pseudo-encoding"/>
-        TightQualityLevel0 = -32
+        TightQualityLevel0 = -32,
+
+        /// <summary>
+        /// VMWare Cursor Data Pseudo-encoding
+        /// </summary>
+        VMWd = 0x574d5664,
+
+        /// <summary>
+        /// VMWare Cursor State Pseudo-encoding
+        /// </summary>
+        VMWe = 0x574d5665,
+
+        /// <summary>
+        /// VMWare Cursor Position Pseudo-encoding
+        /// /// </summary>
+        VMWf = 0x574d5666,
+
+        /// <summary>
+        /// VMWare Keyboard typematic info Pseudo-encoding
+        /// </summary>
+        VMWg = 0x574d5667,
+
+        /// <summary>
+        /// VMWare Keyboard LED state Pseudo-encoding
+        /// </summary>
+        VMWh = 0x574d5668,
+
+        /// <summary>
+        /// VMWare Display Mode Change Pseudo-encoding
+        /// </summary>
+        VMWi = 0x574d5669,
+
+        /// <summary>
+        /// VMWare Virtual Machine Errata State Pseudo-encoding
+        /// </summary>
+        VMWj = 0x574d566a,
     }
 }
