@@ -15,7 +15,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RemoteViewing.NoVncExample"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RemoteViewing.AspNetCore", "RemoteViewing.AspNetCore\RemoteViewing.AspNetCore.csproj", "{4E38F24D-C09B-4739-BD9E-E97FF70B93D3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RemoteViewing.Tests", "RemoteViewing.Tests\RemoteViewing.Tests.csproj", "{3B608B91-5360-4536-90B6-D9CC353FCADE}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RemoteViewing.Tests", "RemoteViewing.Tests\RemoteViewing.Tests.csproj", "{3B608B91-5360-4536-90B6-D9CC353FCADE}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
