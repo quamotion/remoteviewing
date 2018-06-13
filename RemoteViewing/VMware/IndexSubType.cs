@@ -1,7 +1,7 @@
 ﻿#region License
 /*
 RemoteViewing VNC Client/Server Library for .NET
-Copyright (c) 2017 Quamotion bvba <http://www.quamotion.mobi/>
+Copyright (c) 2018 Quamotion bvba <http://quamotion.mobi>
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -26,23 +26,22 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 #endregion
 
-using Microsoft.AspNetCore.Hosting;
-using System.IO;
-
-namespace RemoteViewing.NoVncExample
+namespace RemoteViewing.VMware
 {
-    public class Program
+    /// <summary>
+    /// Specifies subtypes for an AVI 2.0-standard index.
+    /// </summary>
+    /// <seealso href="https://msdn.microsoft.com/en-us/library/windows/desktop/ff625869(v=vs.85).aspx"/>
+    internal enum IndexSubType : byte
     {
-        public static void Main(string[] args)
-        {
-            var host = new WebHostBuilder()
-                .UseKestrel()
-                .UseContentRoot(Directory.GetCurrentDirectory())
-                .UseIISIntegration()
-                .UseStartup<Startup>()
-                .Build();
+        /// <summary>
+        /// No subtype is specified.
+        /// </summary>
+        None = 0,
 
-            host.Run();
-        }
+        /// <summary>
+        /// Fiels within frames are also indexed.
+        /// </summary>
+        AviIndexToField = 0x01
     }
 }

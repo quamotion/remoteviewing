@@ -1,7 +1,7 @@
 ﻿#region License
 /*
 RemoteViewing VNC Client/Server Library for .NET
-Copyright (c) 2017 Quamotion bvba <http://www.quamotion.mobi/>
+Copyright (c) 2018 Quamotion bvba <http://quamotion.mobi>
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -26,23 +26,29 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 #endregion
 
-using Microsoft.AspNetCore.Hosting;
-using System.IO;
+using System.Runtime.InteropServices;
 
-namespace RemoteViewing.NoVncExample
+namespace RemoteViewing.VMware
 {
-    public class Program
+    /// <summary>
+    /// A list in an AVI file.
+    /// </summary>
+    [StructLayout(LayoutKind.Sequential)]
+    internal struct List
     {
-        public static void Main(string[] args)
-        {
-            var host = new WebHostBuilder()
-                .UseKestrel()
-                .UseContentRoot(Directory.GetCurrentDirectory())
-                .UseIISIntegration()
-                .UseStartup<Startup>()
-                .Build();
+        /// <summary>
+        /// The <see cref="FourCC"/> code for the list.
+        /// </summary>
+        public FourCC ListType;
 
-            host.Run();
-        }
+        /// <summary>
+        /// The size of the list.
+        /// </summary>
+        public uint Size;
+
+        /// <summary>
+        /// The <see cref="FourCC"/> code of the list entries.
+        /// </summary>
+        public FourCC FourCC;
     }
 }

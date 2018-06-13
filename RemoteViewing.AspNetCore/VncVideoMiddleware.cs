@@ -1,7 +1,7 @@
 ﻿#region License
 /*
 RemoteViewing VNC Client/Server Library for .NET
-Copyright (c) 2017 Quamotion bvba <http://www.quamotion.mobi/>
+Copyright (c) 2018 Quamotion bvba <http://www.quamotion.mobi/>
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -27,30 +27,29 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #endregion
 
 using Microsoft.AspNetCore.Http;
-using RemoteViewing.Vnc.Server;
 using System;
 using System.Threading.Tasks;
 
 namespace RemoteViewing.AspNetCore
 {
     /// <summary>
-    /// The middleware which handles noVNC connections.
+    /// Middleware for recording VNC videos.
     /// </summary>
-    public class VncMiddleware<T> where T : VncServerSession, new()
+    public class VncVideoMiddleware
     {
         private readonly RequestDelegate next;
         private Func<HttpContext, VncContext> vncContextFactory;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="VncMiddleware"/> class.
+        /// Initializes a new instance of the <see cref="VncVideoMiddleware"/> class.
         /// </summary>
         /// <param name="next">
-        /// The next request handler. This handler is invoked if the request is not a WebSocket request.
+        /// The next request handler. This handler is invoked if the request is not a GET request.
         /// </param>
         /// <param name="vncContextFactory">
         /// A factory which creates the <see cref="VncContext"/> required to handle the request.
         /// </param>
-        public VncMiddleware(RequestDelegate next, Func<HttpContext, VncContext> vncContextFactory)
+        public VncVideoMiddleware(RequestDelegate next, Func<HttpContext, VncContext> vncContextFactory)
         {
             this.next = next;
             this.vncContextFactory = vncContextFactory;
@@ -65,32 +64,27 @@ namespace RemoteViewing.AspNetCore
         /// <returns>
         /// A <see cref="Task"/> which represents the asynchronous operation.
         /// </returns>
-        public async Task Invoke(HttpContext context)
+        public Task Invoke(HttpContext context)
         {
             if (context == null)
             {
                 throw new ArgumentNullException(nameof(context));
             }
 
-            if (!context.WebSockets.IsWebSocketRequest)
+            if (context.Request.Method != "GET")
             {
-                return;
+                return next.Invoke(context);
             }
 
             var vncContext = this.vncContextFactory(context);
 
             if (vncContext == null)
             {
-                return;
+                return next.Invoke(context);
             }
 
-            if (context.WebSockets.IsWebSocketRequest)
-            {
-                var socket = await context.WebSockets.AcceptWebSocketAsync("binary").ConfigureAwait(false);
-
-                VncHandler<T> sockethandler = new VncHandler<T>(socket, vncContext);
-                await sockethandler.Listen().ConfigureAwait(false);
-            }
+            VncVideoHandler videoHandler = new VncVideoHandler(context.Response.Body, vncContext);
+            return videoHandler.Listen(context.RequestAborted);
         }
     }
 }

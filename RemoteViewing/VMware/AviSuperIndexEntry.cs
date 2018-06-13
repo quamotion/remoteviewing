@@ -1,7 +1,7 @@
 ﻿#region License
 /*
 RemoteViewing VNC Client/Server Library for .NET
-Copyright (c) 2017 Quamotion bvba <http://www.quamotion.mobi/>
+Copyright (c) 2018 Quamotion bvba <http://quamotion.mobi>
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -26,23 +26,30 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 #endregion
 
-using Microsoft.AspNetCore.Hosting;
-using System.IO;
+using System.Runtime.InteropServices;
 
-namespace RemoteViewing.NoVncExample
+namespace RemoteViewing.VMware
 {
-    public class Program
+    /// <summary>
+    /// An entry in an AVI Super Index.
+    /// </summary>
+    /// <seealso href="https://msdn.microsoft.com/en-us/library/windows/desktop/ff625871(v=vs.85).aspx"/>
+    [StructLayout(LayoutKind.Sequential)]
+    internal struct AviSuperIndexEntry
     {
-        public static void Main(string[] args)
-        {
-            var host = new WebHostBuilder()
-                .UseKestrel()
-                .UseContentRoot(Directory.GetCurrentDirectory())
-                .UseIISIntegration()
-                .UseStartup<Startup>()
-                .Build();
+        /// <summary>
+        /// The offset, in bytes, from the start of the file to the sub-index that this entry points to.
+        /// </summary>
+        public long Offset;
 
-            host.Run();
-        }
+        /// <summary>
+        /// The size of the sub-index, in bytes.
+        /// </summary>
+        public int Size;
+
+        /// <summary>
+        /// The duration of the file that is covered by the sub-index, in stream ticks.
+        /// </summary>
+        public int Duration;
     }
 }

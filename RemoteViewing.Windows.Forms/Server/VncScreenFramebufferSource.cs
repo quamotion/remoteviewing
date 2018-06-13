@@ -26,7 +26,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 #endregion
 
-#if !NETSTANDARD1_5 && !NETCOREAPP2_0
+#if !NETSTANDARD2_0 && !NETCOREAPP2_1
 using System;
 using System.Drawing;
 using System.Windows.Forms;

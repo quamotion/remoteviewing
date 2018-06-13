@@ -101,6 +101,11 @@ namespace RemoteViewing.Vnc
         }
 
         /// <summary>
+        /// Gets a <see cref="VncPixelFormat"/> with 8 bits of red, green and blue channels.
+        /// </summary>
+        public static VncPixelFormat RGB32 { get; } = new VncPixelFormat();
+
+        /// <summary>
         /// Gets the number of bits used to store a pixel.
         /// </summary>
         public int BitsPerPixel
@@ -146,6 +151,42 @@ namespace RemoteViewing.Vnc
         public int GreenBits
         {
             get { return this.greenBits; }
+        }
+
+        /// <summary>
+        /// Gets the maximum value of the red color.
+        /// </summary>
+        [CLSCompliant(false)]
+        public ushort RedMax
+        {
+            get
+            {
+                return (ushort)((1 << this.RedBits) - 1);
+            }
+        }
+
+        /// <summary>
+        /// Gets the maximum value of the blue color.
+        /// </summary>
+        [CLSCompliant(false)]
+        public ushort BlueMax
+        {
+            get
+            {
+                return (ushort)((1 << this.BlueBits) - 1);
+            }
+        }
+
+        /// <summary>
+        /// Gets the maximum value of the green color.
+        /// </summary>
+        [CLSCompliant(false)]
+        public ushort GreenMax
+        {
+            get
+            {
+                return (ushort)((1 << this.GreenBits) - 1);
+            }
         }
 
         /// <summary>
@@ -465,9 +506,9 @@ namespace RemoteViewing.Vnc
             buffer[offset + 1] = (byte)this.BitDepth;
             buffer[offset + 2] = (byte)(this.IsLittleEndian ? 0 : 1);
             buffer[offset + 3] = (byte)(this.IsPalettized ? 0 : 1);
-            VncUtility.EncodeUInt16BE(buffer, offset + 4, (ushort)((1 << this.RedBits) - 1));
-            VncUtility.EncodeUInt16BE(buffer, offset + 6, (ushort)((1 << this.GreenBits) - 1));
-            VncUtility.EncodeUInt16BE(buffer, offset + 8, (ushort)((1 << this.BlueBits) - 1));
+            VncUtility.EncodeUInt16BE(buffer, offset + 4, this.RedMax);
+            VncUtility.EncodeUInt16BE(buffer, offset + 6, this.GreenMax);
+            VncUtility.EncodeUInt16BE(buffer, offset + 8, this.BlueMax);
             buffer[offset + 10] = (byte)this.RedShift;
             buffer[offset + 11] = (byte)this.GreenShift;
             buffer[offset + 12] = (byte)this.BlueShift;
