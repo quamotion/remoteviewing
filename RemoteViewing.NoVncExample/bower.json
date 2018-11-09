@@ -1,0 +1,7 @@
+{
+  "name": "asp.net",
+  "private": true,
+  "dependencies": {
+    "no-vnc": "0ff97c1a24587a080ec5d8638a4397b3831ee80e"
+  }
+}
