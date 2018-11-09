@@ -87,7 +87,7 @@ namespace RemoteViewing.AspNetCore
         public override int Read(byte[] buffer, int offset, int count)
         {
             ArraySegment<byte> segment = new ArraySegment<byte>(buffer, offset, count);
-            var result = this.WebSocket.ReceiveAsync(segment, CancellationToken.None).Result;
+            var result = this.WebSocket.ReceiveAsync(segment, CancellationToken.None).GetAwaiter().GetResult();
             return result.Count;
         }
 
