@@ -1,13 +1,17 @@
 image: Visual Studio 2017
 
 before_build:
+  - cmd: choco install codecov
   - cmd: dotnet restore
 
 build_script:
   - cmd: dotnet build -c Release
 
 test_script:
-  - dotnet test RemoteViewing.Tests\RemoteViewing.Tests.csproj
+  - cd RemoteViewing.Tests
+  - dotnet test RemoteViewing.Tests.csproj /p:CollectCoverage=true /p:CoverletOutputFormat=opencover
+  - cmd: codecov -f "coverage.opencover.xml" -t %CODECOV_TOKEN%
+  - cd ..
 
 on_success:
   - cmd: dotnet pack -c Release
