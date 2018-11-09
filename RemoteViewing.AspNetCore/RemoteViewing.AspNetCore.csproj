@@ -13,6 +13,8 @@
     <PackageTags>VNC RFB remote desktop client server Hextile Copyrect Zlib asp aspnet aspnetcore noVNC</PackageTags>
     <DocumentationFile>bin\$(Configuration)\$(TargetFramework)\$(AssemblyName).xml</DocumentationFile>
     <CodeAnalysisRuleSet>..\RemoteViewing.ruleset</CodeAnalysisRuleSet>
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\RemoteViewing\RemoteViewing.csproj" />
@@ -22,5 +24,8 @@
     <PackageReference Include="Microsoft.AspNetCore.WebSockets.Server" Version="0.1.0" />
     <PackageReference Include="Microsoft.Extensions.Logging" Version="1.1.2" />
     <PackageReference Include="Nito.AsyncEx" Version="5.0.0-pre-04" />
+    <PackageReference Include="StyleCop.Analyzers" Version="1.0.2" PrivateAssets="All"/>
+    <PackageReference Include="Nerdbank.GitVersioning" Version="2.2.13" PrivateAssets="All"/>
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0-beta-63127-02" PrivateAssets="All"/>
   </ItemGroup>
 </Project>
