@@ -717,17 +717,9 @@ namespace RemoteViewing.Vnc.Server
                     }
                 }
             }
-            catch (ObjectDisposedException)
+            catch (Exception exception)
             {
-            }
-            catch (IOException)
-            {
-            }
-            catch (VncException)
-            {
-            }
-            catch (TaskCanceledException)
-            {
+                this.logger?.Log(LogLevel.Error, () => $"VNC server session stopped due to: {exception.Message}");
             }
 
             this.requester.Stop();
