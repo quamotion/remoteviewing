@@ -41,7 +41,7 @@ namespace RemoteViewing.AspNetCore
         private ILogger logger;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="VncLogger"/> interface.
+        /// Initializes a new instance of the <see cref="VncLogger"/> class.
         /// </summary>
         /// <param name="logger">
         /// The ASP.NET Core logger to use when processing log messages.

@@ -36,13 +36,14 @@ namespace RemoteViewing.AspNetCore
     /// <summary>
     /// The middleware which handles noVNC connections.
     /// </summary>
-    public class VncMiddleware<T> where T : VncServerSession, new()
+    public class VncMiddleware<T>
+        where T : VncServerSession, new()
     {
         private readonly RequestDelegate next;
         private Func<HttpContext, VncContext> vncContextFactory;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="VncMiddleware"/> class.
+        /// Initializes a new instance of the <see cref="VncMiddleware{T}"/> class.
         /// </summary>
         /// <param name="next">
         /// The next request handler. This handler is invoked if the request is not a WebSocket request.

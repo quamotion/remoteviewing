@@ -39,7 +39,8 @@ namespace RemoteViewing.AspNetCore
     /// <summary>
     /// Handles noVNC connections.
     /// </summary>
-    public class VncHandler<T> where T : VncServerSession, new()
+    public class VncHandler<T>
+        where T : VncServerSession, new()
     {
         /// <summary>
         /// This event will be reset when the conection with the client is lost, either because the client logged
@@ -48,7 +49,7 @@ namespace RemoteViewing.AspNetCore
         private readonly AsyncManualResetEvent closed = new AsyncManualResetEvent(false);
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="VncHandler"/> class.
+        /// Initializes a new instance of the <see cref="VncHandler{T}"/> class.
         /// </summary>
         /// <param name="socket">
         ///  The socket to which the notifications should be send.
