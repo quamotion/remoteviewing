@@ -73,14 +73,14 @@ namespace RemoteViewing.AspNetCore
 
             if (context.Request.Method != "GET")
             {
-                return next.Invoke(context);
+                return this.next.Invoke(context);
             }
 
             var vncContext = this.vncContextFactory(context);
 
             if (vncContext == null)
             {
-                return next.Invoke(context);
+                return this.next.Invoke(context);
             }
 
             VncVideoHandler videoHandler = new VncVideoHandler(context.Response.Body, vncContext);

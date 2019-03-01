@@ -1,5 +1,8 @@
 ﻿namespace RemoteViewing.Vnc.Server
 {
+    /// <summary>
+    /// A common interface for a VNC server session.
+    /// </summary>
     public interface IVncServerSession
     {
         /// <summary>

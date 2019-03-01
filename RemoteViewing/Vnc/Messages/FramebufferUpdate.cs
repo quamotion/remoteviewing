@@ -60,7 +60,7 @@ namespace RemoteViewing.Vnc.Messages
         }
 
         /// <summary>
-        /// Gets or sets the underlying buffer.
+        /// Gets the underlying buffer.
         /// </summary>
         public ReadOnlyMemory<byte> Buffer
         {
