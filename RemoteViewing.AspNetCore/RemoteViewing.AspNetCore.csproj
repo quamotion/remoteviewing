@@ -9,12 +9,15 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <PackageId>Quamotion.RemoteViewing.AspNetCore</PackageId>
     <PackageProjectUrl>https://github.com/qmfrederik/remoteviewing/</PackageProjectUrl>
-    <PackageLicenseUrl>https://github.com/qmfrederik/remoteviewing/blob/master/License.txt</PackageLicenseUrl>
     <PackageTags>VNC RFB remote desktop client server Hextile Copyrect Zlib asp aspnet aspnetcore noVNC</PackageTags>
     <DocumentationFile>bin\$(Configuration)\$(TargetFramework)\$(AssemblyName).xml</DocumentationFile>
     <CodeAnalysisRuleSet>..\RemoteViewing.ruleset</CodeAnalysisRuleSet>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+    <PackageLicenseExpression>BSD-2-Clause</PackageLicenseExpression>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\RemoteViewing\RemoteViewing.csproj" />
