@@ -31,7 +31,7 @@ using RemoteViewing.Logging;
 using System;
 using VncLogLevel = RemoteViewing.Logging.LogLevel;
 
-namespace RemoteViewing.AspNetCore
+namespace RemoteViewing
 {
     /// <summary>
     /// A default implementation of the <see cref="ILog"/> interface which wraps around the ASP.NET Core <see cref="ILogger"/> interface.
@@ -46,6 +46,7 @@ namespace RemoteViewing.AspNetCore
         /// <param name="logger">
         /// The ASP.NET Core logger to use when processing log messages.
         /// </param>
+        [CLSCompliant(false)]
         public VncLogger(ILogger logger)
         {
             this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
