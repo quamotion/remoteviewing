@@ -18,3 +18,6 @@ on_success:
   - ps: Push-AppveyorArtifact "RemoteViewing\bin\Release\Quamotion.RemoteViewing.*.nupkg"
   - ps: Push-AppveyorArtifact "RemoteViewing.Windows.Forms\bin\Release\Quamotion.RemoteViewing.Windows.Forms.*.nupkg"
   - ps: Push-AppveyorArtifact "RemoteViewing.AspNetCore\bin\Release\Quamotion.RemoteViewing.AspNetCore.*.nupkg"
+  - ps: Push-AppveyorArtifact "RemoteViewing\bin\Release\Quamotion.RemoteViewing.*.snupkg"
+  - ps: Push-AppveyorArtifact "RemoteViewing.Windows.Forms\bin\Release\Quamotion.RemoteViewing.Windows.Forms.*.snupkg"
+  - ps: Push-AppveyorArtifact "RemoteViewing.AspNetCore\bin\Release\Quamotion.RemoteViewing.AspNetCore.*.snupkg"
