@@ -235,7 +235,18 @@ namespace RemoteViewing.Vnc.Server
 
             _requester.Stop();
 
-            _c.Stream = null;
+            var stream = _c.Stream;
+            if (stream != null)
+            {
+                try { stream.Flush(); }
+                catch (IOException) { }
+
+                try { stream.Close(); }
+                catch (IOException) { }
+
+                _c.Stream = null;
+            }
+
             if (IsConnected)
             {
                 IsConnected = false; OnClosed();
@@ -278,7 +289,7 @@ namespace RemoteViewing.Vnc.Server
                               "Invalid authentication method.",
                               VncFailureReason.UnrecognizedProtocolElement);
 
-            bool success = true;
+            bool success = true; string authenticationFailedMessage = null;
             if (selectedMethod == AuthenticationMethod.Password)
             {
                 var challenge = VncPasswordChallenge.GenerateChallenge();
@@ -292,14 +303,25 @@ namespace RemoteViewing.Vnc.Server
                         var e = new PasswordProvidedEventArgs(challenge, response);
                         OnPasswordProvided(e);
                         success = e.IsAuthenticated;
+                        authenticationFailedMessage = e.AuthenticationFailedMessage;
                     }
                 }
             }
 
-            _c.SendUInt32BE(success ? 0 : (uint)1);
-            VncStream.Require(success,
-                              "Failed to authenticate.",
-                              VncFailureReason.AuthenticationFailed);
+            if (success)
+            {
+                _c.SendUInt32BE(0);
+            }
+            else
+            {
+                if (authenticationFailedMessage == null) { authenticationFailedMessage = "Failed to authenticate."; }
+
+                _c.SendUInt32BE((uint)1);
+                _c.SendString(authenticationFailedMessage, true);
+                VncStream.Require(false,
+                                  authenticationFailedMessage,
+                                  VncFailureReason.AuthenticationFailed);
+            }
         }
 
         void NegotiateDesktop()
@@ -315,14 +337,15 @@ namespace RemoteViewing.Vnc.Server
             VncStream.Require(Framebuffer != null,
                               "No framebuffer. Make sure you've called SetFramebufferSource. It can be set to a VncFramebuffer.",
                               VncFailureReason.SanityCheckFailed);
-            _clientPixelFormat = Framebuffer.PixelFormat;
+            _clientPixelFormat = VncPixelFormat.Format32bpp;
             _clientWidth = Framebuffer.Width; _clientHeight = Framebuffer.Height;
             _fbuAutoCache = null;
             
             _c.SendUInt16BE((ushort)Framebuffer.Width);
             _c.SendUInt16BE((ushort)Framebuffer.Height);
+
             var pixelFormat = new byte[VncPixelFormat.Size];
-            Framebuffer.PixelFormat.Encode(pixelFormat, 0);
+            _clientPixelFormat.Encode(pixelFormat, 0);
             _c.Send(pixelFormat);
             _c.SendString(Framebuffer.Name, true);
         }
@@ -545,7 +568,7 @@ namespace RemoteViewing.Vnc.Server
         /// Do not call this method without holding <see cref="VncServerSession.FramebufferUpdateRequestLock"/>.
         /// </summary>
         /// <param name="region">The region to invalidate.</param>
-        public void FramebufferManualInvalidate(VncRectangle region)
+        public unsafe void FramebufferManualInvalidate(VncRectangle region)
         {
             var fb = Framebuffer; var cpf = _clientPixelFormat;
             region = VncRectangle.Intersect(region, new VncRectangle(0, 0, _clientWidth, _clientHeight));
@@ -554,8 +577,12 @@ namespace RemoteViewing.Vnc.Server
             int x = region.X, y = region.Y, w = region.Width, h = region.Height, bpp = cpf.BytesPerPixel;
             var contents = new byte[w * h * bpp];
 
-            VncPixelFormat.Copy(fb.GetBuffer(), fb.Stride, fb.PixelFormat, region,
-                                contents, w * bpp, cpf);
+            fixed (int* sourcePixels = fb.GetPixels())
+            fixed (byte* targetPixels = contents)
+            {
+                VncPixelFormat.Copy((IntPtr)sourcePixels, fb.Width * 4, VncPixelFormat.Format32bpp, region,
+                                    (IntPtr)targetPixels, w * bpp, cpf);
+            }
 
 #if DEFLATESTREAM_FLUSH_WORKS
             if (_clientEncoding.Contains(VncEncoding.Zlib))

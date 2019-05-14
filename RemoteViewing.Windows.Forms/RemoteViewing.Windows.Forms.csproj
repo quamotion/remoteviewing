@@ -51,18 +51,19 @@
     <Compile Include="VncControl.Designer.cs">
       <DependentUpon>VncControl.cs</DependentUpon>
     </Compile>
+    <Compile Include="VncControlSizeMode.cs" />
     <Compile Include="VncKeysym.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="VncControl.resx">
+      <DependentUpon>VncControl.cs</DependentUpon>
+    </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\RemoteViewing\RemoteViewing.csproj">
       <Project>{89569346-2C71-4A85-99B9-D3EB71FDE87A}</Project>
       <Name>RemoteViewing</Name>
     </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="VncControl.resx">
-      <DependentUpon>VncControl.cs</DependentUpon>
-    </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

@@ -1,7 +1,7 @@
 ﻿#region License
 /*
 RemoteViewing VNC Client/Server Library for .NET
-Copyright (c) 2013 James F. Bellinger <http://www.zer7.com/software/remoteviewing>
+Copyright (c) 2013, 2017 James F. Bellinger <http://www.zer7.com/software/remoteviewing>
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -39,6 +39,24 @@ namespace RemoteViewing.Vnc
         int _redBits, _redShift, _greenBits, _greenShift, _blueBits, _blueShift;
         bool _isLittleEndian, _isPalettized;
 
+        static VncPixelFormat()
+        {
+            Format32bpp = new VncPixelFormat(32, 24, 8, 16, 8, 8, 8, 0);
+            Format8bpp = new VncPixelFormat(8, 24, 8, 16, 8, 8, 8, 0, isPalettized: true);
+        }
+
+        public static VncPixelFormat Format32bpp
+        {
+            get;
+            private set;
+        }
+
+        public static VncPixelFormat Format8bpp
+        {
+            get;
+            private set;
+        }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="VncPixelFormat"/> class,
         /// with 8 bits each of red, green, and blue channels.
@@ -53,7 +71,7 @@ namespace RemoteViewing.Vnc
         /// Initializes a new instance of the <see cref="VncPixelFormat"/> class.
         /// </summary>
         /// <param name="bitsPerPixel">The number of bits used to store a pixel. Currently, this must be 8, 16, or 32.</param>
-        /// <param name="bitDepth">The bit depth of the pixel. Currently, this must be 24.</param>
+        /// <param name="bitDepth">The bit depth of the pixel. Currently, this must be 8, 24, or 32.</param>
         /// <param name="redBits">The number of bits used to represent red.</param>
         /// <param name="redShift">The number of bits left the red value is shifted.</param>
         /// <param name="greenBits">The number of bits used to represent green.</param>
@@ -66,17 +84,23 @@ namespace RemoteViewing.Vnc
                               int redBits, int redShift, int greenBits, int greenShift, int blueBits, int blueShift,
                               bool isLittleEndian = true, bool isPalettized = false)
         {
+            // OBSERVATION: bitsPerPixel == 8 && isPalettized crashes Windows UltraVNC Server.
             Throw.If.False(bitsPerPixel == 8 || bitsPerPixel == 16 || bitsPerPixel == 32, "bitsPerPixel");
-            Throw.If.False(bitDepth == 24, "bitDepth");
-            Throw.If.False(redBits >= 0 && redShift >= 0 && redBits <= bitDepth && redShift <= bitDepth, "redBits");
-            Throw.If.False(greenBits >= 0 && greenShift >= 0 && greenBits <= bitDepth && greenShift <= bitDepth, "greenBits");
-            Throw.If.False(blueBits >= 0 && blueShift >= 0 && blueBits <= bitDepth && blueShift <= bitDepth, "blueBits");
-
+            Throw.If.False(bitDepth == 8 || bitDepth == 24 || bitDepth == 32, "bitDepth");
+            Throw.If.False((!isPalettized && bitsPerPixel >= bitDepth) || (isPalettized && bitsPerPixel == 8), "bitDepth");
             _bitsPerPixel = bitsPerPixel; _bytesPerPixel = bitsPerPixel / 8; _bitDepth = bitDepth;
-            _redBits = redBits; _redShift = redShift;
-            _greenBits = greenBits; _greenShift = greenShift;
-            _blueBits = blueBits; _blueShift = blueShift;
             _isLittleEndian = isLittleEndian; _isPalettized = isPalettized;
+
+            if (!isPalettized)
+            {
+                Throw.If.False(redBits >= 0 && redShift >= 0 && redBits <= bitDepth && redShift <= bitDepth, "redBits");
+                Throw.If.False(greenBits >= 0 && greenShift >= 0 && greenBits <= bitDepth && greenShift <= bitDepth, "greenBits");
+                Throw.If.False(blueBits >= 0 && blueShift >= 0 && blueBits <= bitDepth && blueShift <= bitDepth, "blueBits");
+
+                _redBits = redBits; _redShift = redShift;
+                _greenBits = greenBits; _greenShift = greenShift;
+                _blueBits = blueBits; _blueShift = blueShift;
+            }
         }
 
         /// <inheritdoc />
@@ -86,14 +110,24 @@ namespace RemoteViewing.Vnc
 
             if (format != null)
             {
-                if (BitsPerPixel == format.BitsPerPixel && BitDepth == format.BitDepth &&
-                    RedBits == format.RedBits && RedShift == format.RedShift &&
-                    GreenBits == format.GreenBits && GreenShift == format.GreenShift &&
-                    BlueBits == format.BlueBits && BlueShift == format.BlueShift &&
-                    IsLittleEndian == format.IsLittleEndian && IsPalettized == format.IsPalettized)
+                if (EqualsForCopy(format) && BitDepth == format.BitDepth)
                 {
                     return true;
                 }
+            }
+
+            return false;
+        }
+
+        bool EqualsForCopy(VncPixelFormat format)
+        {
+            if (BitsPerPixel == format.BitsPerPixel &&
+                RedBits == format.RedBits && RedShift == format.RedShift &&
+                GreenBits == format.GreenBits && GreenShift == format.GreenShift &&
+                BlueBits == format.BlueBits && BlueShift == format.BlueShift &&
+                IsLittleEndian == format.IsLittleEndian && IsPalettized == format.IsPalettized)
+            {
+                return true;
             }
 
             return false;
@@ -120,8 +154,8 @@ namespace RemoteViewing.Vnc
         /// <param name="targetFormat">The target pixel format.</param>
         /// <param name="targetX">The X coordinate in the target that the leftmost pixel should be placed into.</param>
         /// <param name="targetY">The Y coordinate in the target that the topmost pixel should be placed into.</param>
-        public static unsafe void Copy(byte[] source, int sourceStride, VncPixelFormat sourceFormat, VncRectangle sourceRectangle,
-                                       byte[] target, int targetStride, VncPixelFormat targetFormat, int targetX = 0, int targetY = 0)
+        internal static unsafe void Copy(byte[] source, int sourceStride, VncPixelFormat sourceFormat, VncRectangle sourceRectangle,
+                                         byte[] target, int targetStride, VncPixelFormat targetFormat, int targetX = 0, int targetY = 0)
         {
             Throw.If.Null(source, "source").Null(target, "target");
 
@@ -149,8 +183,15 @@ namespace RemoteViewing.Vnc
         /// <param name="targetFormat">The target pixel format.</param>
         /// <param name="targetX">The X coordinate in the target that the leftmost pixel should be placed into.</param>
         /// <param name="targetY">The Y coordinate in the target that the topmost pixel should be placed into.</param>
-        public static unsafe void Copy(IntPtr source, int sourceStride, VncPixelFormat sourceFormat, VncRectangle sourceRectangle,
-                                       IntPtr target, int targetStride, VncPixelFormat targetFormat, int targetX = 0, int targetY = 0)
+        internal unsafe static void Copy(IntPtr source, int sourceStride, VncPixelFormat sourceFormat, VncRectangle sourceRectangle,
+                                         IntPtr target, int targetStride, VncPixelFormat targetFormat, int targetX = 0, int targetY = 0)
+        {
+            Copy(source, sourceStride, sourceFormat, sourceRectangle, target, targetStride, targetFormat, targetX, targetY, null);
+        }
+
+        internal unsafe static void Copy(IntPtr source, int sourceStride, VncPixelFormat sourceFormat, VncRectangle sourceRectangle,
+                                         IntPtr target, int targetStride, VncPixelFormat targetFormat, int targetX, int targetY,
+                                         int[] paletteEntries)
         {
             Throw.If.True(source == IntPtr.Zero, "source").True(target == IntPtr.Zero, "target");
             Throw.If.Null(sourceFormat, "sourceFormat").Null(targetFormat, "targetFormat");
@@ -163,7 +204,7 @@ namespace RemoteViewing.Vnc
             var sourceData = (byte*)(void*)source + y * sourceStride + x * sourceFormat.BytesPerPixel;
             var targetData = (byte*)(void*)target + targetY * targetStride + targetX * targetFormat.BytesPerPixel;
 
-            if (sourceFormat.Equals(targetFormat))
+            if (sourceFormat.EqualsForCopy(targetFormat))
             {
                 for (int iy = 0; iy < h; iy++)
                 {
@@ -182,6 +223,19 @@ namespace RemoteViewing.Vnc
                     sourceData += sourceStride; targetData += targetStride;
                 }
             }
+            else if (sourceFormat.IsPalettized && sourceFormat.BytesPerPixel == 1 &&
+                     targetFormat.EqualsForCopy(VncPixelFormat.Format32bpp))
+            {
+                if (paletteEntries != null)
+                {
+                    for (int iy = 0; iy < h; iy++)
+                    {
+                        byte* sourceDataX0 = (byte*)sourceData; int* targetDataX0 = (int*)targetData;
+                        for (int ix = 0; ix < w; ix++) { byte color = (*sourceDataX0++); *targetDataX0++ = color < paletteEntries.Length ? paletteEntries[color] : 0; }
+                        sourceData += sourceStride; targetData += targetStride;
+                    }
+                }
+            }
         }
 
         static int BitsFromMax(int max)
@@ -196,12 +250,17 @@ namespace RemoteViewing.Vnc
             var depth = buffer[offset + 1];
             var isLittleEndian = buffer[offset + 2] == 0;
             var isPalettized = buffer[offset + 3] == 0;
-            var redBits = BitsFromMax(VncUtility.DecodeUInt16BE(buffer, offset + 4));
-            var greenBits = BitsFromMax(VncUtility.DecodeUInt16BE(buffer, offset + 6));
-            var blueBits = BitsFromMax(VncUtility.DecodeUInt16BE(buffer, offset + 8));
-            var redShift = buffer[offset + 10];
-            var greenShift = buffer[offset + 11];
-            var blueShift = buffer[offset + 12];
+
+            int redBits = 0, greenBits = 0, blueBits = 0, redShift = 0, greenShift = 0, blueShift = 0;
+            if (!isPalettized)
+            {
+                redBits = BitsFromMax(VncUtility.DecodeUInt16BE(buffer, offset + 4));
+                greenBits = BitsFromMax(VncUtility.DecodeUInt16BE(buffer, offset + 6));
+                blueBits = BitsFromMax(VncUtility.DecodeUInt16BE(buffer, offset + 8));
+                redShift = buffer[offset + 10];
+                greenShift = buffer[offset + 11];
+                blueShift = buffer[offset + 12];
+            }
 
             return new VncPixelFormat(bitsPerPixel, depth,
                                       redBits, redShift, greenBits, greenShift, blueBits, blueShift,

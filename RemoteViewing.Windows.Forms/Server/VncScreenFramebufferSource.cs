@@ -84,7 +84,7 @@ namespace RemoteViewing.Windows.Forms.Server
             if (_bitmap == null || _bitmap.Width != w || _bitmap.Height != h)
             {
                 _bitmap = new Bitmap(w, h);
-                _framebuffer = new VncFramebuffer(_name, w, h, new VncPixelFormat());
+                _framebuffer = new VncFramebuffer(_name, w, h);
             }
 
             using (var g = Graphics.FromImage(_bitmap))

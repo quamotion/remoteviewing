@@ -78,6 +78,12 @@ namespace RemoteViewing.Vnc
             set;
         }
 
+        public VncPixelFormat PixelFormat
+        {
+            get;
+            set;
+        }
+
         /// <summary>
         /// <c>true</c> to share the desktop with any currently-connected clients.
         /// <c>false</c> to get exclusive access to the desktop.

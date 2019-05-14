@@ -71,8 +71,10 @@ namespace RemoteViewing.Vnc
         public event EventHandler<RemoteClipboardChangedEventArgs> RemoteClipboardChanged;
 
         VncStream _c = new VncStream();
+        int[] _colorMap;
         VncClientConnectOptions _options;
         double _maxUpdateRate;
+        VncPixelFormat _pixelFormat;
         Version _serverVersion = new Version();
         Thread _threadMain;
 
@@ -149,6 +151,7 @@ namespace RemoteViewing.Vnc
                     NegotiateSecurity();
                     NegotiateDesktop();
                     NegotiateEncodings();
+                    NegotiatePixelFormat();
                     InitFramebufferDecoder();
                     SendFramebufferUpdateRequest(false);
                 }
@@ -321,7 +324,24 @@ namespace RemoteViewing.Vnc
             }
 
             var name = _c.ReceiveString();
-            Framebuffer = new VncFramebuffer(name, width, height, pixelFormat);
+            Framebuffer = new VncFramebuffer(name, width, height);
+            _colorMap = new int[0];
+            _pixelFormat = pixelFormat;
+        }
+
+        void NegotiatePixelFormat()
+        {
+            if (_options.PixelFormat != null)
+            {
+                _colorMap = new int[0];
+                _pixelFormat = _options.PixelFormat;
+
+                var pixelFormatBytes = new byte[VncPixelFormat.Size];
+                _pixelFormat.Encode(pixelFormatBytes, 0);
+
+                _c.Send(new[] { (byte)0, (byte)0, (byte)0, (byte)0 });
+                _c.Send(pixelFormatBytes);
+            }
         }
 
         void NegotiateEncodings()
@@ -409,23 +429,17 @@ namespace RemoteViewing.Vnc
         }
 
         // Assumes we are already locked.
-        void CopyToFramebuffer(int tx, int ty, int w, int h, byte[] pixels)
+        unsafe void CopyToFramebuffer(int tx, int ty, int w, int h, byte[] pixels)
         {
             var fb = Framebuffer;
-            CopyToGeneral(tx, ty, fb.Width, fb.Height, fb.GetBuffer(), 0, 0, w, h, pixels, w, h);
-        }
+            var pixelFormat = _pixelFormat;
 
-        void CopyToGeneral(int tx, int ty, int tw, int th, byte[] outPixels,
-                           int sx, int sy, int sw, int sh, byte[] inPixels,
-                           int w, int h)
-        {
-            int bpp = Framebuffer.PixelFormat.BytesPerPixel;
-
-            for (int iy = 0; iy < h; iy++)
+            fixed (byte* sourcePixels = pixels)
+            fixed (int* targetPixels = fb.GetPixels())
             {
-                int inOffset = bpp * ((iy + sy) * sw + sx);
-                int outOffset = bpp * ((iy + ty) * tw + tx);
-                Array.Copy(inPixels, inOffset, outPixels, outOffset, w * bpp);
+                VncPixelFormat.Copy(
+                    (IntPtr)sourcePixels, w * pixelFormat.BytesPerPixel, pixelFormat, new VncRectangle(0, 0, w, h),
+                    (IntPtr)targetPixels, fb.Width * 4, VncPixelFormat.Format32bpp, tx, ty, _colorMap);
             }
         }
 
@@ -433,14 +447,25 @@ namespace RemoteViewing.Vnc
         {
             _c.ReceiveByte(); // padding
 
-            var firstColor = _c.ReceiveUInt16BE();
-            var numColors = _c.ReceiveUInt16BE();
+            int firstColor = _c.ReceiveUInt16BE();
+            int numColors = _c.ReceiveUInt16BE();
 
+            if (firstColor + numColors > _colorMap.Length)
+            {
+                Array.Resize(ref _colorMap, firstColor + numColors);
+            }
+
+            var p = VncPixelFormat.Format32bpp;
             for (int i = 0; i < numColors; i++)
             {
-                var r = _c.ReceiveUInt16BE();
-                var g = _c.ReceiveUInt16BE();
-                var b = _c.ReceiveUInt16BE();
+                int r = _c.ReceiveUInt16BE();
+                int g = _c.ReceiveUInt16BE();
+                int b = _c.ReceiveUInt16BE();
+
+                _colorMap[firstColor + i] =
+                    (r >> (16 - p.RedBits)) << p.RedShift |
+                    (g >> (16 - p.GreenBits)) << p.GreenShift |
+                    (b >> (16 - p.BlueBits)) << p.BlueShift;
             }
         }
 

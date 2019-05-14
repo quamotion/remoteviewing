@@ -1,7 +1,7 @@
 ﻿#region License
 /*
 RemoteViewing VNC Client/Server Library for .NET
-Copyright (c) 2013 James F. Bellinger <http://www.zer7.com/software/remoteviewing>
+Copyright (c) 2013, 2017 James F. Bellinger <http://www.zer7.com/software/remoteviewing>
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -38,7 +38,7 @@ namespace RemoteViewing.Vnc
     /// </summary>
     public class VncFramebuffer : IVncFramebufferSource
     {
-        byte[] _buffer;
+        int[] _pixels;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="VncFramebuffer"/> class.
@@ -46,18 +46,15 @@ namespace RemoteViewing.Vnc
         /// <param name="name">The framebuffer name. Many VNC clients set their titlebar to this name.</param>
         /// <param name="width">The framebuffer width.</param>
         /// <param name="height">The framebuffer height.</param>
-        /// <param name="pixelFormat">The framebuffer pixel format.</param>
-        public VncFramebuffer(string name, int width, int height, VncPixelFormat pixelFormat)
+        public VncFramebuffer(string name, int width, int height)
         {
             Throw.If.Null(name, "name");
             Throw.If.Negative(width, "width").Negative(height, "height");
-            Throw.If.Null(pixelFormat, "pixelFormat");
 
-            Name = name; Width = width; Height = height; PixelFormat = pixelFormat;
-            Stride = PixelFormat.BytesPerPixel * Width;
+            Name = name; Width = width; Height = height;
             SyncRoot = new object();
 
-            _buffer = new byte[Width * Height * PixelFormat.BytesPerPixel];
+            _pixels = new int[Width * Height];
         }
 
         /// <summary>
@@ -73,20 +70,17 @@ namespace RemoteViewing.Vnc
                 Throw.If.False((uint)x < (uint)Width, "x");
                 Throw.If.False((uint)y < (uint)Height, "y");
 
-                if (PixelFormat.BytesPerPixel == 4)
-                {
-                    Array.Copy(BitConverter.GetBytes(color), 0, GetBuffer(), y * Stride + x * 4, 4);
-                }
+                GetPixels()[y * Width + x] = color;
             }
         }
 
         /// <summary>
-        /// Returns the memory underlying this framebuffer.
+        /// Returns the values underlying this framebuffer.
         /// </summary>
-        /// <returns>The framebuffer bytes.</returns>
-        public byte[] GetBuffer()
+        /// <returns>The framebuffer pixels.</returns>
+        public int[] GetPixels()
         {
-            return _buffer;
+            return _pixels;
         }
 
         /// <summary>
@@ -122,24 +116,6 @@ namespace RemoteViewing.Vnc
         /// The framebuffer height.
         /// </summary>
         public int Height
-        {
-            get;
-            private set;
-        }
-
-        /// <summary>
-        /// The framebuffer stride. This is the number of bytes between one Y coordinate and the next.
-        /// </summary>
-        public int Stride
-        {
-            get;
-            private set;
-        }
-
-        /// <summary>
-        /// The framebuffer pixel format.
-        /// </summary>
-        public VncPixelFormat PixelFormat
         {
             get;
             private set;

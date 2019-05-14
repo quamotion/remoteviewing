@@ -53,7 +53,7 @@ namespace RemoteViewing.Vnc
             return VncUtility.AllocateScratch(bytes, ref _framebufferScratch);
         }
 
-        void HandleFramebufferUpdate()
+        unsafe void HandleFramebufferUpdate()
         {
             _c.ReceiveByte(); // padding
 
@@ -67,7 +67,7 @@ namespace RemoteViewing.Vnc
                 VncStream.SanityCheck(w > 0 && w < 0x8000);
                 VncStream.SanityCheck(h > 0 && h < 0x8000);
 
-                int fbW = Framebuffer.Width, fbH = Framebuffer.Height, bpp = Framebuffer.PixelFormat.BytesPerPixel;
+                int fbW = Framebuffer.Width, fbH = Framebuffer.Height, bpp = _pixelFormat.BytesPerPixel;
                 var inRange = w <= fbW && h <= fbH && x <= fbW - w && y <= fbH - h; byte[] pixels;
 
                 var encoding = (VncEncoding)_c.ReceiveUInt32BE();
@@ -143,15 +143,28 @@ namespace RemoteViewing.Vnc
                     case VncEncoding.CopyRect:
                         var srcx = (int)_c.ReceiveUInt16BE();
                         var srcy = (int)_c.ReceiveUInt16BE();
+
                         if (srcx + w > fbW) { w = fbW - srcx; }
                         if (srcy + h > fbH) { h = fbH - srcy; }
-                        if (w < 1 || h < 1) { continue; }
+                        if (w < 1 || h < 1 || !inRange) { continue; }
 
-                        pixels = AllocateFramebufferScratch(w * h * bpp);
+                        var fbFormat = VncPixelFormat.Format32bpp;
+                        int fbBpp = fbFormat.BytesPerPixel;
+
+                        pixels = AllocateFramebufferScratch(w * h * fbBpp);
                         lock (Framebuffer.SyncRoot)
                         {
-                            CopyToGeneral(0, 0, w, h, pixels, srcx, srcy, fbW, fbH, Framebuffer.GetBuffer(), w, h);
-                            CopyToFramebuffer(x, y, w, h, pixels);
+                            fixed (byte* tempPixels = pixels)
+                            fixed (int* fbPixels = Framebuffer.GetPixels())
+                            {
+                                VncPixelFormat.Copy(
+                                    (IntPtr)fbPixels, fbW * fbBpp, fbFormat, new VncRectangle(srcx, srcy, w, h),
+                                    (IntPtr)tempPixels, w * fbBpp, fbFormat);
+
+                                VncPixelFormat.Copy(
+                                    (IntPtr)tempPixels, w * fbBpp, fbFormat, new VncRectangle(0, 0, w, h),
+                                    (IntPtr)fbPixels, fbW * fbBpp, fbFormat, x, y);
+                            }
                         }
                         break;
 
@@ -212,7 +225,7 @@ namespace RemoteViewing.Vnc
                         break;
 
                     case VncEncoding.PseudoDesktopSize:
-                        Framebuffer = new VncFramebuffer(Framebuffer.Name, w, h, Framebuffer.PixelFormat);
+                        Framebuffer = new VncFramebuffer(Framebuffer.Name, w, h);
                         continue; // Don't call OnFramebufferChanged for this one.
 
                     default:

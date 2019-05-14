@@ -98,6 +98,12 @@ namespace RemoteViewing.Vnc.Server
             }
         }
 
+        public string AuthenticationFailedMessage
+        {
+            get;
+            set;
+        }
+
         /// <summary>
         /// <c>true</c> if the client has successfully authenticated.
         /// </summary>

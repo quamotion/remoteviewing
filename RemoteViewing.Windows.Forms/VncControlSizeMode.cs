@@ -1,7 +1,7 @@
 ﻿#region License
 /*
 RemoteViewing VNC Client/Server Library for .NET
-Copyright (c) 2013, 2016 James F. Bellinger <http://www.zer7.com/software/remoteviewing>
+Copyright (c) 2016 James F. Bellinger <http://www.zer7.com/software/remoteviewing>
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -26,17 +26,36 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 #endregion
 
-using System;
-using System.Reflection;
-using System.Runtime.InteropServices;
+namespace RemoteViewing.Windows.Forms
+{
+    /// <summary>
+    /// Specifies how the remote screen is positioned and sized in the <see cref="VncControl"/>.
+    /// </summary>
+    public enum VncControlSizeMode
+    {
+        /// <summary>
+        /// The <see cref="VncControl"/> will contain the upper-left portion of the screen.
+        /// </summary>
+        Clip,
 
-[assembly: AssemblyCopyright("Copyright © 2013, 2016 James F. Bellinger <http://www.zer7.com/software/remoteviewing>")]
-[assembly: AssemblyDescription("C# VNC client/server")]
-[assembly: AssemblyProduct("RemoteViewing")]
-[assembly: AssemblyTitle("RemoteViewing.Windows.Forms")]
-[assembly: AssemblyFileVersion("0.9.2.0")]
-[assembly: AssemblyVersion("0.9.2.0")]
+        /// <summary>
+        /// The screen is resized to fit the <see cref="VncControl"/>. The aspect ratio is allowed to be incorrect.
+        /// </summary>
+        Stretch,
 
-[assembly: CLSCompliant(true)]
-[assembly: ComVisible(false)]
-[assembly: Guid("4c279e1f-d4ac-46d1-b5c7-e76169d85d29")]
+        /// <summary>
+        /// The <see cref="VncControl"/> is resized to fit the screen.
+        /// </summary>
+        AutoSize,
+
+        /// <summary>
+        /// The <see cref="VncControl"/> will contain the center portion of the screen.
+        /// </summary>
+        Center,
+
+        /// <summary>
+        /// The screen is resized to fit the <see cref="VncControl"/>. Correct aspect ratio is maintained.
+        /// </summary>
+        Zoom
+    }
+}

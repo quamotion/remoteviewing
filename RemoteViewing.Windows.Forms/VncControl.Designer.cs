@@ -32,11 +32,13 @@
             // 
             // VncControl
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.Black;
             this.DoubleBuffered = true;
+            this.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.Name = "VncControl";
+            this.Size = new System.Drawing.Size(200, 185);
             this.Paint += new System.Windows.Forms.PaintEventHandler(this.VncControl_Paint);
             this.KeyDown += new System.Windows.Forms.KeyEventHandler(this.VncControl_KeyDown);
             this.KeyUp += new System.Windows.Forms.KeyEventHandler(this.VncControl_KeyUp);
@@ -46,6 +48,7 @@
             this.MouseMove += new System.Windows.Forms.MouseEventHandler(this.VncControl_MouseMove);
             this.MouseUp += new System.Windows.Forms.MouseEventHandler(this.VncControl_MouseUp);
             this.PreviewKeyDown += new System.Windows.Forms.PreviewKeyDownEventHandler(this.VncControl_PreviewKeyDown);
+            this.Resize += new System.EventHandler(this.VncControl_Resize);
             this.ResumeLayout(false);
 
         }
