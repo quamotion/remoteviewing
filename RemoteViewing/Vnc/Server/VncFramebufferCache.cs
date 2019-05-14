@@ -47,10 +47,10 @@ namespace RemoteViewing.Vnc.Server
 
             _hashes = new byte[(framebuffer.Height + TileSize - 1) / TileSize,
                                (framebuffer.Width  + TileSize - 1) / TileSize][];
-            _pixelBuffer = new byte[TileSize * TileSize * Framebuffer.PixelFormat.BytesPerPixel];
+            _pixelBuffer = new byte[TileSize * TileSize * VncPixelFormat.Format32bpp.BytesPerPixel];
         }
 
-        public bool RespondToUpdateRequest(VncServerSession session)
+        public unsafe bool RespondToUpdateRequest(VncServerSession session)
         {
             var fb = Framebuffer; var fbr = session.FramebufferUpdateRequest;
             if (fb == null || fbr == null) { return false; }
@@ -58,8 +58,7 @@ namespace RemoteViewing.Vnc.Server
             var incremental = fbr.Incremental; var region = fbr.Region;
             session.FramebufferManualBeginUpdate();
 
-            var buffer = fb.GetBuffer();
-            int bpp = fb.PixelFormat.BytesPerPixel;
+            var buffer = fb.GetPixels();
             lock (fb.SyncRoot)
             {
                 int ymax = Math.Min(region.Y + region.Height, fb.Height);
@@ -74,8 +73,14 @@ namespace RemoteViewing.Vnc.Server
 
                         var subregion = new VncRectangle(x, y, w, h);
 
-                        VncPixelFormat.Copy(buffer, fb.Stride, fb.PixelFormat, subregion,
-                                            _pixelBuffer, w * bpp, Framebuffer.PixelFormat);
+                        var format = VncPixelFormat.Format32bpp;
+                        int bpp = format.BytesPerPixel;
+                        fixed (int* sourcePixels = buffer)
+                        fixed (byte* targetPixels = _pixelBuffer)
+                        {
+                            VncPixelFormat.Copy((IntPtr)sourcePixels, bpp * fb.Width, format, subregion,
+                                                (IntPtr)targetPixels, bpp * w, format);
+                        }
 
                         int ix = x / TileSize, iy = y / TileSize;
                         var tileHash = _hash.ComputeHash(_pixelBuffer, 0, w * h * bpp);

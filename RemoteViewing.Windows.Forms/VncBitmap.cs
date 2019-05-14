@@ -56,10 +56,10 @@ namespace RemoteViewing.Windows.Forms
             var data = source.LockBits(winformsRect, ImageLockMode.ReadOnly, PixelFormat.Format32bppRgb);
             try
             {
-                fixed (byte* framebufferData = target.GetBuffer())
+                fixed (int* framebufferData = target.GetPixels())
                 {
                     VncPixelFormat.Copy(data.Scan0, data.Stride, new VncPixelFormat(), sourceRectangle,
-                                        (IntPtr)framebufferData, target.Stride, target.PixelFormat, targetX, targetY);
+                                        (IntPtr)framebufferData, target.Width * 4, VncPixelFormat.Format32bpp, targetX, targetY);
                 }
             }
             finally
@@ -86,10 +86,10 @@ namespace RemoteViewing.Windows.Forms
             var data = target.LockBits(winformsRect, ImageLockMode.WriteOnly, PixelFormat.Format32bppRgb);
             try
             {
-                fixed (byte* framebufferData = source.GetBuffer())
+                fixed (int* framebufferData = source.GetPixels())
                 {
-                    VncPixelFormat.Copy((IntPtr)framebufferData, source.Stride, source.PixelFormat, sourceRectangle,
-                                        data.Scan0, data.Stride, new VncPixelFormat());
+                    VncPixelFormat.Copy((IntPtr)framebufferData, source.Width * 4, VncPixelFormat.Format32bpp, sourceRectangle,
+                                        data.Scan0, data.Stride, VncPixelFormat.Format32bpp);
                 }
             }
             finally

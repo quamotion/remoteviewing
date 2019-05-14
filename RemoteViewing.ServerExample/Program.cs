@@ -69,23 +69,26 @@ namespace RemoteViewing.ServerExample
 
             // Wait for a connection.
             var listener = new TcpListener(IPAddress.Any, 5900); listener.Start();
-            var client = listener.AcceptTcpClient();
 
-            // Set up a framebuffer and options.
-            var options = new VncServerSessionOptions();
-            options.AuthenticationMethod = AuthenticationMethod.Password;
+            while (true)
+            {
+                var client = listener.AcceptTcpClient();
 
-            // Create a session.
-            Session = new VncServerSession();
-            Session.Connected += HandleConnected;
-            Session.ConnectionFailed += HandleConnectionFailed;
-            Session.Closed += HandleClosed;
-            Session.PasswordProvided += HandlePasswordProvided;
-            Session.SetFramebufferSource(new VncScreenFramebufferSource("Hello World", Screen.PrimaryScreen));
-            Session.Connect(client.GetStream(), options);
+                // Set up a framebuffer and options.
+                var options = new VncServerSessionOptions();
+                options.AuthenticationMethod = AuthenticationMethod.Password;
 
+                // Create a session.
+                Session = new VncServerSession();
+                Session.Connected += HandleConnected;
+                Session.ConnectionFailed += HandleConnectionFailed;
+                Session.Closed += HandleClosed;
+                Session.PasswordProvided += HandlePasswordProvided;
+                Session.SetFramebufferSource(new VncScreenFramebufferSource("Hello World", Screen.PrimaryScreen));
+                Session.Connect(client.GetStream(), options);
+            }
             // Let's go.
-            Application.Run();
+
         }
     }
 }

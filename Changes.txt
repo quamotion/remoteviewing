@@ -1,8 +1,17 @@
-0.9.1 (May 11, 2013);
-Added a preliminary VNC server implementation.
-Added clipboard sharing support.
-The underlying client is now free-threaded, and the Windows Forms control handles marshaling.
-The download at http://www.zer7.com/software/remoteviewing includes samples if you need them.
+0.9.4 (November 11, 2018):
+  Fixed the VNC server behavior when an incorrect password is supplied.
+
+0.9.3 (November 2, 2017):
+  Added support for palettized color and 32-bit color.
+
+0.9.2 (October 23, 2016):
+  Added a SizeMode property to the Windows Forms control.
+
+0.9.1 (May 11, 2013):
+  Added a preliminary VNC server implementation.
+  Added clipboard sharing support.
+  The underlying client is now free-threaded, and the Windows Forms control handles marshaling.
+  The download at http://www.zer7.com/software/remoteviewing includes samples if you need them.
 
 0.9.0 (April 22, 2013):
-Test version. Still needs cleanup and better keyboard handling.
+  Test version. Still needs cleanup and better keyboard handling.
