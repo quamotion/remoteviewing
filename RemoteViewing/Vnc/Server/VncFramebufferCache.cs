@@ -132,8 +132,6 @@ namespace RemoteViewing.Vnc.Server
                         subregion.Width = region.Width;
                         subregion.Height = 1;
 
-                        bool isValid = true;
-
                         // For a given y, the x pixels are stored sequentially in the array
                         // starting at y * stride (number of bytes per row); for each x
                         // value there are bpp bytes of data (4 for a 32-bit integer); we are looking
@@ -142,10 +140,9 @@ namespace RemoteViewing.Vnc.Server
                         int srcOffset = (y * this.Framebuffer.Stride) + (bpp * region.X);
                         int length = bpp * region.Width;
 
-                        fixed (byte* actualLinePtr = actualBuffer, bufferedLinePtr = bufferedBuffer)
-                        {
-                            isValid = NativeMethods.memcmp(actualLinePtr + srcOffset, bufferedLinePtr + srcOffset, (uint)length) == 0;
-                        }
+
+                        var isValid = actualBuffer.AsSpan().Slice(srcOffset, length)
+                                          .SequenceCompareTo(bufferedBuffer.AsSpan().Slice(srcOffset, length)) == 0;
 
                         if (!isValid)
                         {
