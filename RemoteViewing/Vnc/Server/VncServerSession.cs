@@ -175,7 +175,7 @@ namespace RemoteViewing.Vnc.Server
         public FramebufferUpdateRequest FramebufferUpdateRequest
         {
             get;
-            private set;
+            internal set;
         }
 
         /// <summary>
@@ -654,6 +654,50 @@ namespace RemoteViewing.Vnc.Server
             }
         }
 
+        internal bool FramebufferSendChanges()
+        {
+            var e = new FramebufferUpdatingEventArgs();
+
+            lock (this.FramebufferUpdateRequestLock)
+            {
+                if (this.FramebufferUpdateRequest != null)
+                {
+                    var fbSource = this.fbSource;
+                    if (fbSource != null)
+                    {
+                        try
+                        {
+                            var newFramebuffer = fbSource.Capture();
+                            if (newFramebuffer != null && newFramebuffer != this.Framebuffer)
+                            {
+                                this.Framebuffer = newFramebuffer;
+                            }
+                        }
+                        catch (Exception exc)
+                        {
+                            this.logger?.Log(LogLevel.Error, () => $"Capturing the framebuffer source failed: {exc}.");
+                        }
+                    }
+
+                    this.OnFramebufferCapturing();
+                    this.OnFramebufferUpdating(e);
+
+                    if (!e.Handled)
+                    {
+                        if (this.fbuAutoCache == null || this.fbuAutoCache.Framebuffer != this.Framebuffer)
+                        {
+                            this.fbuAutoCache = this.CreateFramebufferCache(this.Framebuffer, this.logger);
+                        }
+
+                        e.Handled = true;
+                        e.SentChanges = this.fbuAutoCache.RespondToUpdateRequest(this);
+                    }
+                }
+            }
+
+            return e.SentChanges;
+        }
+
         private void ThreadMain()
         {
             this.requester = new Utility.PeriodicThread();
@@ -920,50 +964,6 @@ namespace RemoteViewing.Vnc.Server
             var clipboard = this.c.ReceiveString(0xffffff);
 
             this.OnRemoteClipboardChanged(new RemoteClipboardChangedEventArgs(clipboard));
-        }
-
-        private bool FramebufferSendChanges()
-        {
-            var e = new FramebufferUpdatingEventArgs();
-
-            lock (this.FramebufferUpdateRequestLock)
-            {
-                if (this.FramebufferUpdateRequest != null)
-                {
-                    var fbSource = this.fbSource;
-                    if (fbSource != null)
-                    {
-                        try
-                        {
-                            var newFramebuffer = fbSource.Capture();
-                            if (newFramebuffer != null && newFramebuffer != this.Framebuffer)
-                            {
-                                this.Framebuffer = newFramebuffer;
-                            }
-                        }
-                        catch(Exception exc)
-                        {
-                            this.logger?.Log(LogLevel.Error, () => $"Capturing the framebuffer source failed: {exc}.");
-                        }
-                    }
-
-                    this.OnFramebufferCapturing();
-                    this.OnFramebufferUpdating(e);
-
-                    if (!e.Handled)
-                    {
-                        if (this.fbuAutoCache == null || this.fbuAutoCache.Framebuffer != this.Framebuffer)
-                        {
-                            this.fbuAutoCache = this.CreateFramebufferCache(this.Framebuffer, this.logger);
-                        }
-
-                        e.Handled = true;
-                        e.SentChanges = this.fbuAutoCache.RespondToUpdateRequest(this);
-                    }
-                }
-            }
-
-            return e.SentChanges;
         }
 
         private void AddRegion(VncRectangle region, VncEncoding encoding, byte[] contents)
