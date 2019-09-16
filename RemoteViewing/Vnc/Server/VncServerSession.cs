@@ -933,10 +933,17 @@ namespace RemoteViewing.Vnc.Server
                     var fbSource = this.fbSource;
                     if (fbSource != null)
                     {
-                        var newFramebuffer = fbSource.Capture();
-                        if (newFramebuffer != null && newFramebuffer != this.Framebuffer)
+                        try
                         {
-                            this.Framebuffer = newFramebuffer;
+                            var newFramebuffer = fbSource.Capture();
+                            if (newFramebuffer != null && newFramebuffer != this.Framebuffer)
+                            {
+                                this.Framebuffer = newFramebuffer;
+                            }
+                        }
+                        catch(Exception exc)
+                        {
+                            this.logger?.Log(LogLevel.Error, () => $"Capturing the framebuffer source failed: {exc}.");
                         }
                     }
 
