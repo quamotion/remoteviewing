@@ -53,7 +53,9 @@ namespace RemoteViewing.NoVncExample
             }
 
             app.UseVncServer(
-                "/novnc",
+                // By default, noVNC will use the /websockify path. You can specify any other
+                // path, though.
+                "/websockify",
                 (context) => new VncContext()
                 {
                     Password = "demo",
@@ -66,6 +68,21 @@ namespace RemoteViewing.NoVncExample
                 {
                     FramebufferSource = new DummyFramebufferSource()
                 });
+
+            app.Use(async (context, next) =>
+            {
+                if (context.Request.Path == "/")
+                {
+                    // Redirect to the vnc_lite page, which ships as part of the noVNC module.
+                    // We used to copy this path to the root, which causes issues with relative
+                    // paths, so it's easier to just redirect there.
+                    context.Response.Redirect("lib/no-vnc/vnc_lite.html?password=demo");
+                }
+                else
+                {
+                    await next.Invoke();
+                }
+            });
 
             app.UseDefaultFiles();
             app.UseStaticFiles();
