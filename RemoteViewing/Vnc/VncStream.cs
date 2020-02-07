@@ -47,6 +47,18 @@ namespace RemoteViewing.Vnc
         }
 
         /// <summary>
+        /// Initializes a new instance of the <see cref="VncStream"/> class.
+        /// </summary>
+        /// <param name="stream">
+        /// The underlying <see cref="Stream"/>.
+        /// </param>
+        public VncStream(Stream stream)
+            : this()
+        {
+            this.Stream = stream;
+        }
+
+        /// <summary>
         /// Gets or sets the underlying <see cref="Stream"/>.
         /// </summary>
         public Stream Stream

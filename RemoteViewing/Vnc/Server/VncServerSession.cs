@@ -293,6 +293,17 @@ namespace RemoteViewing.Vnc.Server
         /// <param name="options">Session options, if any.</param>
         public void Connect(Stream stream, VncServerSessionOptions options = null)
         {
+            this.Connect(stream, options, true);
+        }
+
+        /// <summary>
+        /// Starts a session with a VNC client.
+        /// </summary>
+        /// <param name="stream">The stream containing the connection.</param>
+        /// <param name="options">Session options, if any.</param>
+        /// <param name="startThread">A value indicating whether to start the </param>
+        public void Connect(Stream stream, VncServerSessionOptions options = null, bool startThread = true)
+        {
             Throw.If.Null(stream, "stream");
 
             lock (this.c.SyncRoot)
@@ -302,9 +313,12 @@ namespace RemoteViewing.Vnc.Server
                 this.options = options ?? new VncServerSessionOptions();
                 this.c.Stream = stream;
 
-                this.threadMain = new Thread(this.ThreadMain);
-                this.threadMain.IsBackground = true;
-                this.threadMain.Start();
+                if (startThread)
+                {
+                    this.threadMain = new Thread(this.ThreadMain);
+                    this.threadMain.IsBackground = true;
+                    this.threadMain.Start();
+                }
             }
         }
 
@@ -707,57 +721,60 @@ namespace RemoteViewing.Vnc.Server
                 this.InitFramebufferEncoder();
 
                 AuthenticationMethod[] methods;
-                this.NegotiateVersion(out methods);
-                this.NegotiateSecurity(methods);
-                this.NegotiateDesktop();
-                this.NegotiateEncodings();
 
-                this.requester.Start(() => this.FramebufferSendChanges(), () => this.MaxUpdateRate, false);
-
-                this.IsConnected = true;
-                this.logger?.Log(LogLevel.Info, () => "The client has connected successfully");
-
-                this.OnConnected();
-
-                while (true)
+                if (this.NegotiateVersion(out methods)
+                    && this.NegotiateSecurity(methods))
                 {
-                    var command = (VncMessageType)this.c.ReceiveByte();
+                    this.NegotiateDesktop();
+                    this.NegotiateEncodings();
 
-                    this.logger?.Log(LogLevel.Info, () => $"Received the {command} command.");
+                    this.requester.Start(() => this.FramebufferSendChanges(), () => this.MaxUpdateRate, false);
 
-                    switch (command)
+                    this.IsConnected = true;
+                    this.logger?.Log(LogLevel.Info, () => "The client has connected successfully");
+
+                    this.OnConnected();
+
+                    while (true)
                     {
-                        case VncMessageType.SetPixelFormat:
-                            this.HandleSetPixelFormat();
-                            break;
+                        var command = (VncMessageType)this.c.ReceiveByte();
 
-                        case VncMessageType.SetEncodings:
-                            this.HandleSetEncodings();
-                            break;
+                        this.logger?.Log(LogLevel.Info, () => $"Received the {command} command.");
 
-                        case VncMessageType.FrameBufferUpdateRequest:
-                            this.HandleFramebufferUpdateRequest();
-                            break;
+                        switch (command)
+                        {
+                            case VncMessageType.SetPixelFormat:
+                                this.HandleSetPixelFormat();
+                                break;
 
-                        case VncMessageType.KeyEvent:
-                            this.HandleKeyEvent();
-                            break;
+                            case VncMessageType.SetEncodings:
+                                this.HandleSetEncodings();
+                                break;
 
-                        case VncMessageType.PointerEvent:
-                            this.HandlePointerEvent();
-                            break;
+                            case VncMessageType.FrameBufferUpdateRequest:
+                                this.HandleFramebufferUpdateRequest();
+                                break;
 
-                        case VncMessageType.ClientCutText:
-                            this.HandleReceiveClipboardData();
-                            break;
+                            case VncMessageType.KeyEvent:
+                                this.HandleKeyEvent();
+                                break;
 
-                        default:
-                            VncStream.Require(
-                                false,
-                                "Unsupported command.",
-                                VncFailureReason.UnrecognizedProtocolElement);
+                            case VncMessageType.PointerEvent:
+                                this.HandlePointerEvent();
+                                break;
 
-                            break;
+                            case VncMessageType.ClientCutText:
+                                this.HandleReceiveClipboardData();
+                                break;
+
+                            default:
+                                VncStream.Require(
+                                    false,
+                                    "Unsupported command.",
+                                    VncFailureReason.UnrecognizedProtocolElement);
+
+                                break;
+                        }
                     }
                 }
             }
@@ -780,7 +797,18 @@ namespace RemoteViewing.Vnc.Server
             }
         }
 
-        private void NegotiateVersion(out AuthenticationMethod[] methods)
+        /// <summary>
+        /// Negotiates the version of the RFB protocol used by server and client.
+        /// </summary>
+        /// <param name="methods">
+        /// The authentication methods supported by the server.
+        /// </param>
+        /// <returns>
+        /// This method always returns <see langowrd="true"/>, though <paramref name="methods"/>
+        /// will be an empty array if the client and server failed to negotiate version 3.8
+        /// of the RFB protocol.
+        /// </returns>
+        internal bool NegotiateVersion(out AuthenticationMethod[] methods)
         {
             this.logger?.Log(LogLevel.Info, () => "Negotiating the version.");
 
@@ -797,6 +825,9 @@ namespace RemoteViewing.Vnc.Server
             }
             else
             {
+                // Clients using any version of the RFB protocol other than 3.8 are not supported.
+                // We'll let them know by sending an empty list of authenticaton methods, which will cause
+                // NegotiateSecurity to fail.
                 methods = new AuthenticationMethod[0];
             }
 
@@ -804,27 +835,46 @@ namespace RemoteViewing.Vnc.Server
 
             this.logger?.Log(LogLevel.Info, () => $"The client version is {this.clientVersion}");
             this.logger?.Log(LogLevel.Info, () => supportedMethods);
+
+            return true;
         }
 
-        private void NegotiateSecurity(AuthenticationMethod[] methods)
+        /// <summary>
+        /// Negotiates the security mechanism used to authenticate the client, and authenticates the client.
+        /// </summary>
+        /// <param name="methods">
+        /// The authentication methods supported by this server.
+        /// </param>
+        /// <returns>
+        /// <see langword="true"/> if the client authenticated successfully; otherwise, <see langword="false"/>.
+        /// </returns>
+        /// <seealso href="https://github.com/rfbproto/rfbproto/blob/master/rfbproto.rst#712security"/>
+        internal bool NegotiateSecurity(AuthenticationMethod[] methods)
         {
             this.logger?.Log(LogLevel.Info, () => "Negotiating security");
 
             this.c.SendByte((byte)methods.Length);
-            VncStream.Require(
-                methods.Length > 0,
-                                  "Client is not allowed in.",
-                                  VncFailureReason.NoSupportedAuthenticationMethods);
+
+            if (methods.Length == 0)
+            {
+                this.logger?.Log(LogLevel.Warn, () => "The server and client could not agree on any authentication method.");
+                this.c.SendString("The server and client could not agree on any authentication method.", includeLength: true);
+                return false;
+            }
+
             foreach (var method in methods)
             {
                 this.c.SendByte((byte)method);
             }
 
             var selectedMethod = (AuthenticationMethod)this.c.ReceiveByte();
-            VncStream.Require(
-                methods.Contains(selectedMethod),
-                              "Invalid authentication method.",
-                              VncFailureReason.UnrecognizedProtocolElement);
+            if (!methods.Contains(selectedMethod))
+            {
+                this.c.SendUInt32BE(1);
+                this.logger?.Log(LogLevel.Info, () => "Invalid authentication method.");
+                this.c.SendString("Invalid authentication method.", includeLength: true);
+                return false;
+            }
 
             bool success = true;
             if (selectedMethod == AuthenticationMethod.Password)
@@ -845,13 +895,18 @@ namespace RemoteViewing.Vnc.Server
             }
 
             this.c.SendUInt32BE(success ? 0 : (uint)1);
-            VncStream.Require(
-                success,
-                              "Failed to authenticate.",
-                              VncFailureReason.AuthenticationFailed);
+
+            if (!success)
+            {
+                this.logger?.Log(LogLevel.Info, () => "The user failed to authenticate.");
+                this.c.SendString("Failed to authenticate", includeLength: true);
+                return false;
+            }
 
             this.logger?.Log(LogLevel.Info, () => "The user authenticated successfully.");
             this.securityNegotiated = true;
+
+            return true;
         }
 
         private void NegotiateDesktop()
