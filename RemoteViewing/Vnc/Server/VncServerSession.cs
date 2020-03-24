@@ -131,7 +131,7 @@ namespace RemoteViewing.Vnc.Server
 
         /// <summary>
         /// Occurs when the framebuffer needs to be updated.
-        /// If you do not set <see cref="FramebufferUpdatingEventArgs.Handled"/>,
+        /// If you do not set <see cref="FramebufferUpdatingEventArgs.SentChanges"/>,
         /// <see cref="VncServerSession"/> will determine the updated regions itself.
         ///
         /// <see cref="VncServerSession.FramebufferUpdateRequestLock"/> is held automatically while this event is raised.
@@ -530,6 +530,162 @@ namespace RemoteViewing.Vnc.Server
             }
         }
 
+        internal bool FramebufferSendChanges()
+        {
+            var e = new FramebufferUpdatingEventArgs();
+
+            lock (this.FramebufferUpdateRequestLock)
+            {
+                if (this.FramebufferUpdateRequest != null)
+                {
+                    var fbSource = this.fbSource;
+                    if (fbSource != null)
+                    {
+                        try
+                        {
+                            var newFramebuffer = fbSource.Capture();
+                            if (newFramebuffer != null && newFramebuffer != this.Framebuffer)
+                            {
+                                this.Framebuffer = newFramebuffer;
+                            }
+                        }
+                        catch (Exception exc)
+                        {
+                            this.logger?.Log(LogLevel.Error, () => $"Capturing the framebuffer source failed: {exc}.");
+                        }
+                    }
+
+                    this.OnFramebufferCapturing();
+                    this.OnFramebufferUpdating(e);
+
+                    if (!e.Handled)
+                    {
+                        if (this.fbuAutoCache == null || this.fbuAutoCache.Framebuffer != this.Framebuffer)
+                        {
+                            this.fbuAutoCache = this.CreateFramebufferCache(this.Framebuffer, this.logger);
+                        }
+
+                        e.Handled = true;
+                        e.SentChanges = this.fbuAutoCache.RespondToUpdateRequest(this);
+                    }
+                }
+            }
+
+            return e.SentChanges;
+        }
+
+        /// <summary>
+        /// Negotiates the version of the RFB protocol used by server and client.
+        /// </summary>
+        /// <param name="methods">
+        /// The authentication methods supported by the server.
+        /// </param>
+        /// <returns>
+        /// This method always returns <see langowrd="true"/>, though <paramref name="methods"/>
+        /// will be an empty array if the client and server failed to negotiate version 3.8
+        /// of the RFB protocol.
+        /// </returns>
+        internal bool NegotiateVersion(out AuthenticationMethod[] methods)
+        {
+            this.logger?.Log(LogLevel.Info, () => "Negotiating the version.");
+
+            this.c.SendVersion(new Version(3, 8));
+
+            this.clientVersion = this.c.ReceiveVersion();
+            if (this.clientVersion == new Version(3, 8))
+            {
+                methods = new[]
+                {
+                    this.options.AuthenticationMethod == AuthenticationMethod.Password
+                        ? AuthenticationMethod.Password : AuthenticationMethod.None
+                };
+            }
+            else
+            {
+                // Clients using any version of the RFB protocol other than 3.8 are not supported.
+                // We'll let them know by sending an empty list of authenticaton methods, which will cause
+                // NegotiateSecurity to fail.
+                methods = new AuthenticationMethod[0];
+            }
+
+            var supportedMethods = $"Supported autentication method are {string.Join(" ", methods)}";
+
+            this.logger?.Log(LogLevel.Info, () => $"The client version is {this.clientVersion}");
+            this.logger?.Log(LogLevel.Info, () => supportedMethods);
+
+            return true;
+        }
+
+        /// <summary>
+        /// Negotiates the security mechanism used to authenticate the client, and authenticates the client.
+        /// </summary>
+        /// <param name="methods">
+        /// The authentication methods supported by this server.
+        /// </param>
+        /// <returns>
+        /// <see langword="true"/> if the client authenticated successfully; otherwise, <see langword="false"/>.
+        /// </returns>
+        /// <seealso href="https://github.com/rfbproto/rfbproto/blob/master/rfbproto.rst#712security"/>
+        internal bool NegotiateSecurity(AuthenticationMethod[] methods)
+        {
+            this.logger?.Log(LogLevel.Info, () => "Negotiating security");
+
+            this.c.SendByte((byte)methods.Length);
+
+            if (methods.Length == 0)
+            {
+                this.logger?.Log(LogLevel.Warn, () => "The server and client could not agree on any authentication method.");
+                this.c.SendString("The server and client could not agree on any authentication method.", includeLength: true);
+                return false;
+            }
+
+            foreach (var method in methods)
+            {
+                this.c.SendByte((byte)method);
+            }
+
+            var selectedMethod = (AuthenticationMethod)this.c.ReceiveByte();
+            if (!methods.Contains(selectedMethod))
+            {
+                this.c.SendUInt32BE(1);
+                this.logger?.Log(LogLevel.Info, () => "Invalid authentication method.");
+                this.c.SendString("Invalid authentication method.", includeLength: true);
+                return false;
+            }
+
+            bool success = true;
+            if (selectedMethod == AuthenticationMethod.Password)
+            {
+                var challenge = this.passwordChallenge.GenerateChallenge();
+                using (new Utility.AutoClear(challenge))
+                {
+                    this.c.Send(challenge);
+
+                    var response = this.c.Receive(16);
+                    using (new Utility.AutoClear(response))
+                    {
+                        var e = new PasswordProvidedEventArgs(this.passwordChallenge, challenge, response);
+                        this.OnPasswordProvided(e);
+                        success = e.IsAuthenticated;
+                    }
+                }
+            }
+
+            this.c.SendUInt32BE(success ? 0 : (uint)1);
+
+            if (!success)
+            {
+                this.logger?.Log(LogLevel.Info, () => "The user failed to authenticate.");
+                this.c.SendString("Failed to authenticate", includeLength: true);
+                return false;
+            }
+
+            this.logger?.Log(LogLevel.Info, () => "The user authenticated successfully.");
+            this.securityNegotiated = true;
+
+            return true;
+        }
+
         /// <summary>
         /// Raises the <see cref="PasswordProvided"/> event.
         /// </summary>
@@ -668,50 +824,6 @@ namespace RemoteViewing.Vnc.Server
             }
         }
 
-        internal bool FramebufferSendChanges()
-        {
-            var e = new FramebufferUpdatingEventArgs();
-
-            lock (this.FramebufferUpdateRequestLock)
-            {
-                if (this.FramebufferUpdateRequest != null)
-                {
-                    var fbSource = this.fbSource;
-                    if (fbSource != null)
-                    {
-                        try
-                        {
-                            var newFramebuffer = fbSource.Capture();
-                            if (newFramebuffer != null && newFramebuffer != this.Framebuffer)
-                            {
-                                this.Framebuffer = newFramebuffer;
-                            }
-                        }
-                        catch (Exception exc)
-                        {
-                            this.logger?.Log(LogLevel.Error, () => $"Capturing the framebuffer source failed: {exc}.");
-                        }
-                    }
-
-                    this.OnFramebufferCapturing();
-                    this.OnFramebufferUpdating(e);
-
-                    if (!e.Handled)
-                    {
-                        if (this.fbuAutoCache == null || this.fbuAutoCache.Framebuffer != this.Framebuffer)
-                        {
-                            this.fbuAutoCache = this.CreateFramebufferCache(this.Framebuffer, this.logger);
-                        }
-
-                        e.Handled = true;
-                        e.SentChanges = this.fbuAutoCache.RespondToUpdateRequest(this);
-                    }
-                }
-            }
-
-            return e.SentChanges;
-        }
-
         private void ThreadMain()
         {
             this.requester = new Utility.PeriodicThread();
@@ -795,118 +907,6 @@ namespace RemoteViewing.Vnc.Server
             {
                 this.OnConnectionFailed();
             }
-        }
-
-        /// <summary>
-        /// Negotiates the version of the RFB protocol used by server and client.
-        /// </summary>
-        /// <param name="methods">
-        /// The authentication methods supported by the server.
-        /// </param>
-        /// <returns>
-        /// This method always returns <see langowrd="true"/>, though <paramref name="methods"/>
-        /// will be an empty array if the client and server failed to negotiate version 3.8
-        /// of the RFB protocol.
-        /// </returns>
-        internal bool NegotiateVersion(out AuthenticationMethod[] methods)
-        {
-            this.logger?.Log(LogLevel.Info, () => "Negotiating the version.");
-
-            this.c.SendVersion(new Version(3, 8));
-
-            this.clientVersion = this.c.ReceiveVersion();
-            if (this.clientVersion == new Version(3, 8))
-            {
-                methods = new[]
-                {
-                    this.options.AuthenticationMethod == AuthenticationMethod.Password
-                        ? AuthenticationMethod.Password : AuthenticationMethod.None
-                };
-            }
-            else
-            {
-                // Clients using any version of the RFB protocol other than 3.8 are not supported.
-                // We'll let them know by sending an empty list of authenticaton methods, which will cause
-                // NegotiateSecurity to fail.
-                methods = new AuthenticationMethod[0];
-            }
-
-            var supportedMethods = $"Supported autentication method are {string.Join(" ", methods)}";
-
-            this.logger?.Log(LogLevel.Info, () => $"The client version is {this.clientVersion}");
-            this.logger?.Log(LogLevel.Info, () => supportedMethods);
-
-            return true;
-        }
-
-        /// <summary>
-        /// Negotiates the security mechanism used to authenticate the client, and authenticates the client.
-        /// </summary>
-        /// <param name="methods">
-        /// The authentication methods supported by this server.
-        /// </param>
-        /// <returns>
-        /// <see langword="true"/> if the client authenticated successfully; otherwise, <see langword="false"/>.
-        /// </returns>
-        /// <seealso href="https://github.com/rfbproto/rfbproto/blob/master/rfbproto.rst#712security"/>
-        internal bool NegotiateSecurity(AuthenticationMethod[] methods)
-        {
-            this.logger?.Log(LogLevel.Info, () => "Negotiating security");
-
-            this.c.SendByte((byte)methods.Length);
-
-            if (methods.Length == 0)
-            {
-                this.logger?.Log(LogLevel.Warn, () => "The server and client could not agree on any authentication method.");
-                this.c.SendString("The server and client could not agree on any authentication method.", includeLength: true);
-                return false;
-            }
-
-            foreach (var method in methods)
-            {
-                this.c.SendByte((byte)method);
-            }
-
-            var selectedMethod = (AuthenticationMethod)this.c.ReceiveByte();
-            if (!methods.Contains(selectedMethod))
-            {
-                this.c.SendUInt32BE(1);
-                this.logger?.Log(LogLevel.Info, () => "Invalid authentication method.");
-                this.c.SendString("Invalid authentication method.", includeLength: true);
-                return false;
-            }
-
-            bool success = true;
-            if (selectedMethod == AuthenticationMethod.Password)
-            {
-                var challenge = this.passwordChallenge.GenerateChallenge();
-                using (new Utility.AutoClear(challenge))
-                {
-                    this.c.Send(challenge);
-
-                    var response = this.c.Receive(16);
-                    using (new Utility.AutoClear(response))
-                    {
-                        var e = new PasswordProvidedEventArgs(this.passwordChallenge, challenge, response);
-                        this.OnPasswordProvided(e);
-                        success = e.IsAuthenticated;
-                    }
-                }
-            }
-
-            this.c.SendUInt32BE(success ? 0 : (uint)1);
-
-            if (!success)
-            {
-                this.logger?.Log(LogLevel.Info, () => "The user failed to authenticate.");
-                this.c.SendString("Failed to authenticate", includeLength: true);
-                return false;
-            }
-
-            this.logger?.Log(LogLevel.Info, () => "The user authenticated successfully.");
-            this.securityNegotiated = true;
-
-            return true;
         }
 
         private void NegotiateDesktop()

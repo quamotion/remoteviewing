@@ -140,7 +140,6 @@ namespace RemoteViewing.Vnc.Server
                         int srcOffset = (y * this.Framebuffer.Stride) + (bpp * region.X);
                         int length = bpp * region.Width;
 
-
                         var isValid = actualBuffer.AsSpan().Slice(srcOffset, length)
                                           .SequenceCompareTo(bufferedBuffer.AsSpan().Slice(srcOffset, length)) == 0;
 
