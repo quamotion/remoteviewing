@@ -30,9 +30,9 @@ using System;
 using System.Net;
 using System.Net.Sockets;
 using System.Windows.Forms;
+using RemoteViewing.NoVncExample;
 using RemoteViewing.Vnc;
 using RemoteViewing.Vnc.Server;
-using RemoteViewing.Windows.Forms.Server;
 
 namespace RemoteViewing.ServerExample
 {
@@ -68,7 +68,7 @@ namespace RemoteViewing.ServerExample
             Console.WriteLine("Try to connect! The password is: {0}", password);
 
             // Wait for a connection.
-            var listener = new TcpListener(IPAddress.Any, 5900);
+            var listener = new TcpListener(IPAddress.Loopback, 5900);
             listener.Start();
             var client = listener.AcceptTcpClient();
 
@@ -76,17 +76,13 @@ namespace RemoteViewing.ServerExample
             var options = new VncServerSessionOptions();
             options.AuthenticationMethod = AuthenticationMethod.Password;
 
-            // Virtual mouse
-            var mouse = new VncMouse();
-
             // Create a session.
             session = new VncServerSession();
             session.Connected += HandleConnected;
             session.ConnectionFailed += HandleConnectionFailed;
             session.Closed += HandleClosed;
             session.PasswordProvided += HandlePasswordProvided;
-            session.SetFramebufferSource(new VncScreenFramebufferSource("Hello World", Screen.PrimaryScreen));
-            session.PointerChanged += mouse.OnMouseUpdate;
+            session.SetFramebufferSource(new DummyFramebufferSource());
             session.Connect(client.GetStream(), options);
 
             // Let's go.

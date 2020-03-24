@@ -74,7 +74,7 @@ namespace RemoteViewing.Vnc
                 throw new ArgumentOutOfRangeException(nameof(bitsPerPixel));
             }
 
-            if (bitDepth != 8 && bitDepth != 24)
+            if (bitDepth != 6 && bitDepth != 24)
             {
                 throw new ArgumentOutOfRangeException(nameof(bitDepth));
             }
