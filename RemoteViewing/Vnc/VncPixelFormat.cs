@@ -35,18 +35,6 @@ namespace RemoteViewing.Vnc
     /// </summary>
     public sealed class VncPixelFormat
     {
-        private int bitsPerPixel;
-        private int bytesPerPixel;
-        private int bitDepth;
-        private int redBits;
-        private int redShift;
-        private int greenBits;
-        private int greenShift;
-        private int blueBits;
-        private int blueShift;
-        private bool isLittleEndian;
-        private bool isPalettized;
-
         /// <summary>
         /// Initializes a new instance of the <see cref="VncPixelFormat"/> class,
         /// with 8 bits each of red, green, and blue channels.
@@ -81,23 +69,42 @@ namespace RemoteViewing.Vnc
             bool isLittleEndian = true,
             bool isPalettized = false)
         {
-            Throw.If.False(bitsPerPixel == 8 || bitsPerPixel == 16 || bitsPerPixel == 32, "bitsPerPixel");
-            Throw.If.False(bitDepth == 24, "bitDepth");
-            Throw.If.False(redBits >= 0 && redShift >= 0 && redBits <= bitDepth && redShift <= bitDepth, "redBits");
-            Throw.If.False(greenBits >= 0 && greenShift >= 0 && greenBits <= bitDepth && greenShift <= bitDepth, "greenBits");
-            Throw.If.False(blueBits >= 0 && blueShift >= 0 && blueBits <= bitDepth && blueShift <= bitDepth, "blueBits");
+            if (bitsPerPixel != 8 && bitsPerPixel != 16 && bitsPerPixel != 32)
+            {
+                throw new ArgumentOutOfRangeException(nameof(bitsPerPixel));
+            }
 
-            this.bitsPerPixel = bitsPerPixel;
-            this.bytesPerPixel = bitsPerPixel / 8;
-            this.bitDepth = bitDepth;
-            this.redBits = redBits;
-            this.redShift = redShift;
-            this.greenBits = greenBits;
-            this.greenShift = greenShift;
-            this.blueBits = blueBits;
-            this.blueShift = blueShift;
-            this.isLittleEndian = isLittleEndian;
-            this.isPalettized = isPalettized;
+            if (bitDepth != 8 && bitDepth != 24)
+            {
+                throw new ArgumentOutOfRangeException(nameof(bitDepth));
+            }
+
+            if (!(redBits >= 0 && redShift >= 0 && redBits <= bitDepth && redShift <= bitDepth))
+            {
+                throw new ArgumentOutOfRangeException(nameof(redBits));
+            }
+
+            if (!(greenBits >= 0 && greenShift >= 0 && greenBits <= bitDepth && greenShift <= bitDepth))
+            {
+                throw new ArgumentOutOfRangeException(nameof(greenBits));
+            }
+
+            if (!(blueBits >= 0 && blueShift >= 0 && blueBits <= bitDepth && blueShift <= bitDepth))
+            {
+                throw new ArgumentOutOfRangeException(nameof(blueBits));
+            }
+
+            this.BitsPerPixel = bitsPerPixel;
+            this.BytesPerPixel = bitsPerPixel / 8;
+            this.BitDepth = bitDepth;
+            this.RedBits = redBits;
+            this.RedShift = redShift;
+            this.GreenBits = greenBits;
+            this.GreenShift = greenShift;
+            this.BlueBits = blueBits;
+            this.BlueShift = blueShift;
+            this.IsLittleEndian = isLittleEndian;
+            this.IsPalettized = isPalettized;
         }
 
         /// <summary>
@@ -108,50 +115,32 @@ namespace RemoteViewing.Vnc
         /// <summary>
         /// Gets the number of bits used to store a pixel.
         /// </summary>
-        public int BitsPerPixel
-        {
-            get { return this.bitsPerPixel; }
-        }
+        public int BitsPerPixel { get; private set; }
 
         /// <summary>
         /// Gets the number of bytes used to store a pixel.
         /// </summary>
-        public int BytesPerPixel
-        {
-            get { return this.bytesPerPixel; }
-        }
+        public int BytesPerPixel { get; private set; }
 
         /// <summary>
         /// Gets the bit depth of the pixel.
         /// </summary>
-        public int BitDepth
-        {
-            get { return this.bitDepth; }
-        }
+        public int BitDepth { get; private set; }
 
         /// <summary>
         /// Gets the number of bits used to represent red.
         /// </summary>
-        public int RedBits
-        {
-            get { return this.redBits; }
-        }
+        public int RedBits { get; private set; }
 
         /// <summary>
         /// Gets the number of bits left the red value is shifted.
         /// </summary>
-        public int RedShift
-        {
-            get { return this.redShift; }
-        }
+        public int RedShift { get; private set; }
 
         /// <summary>
         /// Gets the number of bits used to represent green.
         /// </summary>
-        public int GreenBits
-        {
-            get { return this.greenBits; }
-        }
+        public int GreenBits { get; private set; }
 
         /// <summary>
         /// Gets the maximum value of the red color.
@@ -192,26 +181,17 @@ namespace RemoteViewing.Vnc
         /// <summary>
         /// Gets the number of bits left the green value is shifted.
         /// </summary>
-        public int GreenShift
-        {
-            get { return this.greenShift; }
-        }
+        public int GreenShift { get; private set; }
 
         /// <summary>
         /// Gets the number of bits used to represent blue.
         /// </summary>
-        public int BlueBits
-        {
-            get { return this.blueBits; }
-        }
+        public int BlueBits { get; private set; }
 
         /// <summary>
         /// Gets the number of bits left the blue value is shifted.
         /// </summary>
-        public int BlueShift
-        {
-            get { return this.blueShift; }
-        }
+        public int BlueShift { get; private set; }
 
         /// <summary>
         /// Gets a value indicating whether the pixel is little-endian.
@@ -219,10 +199,7 @@ namespace RemoteViewing.Vnc
         /// <value>
         /// <c>true</c> if the pixel is little-endian, or <c>false</c> if it is big-endian.
         /// </value>
-        public bool IsLittleEndian
-        {
-            get { return this.isLittleEndian; }
-        }
+        public bool IsLittleEndian { get; private set; }
 
         /// <summary>
         /// Gets a value indicating whether the framebuffer stores palette indices.
@@ -230,10 +207,7 @@ namespace RemoteViewing.Vnc
         /// <value>
         /// <c>true</c> if the framebuffer stores palette indices, or <c>false</c> if it stores colors.
         /// </value>
-        public bool IsPalettized
-        {
-            get { return this.isPalettized; }
-        }
+        public bool IsPalettized { get; private set; }
 
         /// <summary>
         /// Gets the size of a <see cref="VncPixelFormat"/> when serialized to a <see cref="byte"/> array.
@@ -273,7 +247,15 @@ namespace RemoteViewing.Vnc
             int targetX = 0,
             int targetY = 0)
         {
-            Throw.If.Null(source, "source").Null(target, "target");
+            if (source == null)
+            {
+                throw new ArgumentNullException(nameof(source));
+            }
+
+            if (target == null)
+            {
+                throw new ArgumentNullException(nameof(target));
+            }
 
             if (sourceRectangle.IsEmpty)
             {
@@ -338,8 +320,25 @@ namespace RemoteViewing.Vnc
             int targetX = 0,
             int targetY = 0)
         {
-            Throw.If.True(source == IntPtr.Zero, "source").True(target == IntPtr.Zero, "target");
-            Throw.If.Null(sourceFormat, "sourceFormat").Null(targetFormat, "targetFormat");
+            if (source == IntPtr.Zero)
+            {
+                throw new ArgumentOutOfRangeException(nameof(source));
+            }
+
+            if (target == IntPtr.Zero)
+            {
+                throw new ArgumentOutOfRangeException(nameof(target));
+            }
+
+            if (sourceFormat == null)
+            {
+                throw new ArgumentOutOfRangeException(nameof(sourceFormat));
+            }
+
+            if (targetFormat == null)
+            {
+                throw new ArgumentNullException(nameof(targetFormat));
+            }
 
             if (sourceRectangle.IsEmpty)
             {
@@ -443,7 +442,7 @@ namespace RemoteViewing.Vnc
         /// <inheritdoc />
         public override int GetHashCode()
         {
-            return this.bitsPerPixel ^ this.redBits;
+            return this.BitsPerPixel ^ this.RedBits;
         }
 
         /// <inheritdoc/>
