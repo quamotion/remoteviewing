@@ -126,6 +126,13 @@ namespace RemoteViewing.Vnc
         JRLE = 22,
 
         /// <summary>
+        /// The Tight PNG encoding is a variant of the <see cref="Tight"/> encoding that disallows the
+        /// BasicCompression type and replaces it with a new PngCompression type.
+        /// </summary>
+        /// <seealso href="https://github.com/rfbproto/rfbproto/blob/master/rfbproto.rst#tight-png-encoding"/>
+        TightPng = -260,
+
+        /// <summary>
         /// A client which requests the <see cref="Fence"/> pseudo-encoding is declaring that it supports and/or wishes to use
         /// the Fence extension.
         /// </summary>
@@ -365,5 +372,59 @@ namespace RemoteViewing.Vnc
         /// VMWare Virtual Machine Errata State Pseudo-encoding
         /// </summary>
         VMWj = 0x574d566a,
+
+        /// <summary>
+        /// QEMU Pointer Motion Change Pseudo-encoding
+        /// </summary>
+        /// <seealso href="https://github.com/rfbproto/rfbproto/blob/master/rfbproto.rst#qemu-pointer-motion-change-pseudo-encoding"/>
+        QemuPointerMotionChange = -257,
+
+        /// <summary>
+        /// QEMU Extended Key Event Pseudo-encoding
+        /// </summary>
+        /// <seealso href="https://github.com/rfbproto/rfbproto/blob/master/rfbproto.rst#qemu-extended-key-event-pseudo-encoding"/>
+        QemuExtendedKeyEvent = -258,
+
+        /// <summary>
+        /// QEMU Audio Pseudo-encoding
+        /// </summary>
+        /// <seealso href="https://github.com/rfbproto/rfbproto/blob/master/rfbproto.rst#qemu-audio-pseudo-encoding"/>
+        QemuAudio = -259,
+
+        /// <summary>
+        /// LED State Pseudo-encoding
+        /// </summary>
+        /// <seealso href="https://github.com/rfbproto/rfbproto/blob/master/rfbproto.rst#led-state-pseudo-encoding"/>
+        LedState = -261,
+
+        /// <summary>
+        /// gii Pseudo-encoding
+        /// </summary>
+        /// <seealso href="https://github.com/rfbproto/rfbproto/blob/master/rfbproto.rst#gii-pseudo-encoding"/>
+        Gii = -305,
+
+        /// <summary>
+        /// DesktopName Pseudo-encoding
+        /// </summary>
+        /// <seealso href="https://github.com/rfbproto/rfbproto/blob/master/rfbproto.rst#desktopname-pseudo-encoding"/>
+        DesktopName = -307,
+
+        /// <summary>
+        /// ExtendedDesktopSize Pseudo-encoding
+        /// </summary>
+        /// <seealso href="https://github.com/rfbproto/rfbproto/blob/master/rfbproto.rst#extendeddesktopsize-pseudo-encoding"/>
+        ExtendedDesktopSize = -308,
+
+        /// <summary>
+        /// xvp Pseudo-encoding
+        /// </summary>
+        /// <seealso href="https://github.com/rfbproto/rfbproto/blob/master/rfbproto.rst#xvp-pseudo-encoding"/>
+        Xvp = -309,
+
+        /// <summary>
+        /// ContinuousUpdates Pseudo-encoding
+        /// </summary>
+        /// <seealso href="https://github.com/rfbproto/rfbproto/blob/master/rfbproto.rst#continuousupdates-pseudo-encoding"/>
+        ContinuousUpdate = -313,
     }
 }
