@@ -29,6 +29,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 using RemoteViewing.Logging;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -63,6 +64,7 @@ namespace RemoteViewing.Vnc.Server
         MemoryStream _zlibMemoryStream;
         DeflateStream _zlibDeflater;
 #endif
+        private VncEncoder encoder = new RawEncoder();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="VncServerSession"/> class.
@@ -520,9 +522,12 @@ namespace RemoteViewing.Vnc.Server
 
                 foreach (var rectangle in this.fbuRectangles)
                 {
+                    Debug.Assert(rectangle.Encoding == VncEncoding.Raw, "Rectangles should be in raw format");
+
                     this.c.SendRectangle(rectangle.Region);
-                    this.c.SendUInt32BE((uint)rectangle.Encoding);
-                    this.c.Send(rectangle.Contents);
+                    this.c.SendUInt32BE((uint)this.encoder.Encoding);
+
+                    this.encoder.Send(this.c.Stream, this.clientPixelFormat, rectangle.Contents);
                 }
 
                 this.fbuRectangles.Clear();
