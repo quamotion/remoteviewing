@@ -111,7 +111,7 @@ namespace RemoteViewing.Vnc.Server
                         {
                             if (i == contents.Length - 4)
                             {
-                                deflater.FlushMode = FlushType.Finish;
+                                deflater.FlushMode = FlushType.Full;
                             }
 
                             deflater.Write(contents, i, 3);
