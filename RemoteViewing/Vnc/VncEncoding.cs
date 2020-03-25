@@ -32,7 +32,7 @@ namespace RemoteViewing.Vnc
     /// Defines the encoding format used by the client and the server.
     /// </summary>
     /// <seealso href="http://www.iana.org/assignments/rfb/rfb.xml#rfb-4"/>
-    internal enum VncEncoding
+    public enum VncEncoding
     {
         /// <summary>
         /// The data is encoded in the raw encoding format.

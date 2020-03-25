@@ -34,7 +34,7 @@ namespace RemoteViewing.Vnc.Server
     /// <summary>
     /// A common base class for VNC encoders.
     /// </summary>
-    internal abstract class VncEncoder
+    public abstract class VncEncoder
     {
         /// <summary>
         /// Gets the <see cref="VncEncoder"/> protocol implemented by this <see cref="VncEncoder"/>.

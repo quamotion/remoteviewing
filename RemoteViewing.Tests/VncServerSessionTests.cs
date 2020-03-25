@@ -258,5 +258,58 @@ namespace RemoteViewing.Tests
                 Assert.Equal(stream.Input.Length, stream.Input.Position);
             }
         }
+
+        /// <summary>
+        /// Tests the <see cref="VncServerSession.Encoders"/> property.
+        /// </summary>
+        [Fact]
+        public void DefaultEncodersTest()
+        {
+            var session = new VncServerSession();
+            Assert.Collection(
+                session.Encoders,
+                (e) => Assert.IsType<TightEncoder>(e),
+                (e) => Assert.IsType<ZlibEncoder>(e));
+        }
+
+        /// <summary>
+        /// Tests the <see cref="VncServerSession.HandleSetEncodings"/> method.
+        /// </summary>
+        /// <param name="forceConnect">
+        /// A value indicating whether to set <see cref="VncServerSession.IsConnected"/>.
+        /// </param>
+        /// <param name="expectedEncoding">
+        /// The expected encoding.
+        /// </param>
+        [InlineData(false, VncEncoding.Raw)]
+        [InlineData(true, VncEncoding.Zlib)]
+        [Theory]
+        public void HandleSetEncodingsTest(bool forceConnect, VncEncoding expectedEncoding)
+        {
+            using (var stream = new TestStream())
+            {
+                // Have the client send a list of supported encodings, including
+                // Raw and zlib
+                VncStream clientStream = new VncStream(stream.Input);
+                clientStream.SendByte(0);
+                clientStream.SendUInt16BE(2); // 2 encodings are supported
+                clientStream.SendUInt32BE((uint)VncEncoding.Raw);
+                clientStream.SendUInt32BE((uint)VncEncoding.Zlib);
+                stream.Input.Position = 0;
+
+                var session = new VncServerSession();
+                session.Connect(stream, null, startThread: false, forceConnected: forceConnect);
+
+                session.HandleSetEncodings();
+
+                // The server should not have written any output, but switched
+                // to zlib encoding
+                VncStream serverStream = new VncStream(stream.Output);
+                Assert.Equal(0, serverStream.Stream.Length);
+                stream.Output.Position = 0;
+
+                Assert.Equal(expectedEncoding, session.Encoder.Encoding);
+            }
+        }
     }
 }
