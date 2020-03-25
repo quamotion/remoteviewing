@@ -29,6 +29,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 using RemoteViewing.Logging;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -60,11 +61,6 @@ namespace RemoteViewing.Vnc.Server
         private object specialSync = new object();
         private Thread threadMain;
         private bool securityNegotiated = false;
-#if DEFLATESTREAM_FLUSH_WORKS
-        MemoryStream _zlibMemoryStream;
-        DeflateStream _zlibDeflater;
-#endif
-        private VncEncoder encoder = new RawEncoder();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="VncServerSession"/> class.
@@ -276,6 +272,22 @@ namespace RemoteViewing.Vnc.Server
         { get; set; } = (framebuffer, log) => new VncFramebufferCache(framebuffer, log);
 
         /// <summary>
+        /// Gets a list of encoders which this <see cref="VncServerSession"/> can use.
+        /// </summary>
+        public Collection<VncEncoder> Encoders
+        { get; } =
+            new Collection<VncEncoder>()
+            {
+                new TightEncoder(),
+                new ZlibEncoder(),
+            };
+
+        /// <summary>
+        /// Gets or sets the encoder which is currently in use.
+        /// </summary>
+        public VncEncoder Encoder { get; protected set; } = new RawEncoder();
+
+        /// <summary>
         /// Closes the connection with the remote client.
         /// </summary>
         public void Close()
@@ -304,7 +316,8 @@ namespace RemoteViewing.Vnc.Server
         /// <param name="stream">The stream containing the connection.</param>
         /// <param name="options">Session options, if any.</param>
         /// <param name="startThread">A value indicating whether to start the </param>
-        public void Connect(Stream stream, VncServerSessionOptions options = null, bool startThread = true)
+        /// <param name="forceConnected">A value indicated whether to immediately set <see cref="IsConnected"/>. Intended for unit tests only.</param>
+        public void Connect(Stream stream, VncServerSessionOptions options = null, bool startThread = true, bool forceConnected = false)
         {
             Throw.If.Null(stream, "stream");
 
@@ -320,6 +333,11 @@ namespace RemoteViewing.Vnc.Server
                     this.threadMain = new Thread(this.ThreadMain);
                     this.threadMain.IsBackground = true;
                     this.threadMain.Start();
+                }
+
+                if (forceConnected)
+                {
+                    this.IsConnected = true;
                 }
             }
         }
@@ -456,31 +474,7 @@ namespace RemoteViewing.Vnc.Server
                 w * bpp,
                 cpf);
 
-#if DEFLATESTREAM_FLUSH_WORKS
-            if (_clientEncoding.Contains(VncEncoding.Zlib))
-            {
-                _zlibMemoryStream.Position = 0;
-                _zlibMemoryStream.SetLength(0);
-                _zlibMemoryStream.Write(new byte[4], 0, 4);
-
-                if (_zlibDeflater == null)
-                {
-                    _zlibMemoryStream.Write(new[] { (byte)120, (byte)218 }, 0, 2);
-                    _zlibDeflater = new DeflateStream(_zlibMemoryStream, CompressionMode.Compress, false);
-                }
-
-                _zlibDeflater.Write(contents, 0, contents.Length);
-                _zlibDeflater.Flush();
-                contents = _zlibMemoryStream.ToArray();
-
-                VncUtility.EncodeUInt32BE(contents, 0, (uint)(contents.Length - 4));
-                AddRegion(region, VncEncoding.Zlib, contents);
-            }
-            else
-#endif
-            {
-                this.AddRegion(region, VncEncoding.Raw, contents);
-            }
+            this.AddRegion(region, VncEncoding.Raw, contents);
         }
 
         /// <inheritdoc/>
@@ -525,9 +519,9 @@ namespace RemoteViewing.Vnc.Server
                     Debug.Assert(rectangle.Encoding == VncEncoding.Raw, "Rectangles should be in raw format");
 
                     this.c.SendRectangle(rectangle.Region);
-                    this.c.SendUInt32BE((uint)this.encoder.Encoding);
+                    this.c.SendUInt32BE((uint)this.Encoder.Encoding);
 
-                    this.encoder.Send(this.c.Stream, this.clientPixelFormat, rectangle.Contents);
+                    this.Encoder.Send(this.c.Stream, this.clientPixelFormat, rectangle.Contents);
                 }
 
                 this.fbuRectangles.Clear();
@@ -691,6 +685,28 @@ namespace RemoteViewing.Vnc.Server
             return true;
         }
 
+        internal void HandleSetEncodings()
+        {
+            this.c.Receive(1);
+
+            int encodingCount = this.c.ReceiveUInt16BE();
+            VncStream.SanityCheck(encodingCount <= 0x1ff);
+            var clientEncoding = new VncEncoding[encodingCount];
+
+            this.logger?.Log(LogLevel.Info, () => "The client supports {0} encodings:", null, encodingCount);
+
+            for (int i = 0; i < clientEncoding.Length; i++)
+            {
+                var encoding = (VncEncoding)this.c.ReceiveUInt32BE();
+                clientEncoding[i] = encoding;
+
+                this.logger?.Log(LogLevel.Info, () => "- {0}", null, encoding);
+            }
+
+            this.clientEncoding = clientEncoding;
+            this.InitFramebufferEncoder();
+        }
+
         /// <summary>
         /// Raises the <see cref="PasswordProvided"/> event.
         /// </summary>
@@ -843,7 +859,6 @@ namespace RemoteViewing.Vnc.Server
                     && this.NegotiateSecurity(methods))
                 {
                     this.NegotiateDesktop();
-                    this.NegotiateEncodings();
 
                     this.requester.Start(() => this.FramebufferSendChanges(), () => this.MaxUpdateRate, false);
 
@@ -945,37 +960,14 @@ namespace RemoteViewing.Vnc.Server
             this.logger?.Log(LogLevel.Info, () => $"The desktop {this.Framebuffer.Name} has initialized with pixel format {this.clientPixelFormat}; the screen size is {this.clientWidth}x{this.clientHeight}");
         }
 
-        private void NegotiateEncodings()
-        {
-            this.logger?.Log(LogLevel.Info, () => "Negotiating encodings");
-
-            this.clientEncoding = new VncEncoding[0]; // Default to no encodings.
-
-            this.logger?.Log(LogLevel.Info, () => $"Supported encodings method are {string.Join(" ", this.clientEncoding)}");
-        }
-
         private void HandleSetPixelFormat()
         {
             this.c.Receive(3);
 
             var pixelFormat = this.c.Receive(VncPixelFormat.Size);
             this.clientPixelFormat = VncPixelFormat.Decode(pixelFormat, 0);
-        }
 
-        private void HandleSetEncodings()
-        {
-            this.c.Receive(1);
-
-            int encodingCount = this.c.ReceiveUInt16BE();
-            VncStream.SanityCheck(encodingCount <= 0x1ff);
-            var clientEncoding = new VncEncoding[encodingCount];
-            for (int i = 0; i < clientEncoding.Length; i++)
-            {
-                uint encoding = this.c.ReceiveUInt32BE();
-                clientEncoding[i] = (VncEncoding)encoding;
-            }
-
-            this.clientEncoding = clientEncoding;
+            this.InitFramebufferEncoder();
         }
 
         private void HandleFramebufferUpdateRequest()
@@ -1042,11 +1034,30 @@ namespace RemoteViewing.Vnc.Server
         private void InitFramebufferEncoder()
         {
             this.logger?.Log(LogLevel.Info, () => "Initializing the frame buffer encoder");
-#if DEFLATESTREAM_FLUSH_WORKS
-            _zlibMemoryStream = new MemoryStream();
-            _zlibDeflater = null;
-#endif
-            this.logger?.Log(LogLevel.Info, () => "Initialized the frame buffer encoder");
+
+            // For RealVNC compatibility: make sure we only start using encodings _after_
+            // the connection has been initialized correctly.
+            if (this.IsConnected)
+            {
+                // Iterate over all encodings supported by the client. Select the first encoding
+                // which is supported by this session.
+                foreach (var encoding in this.clientEncoding)
+                {
+                    var encoder = this.Encoders.SingleOrDefault(c => c.Encoding == encoding);
+
+                    if (encoder != null)
+                    {
+                        this.Encoder = encoder;
+                        break;
+                    }
+                }
+            }
+            else
+            {
+                this.logger?.Log(LogLevel.Info, () => "Not selecting any encoder because the connection setup phase has not completed.");
+            }
+
+            this.logger?.Log(LogLevel.Info, () => $"Initialized the frame buffer encoder. Using {this.Encoder.GetType().Name} ({this.Encoder.Encoding})");
         }
 
         private struct Rectangle
