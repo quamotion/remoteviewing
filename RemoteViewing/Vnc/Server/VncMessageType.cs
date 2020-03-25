@@ -56,6 +56,11 @@
         /// <summary>
         /// Requests a change of desktop size.
         /// </summary>
-        SetDesktopSize = 251
+        SetDesktopSize = 251,
+
+        /// <summary>
+        /// Represents an unknown message type.
+        /// </summary>
+        Unknown = 0xFF,
     }
 }
