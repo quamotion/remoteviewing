@@ -867,11 +867,31 @@ namespace RemoteViewing.Vnc.Server
 
                     this.OnConnected();
 
+                    var previousCommand = VncMessageType.Unknown;
+                    var commandCount = 0;
+
                     while (true)
                     {
                         var command = (VncMessageType)this.c.ReceiveByte();
 
-                        this.logger?.Log(LogLevel.Info, () => $"Received the {command} command.");
+                        // If the same command is sent repeatedly (e.g. FramebufferUpdateRequest), suppress repeated requests
+                        if (previousCommand != command || commandCount >= 25)
+                        {
+                            if (commandCount > 0)
+                            {
+                                this.logger?.Log(LogLevel.Info, () => $"Suppressed {commandCount} notifications of the {command} command at the Info level.");
+                            }
+
+                            this.logger?.Log(LogLevel.Info, () => $"Received the {command} command.");
+                            commandCount = 0;
+                        }
+                        else
+                        {
+                            this.logger?.Log(LogLevel.Debug, () => $"Received the {command} command");
+                            commandCount++;
+                        }
+
+                        previousCommand = command;
 
                         switch (command)
                         {
@@ -977,7 +997,7 @@ namespace RemoteViewing.Vnc.Server
 
             lock (this.FramebufferUpdateRequestLock)
             {
-                this.logger?.Log(LogLevel.Info, () => $"Received a FramebufferUpdateRequest command for {region}");
+                this.logger?.Log(LogLevel.Debug, () => $"Received a FramebufferUpdateRequest command for {region}");
 
                 region = VncRectangle.Intersect(region, new VncRectangle(0, 0, this.Framebuffer.Width, this.Framebuffer.Height));
 
