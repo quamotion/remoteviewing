@@ -398,11 +398,7 @@ namespace RemoteViewing.Vnc
         /// </summary>
         protected virtual void OnBell()
         {
-            var ev = this.Bell;
-            if (ev != null)
-            {
-                ev(this, EventArgs.Empty);
-            }
+            this.Bell?.Invoke(this, EventArgs.Empty);
         }
 
         /// <summary>
@@ -410,11 +406,7 @@ namespace RemoteViewing.Vnc
         /// </summary>
         protected virtual void OnConnected()
         {
-            var ev = this.Connected;
-            if (ev != null)
-            {
-                ev(this, EventArgs.Empty);
-            }
+            this.Connected?.Invoke(this, EventArgs.Empty);
         }
 
         /// <summary>
@@ -422,11 +414,7 @@ namespace RemoteViewing.Vnc
         /// </summary>
         protected virtual void OnConnectionFailed()
         {
-            var ev = this.ConnectionFailed;
-            if (ev != null)
-            {
-                ev(this, EventArgs.Empty);
-            }
+            this.ConnectionFailed?.Invoke(this, EventArgs.Empty);
         }
 
         /// <summary>
@@ -434,11 +422,7 @@ namespace RemoteViewing.Vnc
         /// </summary>
         protected virtual void OnClosed()
         {
-            var ev = this.Closed;
-            if (ev != null)
-            {
-                ev(this, EventArgs.Empty);
-            }
+            this.Closed?.Invoke(this, EventArgs.Empty);
         }
 
         /// <summary>
@@ -450,11 +434,7 @@ namespace RemoteViewing.Vnc
         /// </param>
         protected virtual void OnFramebufferChanged(FramebufferChangedEventArgs e)
         {
-            var ev = this.FramebufferChanged;
-            if (ev != null)
-            {
-                ev(this, e);
-            }
+            this.FramebufferChanged?.Invoke(this, e);
         }
 
         /// <summary>
@@ -466,11 +446,7 @@ namespace RemoteViewing.Vnc
         /// </param>
         protected virtual void OnRemoteClipboardChanged(RemoteClipboardChangedEventArgs e)
         {
-            var ev = this.RemoteClipboardChanged;
-            if (ev != null)
-            {
-                ev(this, e);
-            }
+            this.RemoteClipboardChanged?.Invoke(this, e);
         }
 
         // Assumes we are already locked.

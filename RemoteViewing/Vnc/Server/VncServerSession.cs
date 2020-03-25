@@ -715,11 +715,7 @@ namespace RemoteViewing.Vnc.Server
         /// </param>
         protected virtual void OnPasswordProvided(PasswordProvidedEventArgs e)
         {
-            var ev = this.PasswordProvided;
-            if (ev != null)
-            {
-                ev(this, e);
-            }
+            this.PasswordProvided?.Invoke(this, e);
         }
 
         /// <summary>
@@ -730,11 +726,7 @@ namespace RemoteViewing.Vnc.Server
         /// </param>
         protected virtual void OnCreatingDesktop(CreatingDesktopEventArgs e)
         {
-            var ev = this.CreatingDesktop;
-            if (ev != null)
-            {
-                ev(this, e);
-            }
+            this.CreatingDesktop?.Invoke(this, e);
         }
 
         /// <summary>
@@ -742,11 +734,7 @@ namespace RemoteViewing.Vnc.Server
         /// </summary>
         protected virtual void OnConnected()
         {
-            var ev = this.Connected;
-            if (ev != null)
-            {
-                ev(this, EventArgs.Empty);
-            }
+            this.Connected?.Invoke(this, EventArgs.Empty);
         }
 
         /// <summary>
@@ -754,11 +742,7 @@ namespace RemoteViewing.Vnc.Server
         /// </summary>
         protected virtual void OnConnectionFailed()
         {
-            var ev = this.ConnectionFailed;
-            if (ev != null)
-            {
-                ev(this, EventArgs.Empty);
-            }
+            this.ConnectionFailed?.Invoke(this, EventArgs.Empty);
         }
 
         /// <summary>
@@ -766,11 +750,7 @@ namespace RemoteViewing.Vnc.Server
         /// </summary>
         protected virtual void OnClosed()
         {
-            var ev = this.Closed;
-            if (ev != null)
-            {
-                ev(this, EventArgs.Empty);
-            }
+            this.Closed?.Invoke(this, EventArgs.Empty);
         }
 
         /// <summary>
@@ -778,11 +758,7 @@ namespace RemoteViewing.Vnc.Server
         /// </summary>
         protected virtual void OnFramebufferCapturing()
         {
-            var ev = this.FramebufferCapturing;
-            if (ev != null)
-            {
-                ev(this, EventArgs.Empty);
-            }
+            this.FramebufferCapturing?.Invoke(this, EventArgs.Empty);
         }
 
         /// <summary>
@@ -793,11 +769,7 @@ namespace RemoteViewing.Vnc.Server
         /// </param>
         protected virtual void OnFramebufferUpdating(FramebufferUpdatingEventArgs e)
         {
-            var ev = this.FramebufferUpdating;
-            if (ev != null)
-            {
-                ev(this, e);
-            }
+            this.FramebufferUpdating?.Invoke(this, e);
         }
 
         /// <summary>
@@ -808,11 +780,7 @@ namespace RemoteViewing.Vnc.Server
         /// </param>
         protected void OnKeyChanged(KeyChangedEventArgs e)
         {
-            var ev = this.KeyChanged;
-            if (ev != null)
-            {
-                ev(this, e);
-            }
+            this.KeyChanged?.Invoke(this, e);
         }
 
         /// <summary>
@@ -823,11 +791,7 @@ namespace RemoteViewing.Vnc.Server
         /// </param>
         protected void OnPointerChanged(PointerChangedEventArgs e)
         {
-            var ev = this.PointerChanged;
-            if (ev != null)
-            {
-                ev(this, e);
-            }
+            this.PointerChanged?.Invoke(this, e);
         }
 
         /// <summary>
@@ -838,11 +802,7 @@ namespace RemoteViewing.Vnc.Server
         /// </param>
         protected virtual void OnRemoteClipboardChanged(RemoteClipboardChangedEventArgs e)
         {
-            var ev = this.RemoteClipboardChanged;
-            if (ev != null)
-            {
-                ev(this, e);
-            }
+            this.RemoteClipboardChanged?.Invoke(this, e);
         }
 
         private void ThreadMain()
