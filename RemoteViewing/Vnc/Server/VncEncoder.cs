@@ -50,9 +50,12 @@ namespace RemoteViewing.Vnc.Server
         /// <param name="pixelFormat">
         /// The <see cref="VncPixelFormat"/> being used.
         /// </param>
+        /// <param name="region">
+        /// The dimesions of the rectangle.
+        /// </param>
         /// <param name="contents">
         /// The contents of the rectangle, in raw pixel format.
         /// </param>
-        public abstract void Send(Stream stream, VncPixelFormat pixelFormat, byte[] contents);
+        public abstract void Send(Stream stream, VncPixelFormat pixelFormat, VncRectangle region, byte[] contents);
     }
 }

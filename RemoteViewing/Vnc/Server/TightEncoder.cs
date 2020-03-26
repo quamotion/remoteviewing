@@ -120,7 +120,7 @@ namespace RemoteViewing.Vnc.Server
         }
 
         /// <inheritdoc/>
-        public override void Send(Stream stream, VncPixelFormat pixelFormat, byte[] contents)
+        public override void Send(Stream stream, VncPixelFormat pixelFormat, VncRectangle rectangle, byte[] contents)
         {
             if (contents.Length < 12)
             {
