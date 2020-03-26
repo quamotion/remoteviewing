@@ -26,9 +26,12 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 #endregion
 
+using Moq;
 using RemoteViewing.Vnc;
 using RemoteViewing.Vnc.Server;
+using SharpCompress.Compressors.Deflate;
 using System;
+using System.Collections.ObjectModel;
 using System.IO;
 using System.Text;
 using Xunit;
@@ -66,7 +69,7 @@ namespace RemoteViewing.Tests.Vnc.Server
         [Fact]
         public void SendTestStandardPixelFormat()
         {
-            TightEncoder encoder = new TightEncoder();
+            TightEncoder encoder = new TightEncoder(Mock.Of<IVncServerSession>());
 
             byte[] raw = null;
 
@@ -98,7 +101,7 @@ namespace RemoteViewing.Tests.Vnc.Server
         [Fact]
         public void SendTightPixelFormat()
         {
-            TightEncoder encoder = new TightEncoder();
+            TightEncoder encoder = new TightEncoder(Mock.Of<IVncServerSession>());
 
             byte[] raw = null;
 
@@ -131,7 +134,7 @@ namespace RemoteViewing.Tests.Vnc.Server
         [Fact]
         public void SendSmallRectangleFormat()
         {
-            TightEncoder encoder = new TightEncoder();
+            TightEncoder encoder = new TightEncoder(Mock.Of<IVncServerSession>());
 
             byte[] raw = null;
 
@@ -155,6 +158,80 @@ namespace RemoteViewing.Tests.Vnc.Server
 
             Assert.Equal((byte)expectedZlibData.Length, raw[1]);
             Assert.Equal(expectedZlibData, actualZlibData);
+        }
+
+        /// <summary>
+        /// Tests the <see cref="TightEncoder.GetCompressionLevel(IVncServerSession)"/> method.
+        /// </summary>
+        /// <param name="expectedCompressionLevel">
+        /// The expected compression level.
+        /// </param>
+        /// <param name="encoding">
+        /// The pseudo-encoding which influences the compression level.
+        /// </param>
+        [Theory]
+        [InlineData(CompressionLevel.Default, VncEncoding.RRE)]
+        [InlineData(CompressionLevel.Level0, VncEncoding.TightCompressionLevel0)]
+        [InlineData(CompressionLevel.Level1, VncEncoding.TightCompressionLevel1)]
+        [InlineData(CompressionLevel.Level2, VncEncoding.TightCompressionLevel2)]
+        [InlineData(CompressionLevel.Level3, VncEncoding.TightCompressionLevel3)]
+        [InlineData(CompressionLevel.Level4, VncEncoding.TightCompressionLevel4)]
+        [InlineData(CompressionLevel.Level5, VncEncoding.TightCompressionLevel5)]
+        [InlineData(CompressionLevel.Level6, VncEncoding.TightCompressionLevel6)]
+        [InlineData(CompressionLevel.Level7, VncEncoding.TightCompressionLevel7)]
+        [InlineData(CompressionLevel.Level8, VncEncoding.TightCompressionLevel8)]
+        [InlineData(CompressionLevel.Level9, VncEncoding.TightCompressionLevel9)]
+        public void GetTightCompressionLevelTest(CompressionLevel expectedCompressionLevel, VncEncoding encoding)
+        {
+            Collection<VncEncoding> encodings = new Collection<VncEncoding>();
+            encodings.Add(VncEncoding.Raw);
+            encodings.Add(VncEncoding.Tight);
+            encodings.Add(encoding);
+
+            var mock = new Mock<IVncServerSession>();
+            mock
+                .Setup(m => m.ClientEncodings)
+                .Returns(encodings);
+
+            var compressionLevel = TightEncoder.GetCompressionLevel(mock.Object);
+            Assert.Equal(expectedCompressionLevel, compressionLevel);
+        }
+
+        /// <summary>
+        /// Tests the <see cref="TightEncoder.GetQualityLevel(IVncServerSession)"/> method.
+        /// </summary>
+        /// <param name="expectedQualityLevel">
+        /// The expected quality level.
+        /// </param>
+        /// <param name="encoding">
+        /// The pseudo-encoding which influences the quality level.
+        /// </param>
+        [Theory]
+        [InlineData(0, VncEncoding.RRE)]
+        [InlineData(5, VncEncoding.TightQualityLevel0)]
+        [InlineData(10, VncEncoding.TightQualityLevel1)]
+        [InlineData(15, VncEncoding.TightQualityLevel2)]
+        [InlineData(25, VncEncoding.TightQualityLevel3)]
+        [InlineData(37, VncEncoding.TightQualityLevel4)]
+        [InlineData(50, VncEncoding.TightQualityLevel5)]
+        [InlineData(60, VncEncoding.TightQualityLevel6)]
+        [InlineData(70, VncEncoding.TightQualityLevel7)]
+        [InlineData(75, VncEncoding.TightQualityLevel8)]
+        [InlineData(80, VncEncoding.TightQualityLevel9)]
+        public void GetTightQualityLevelTest(int expectedQualityLevel, VncEncoding encoding)
+        {
+            Collection<VncEncoding> encodings = new Collection<VncEncoding>();
+            encodings.Add(VncEncoding.Raw);
+            encodings.Add(VncEncoding.Tight);
+            encodings.Add(encoding);
+
+            var mock = new Mock<IVncServerSession>();
+            mock
+                .Setup(m => m.ClientEncodings)
+                .Returns(encodings);
+
+            var compressionLevel = TightEncoder.GetQualityLevel(mock.Object);
+            Assert.Equal(expectedQualityLevel, compressionLevel);
         }
     }
 }

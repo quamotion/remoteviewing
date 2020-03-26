@@ -245,7 +245,7 @@ namespace RemoteViewing.Vnc
         /// is low compression.
         /// </summary>
         /// <seealso href="https://github.com/rfbproto/rfbproto/blob/master/rfbproto.rst#compression-level-pseudo-encoding"/>
-        TightCompressionLevel3 = -252,
+        TightCompressionLevel3 = -253,
 
         /// <summary>
         /// Specifies the desired compression level, where level 9 is high compression and level 0

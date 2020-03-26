@@ -29,6 +29,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 using RemoteViewing.Logging;
 using System;
+using System.Collections.Generic;
 using System.IO;
 
 namespace RemoteViewing.Vnc.Server
@@ -103,6 +104,11 @@ namespace RemoteViewing.Vnc.Server
         /// Gets a lock which should be used before performing any framebuffer updates.
         /// </summary>
         object FramebufferUpdateRequestLock { get; }
+
+        /// <summary>
+        /// Gets a list of encodings supported by the client.
+        /// </summary>
+        IReadOnlyList<VncEncoding> ClientEncodings { get; }
 
         /// <summary>
         /// Starts a session with a VNC client.
