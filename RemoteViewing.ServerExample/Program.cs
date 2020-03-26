@@ -29,7 +29,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 using System;
 using System.Net;
 using System.Net.Sockets;
-using System.Windows.Forms;
 using RemoteViewing.NoVncExample;
 using RemoteViewing.Vnc;
 using RemoteViewing.Vnc.Server;
@@ -77,7 +76,9 @@ namespace RemoteViewing.ServerExample
             options.AuthenticationMethod = AuthenticationMethod.Password;
 
             // Create a session.
-            session = new VncServerSession();
+            session = new VncServerSession(
+                new VncPasswordChallenge(),
+                new ConsoleLogger());
             session.Connected += HandleConnected;
             session.ConnectionFailed += HandleConnectionFailed;
             session.Closed += HandleClosed;
@@ -86,7 +87,8 @@ namespace RemoteViewing.ServerExample
             session.Connect(client.GetStream(), options);
 
             // Let's go.
-            Application.Run();
+            Console.WriteLine("Hit ENTER to exit");
+            Console.ReadLine();
         }
     }
 }
