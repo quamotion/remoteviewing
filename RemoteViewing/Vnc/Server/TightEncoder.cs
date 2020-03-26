@@ -29,8 +29,12 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 using SharpCompress.Compressors;
 using SharpCompress.Compressors.Deflate;
 using System;
+using System.Buffers;
 using System.Diagnostics;
+using System.Drawing.Imaging;
 using System.IO;
+using System.Linq;
+using TurboJpegWrapper;
 
 namespace RemoteViewing.Vnc.Server
 {
@@ -53,6 +57,11 @@ namespace RemoteViewing.Vnc.Server
         private static readonly int[] QualityLevels = new int[] { 5, 10, 15, 25, 37, 50, 60, 70, 75, 80, 0 };
 
         /// <summary>
+        /// The TurboJpeg compressor which will be used to compress rectangles into JPEG format.
+        /// </summary>
+        private readonly TJCompressor compressor = new TJCompressor();
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="TightEncoder"/> class.
         /// </summary>
         /// <param name="vncServerSession">
@@ -65,6 +74,12 @@ namespace RemoteViewing.Vnc.Server
 
         /// <inheritdoc/>
         public override VncEncoding Encoding => VncEncoding.Tight;
+
+        /// <summary>
+        /// Gets or sets the compression method used.
+        /// </summary>
+        public TightCompression Compression
+        { get; set; } = TightCompression.Jpeg;
 
         /// <summary>
         /// Gets the <see cref="VncServerSession"/> to which this <see cref="TightEncoder"/> is linked.
@@ -120,7 +135,105 @@ namespace RemoteViewing.Vnc.Server
         }
 
         /// <inheritdoc/>
-        public override void Send(Stream stream, VncPixelFormat pixelFormat, VncRectangle rectangle, byte[] contents)
+        public override void Send(Stream stream, VncPixelFormat pixelFormat, VncRectangle region, byte[] contents)
+        {
+            var jpegQualityLevel = GetQualityLevel(this.VncServerSession);
+
+            // The JPEG compression currently assumes a RGB32 pixel format, fall back to basic compression
+            // when this pixel format is not available.
+            // Additionally, a minimal JPEG image is at least ~128 bytes in size, so only compress to JPEG
+            // when the uncompressed file significantly larger.
+            if (this.Compression != TightCompression.Jpeg
+                || !VncPixelFormat.RGB32.Equals(pixelFormat)
+                || region.IsEmpty
+                || contents.Length < 256
+                || jpegQualityLevel == 0)
+            {
+                this.SendWithBasicCompression(stream, pixelFormat, region, contents);
+            }
+            else
+            {
+                this.SendWithJpegCompression(stream, pixelFormat, region, contents, jpegQualityLevel);
+            }
+        }
+
+        /// <summary>
+        /// Sends a rectangle using JPEG compression.
+        /// </summary>
+        /// <param name="stream">
+        /// The <see cref="Stream"/> which represents connectivity with the client.
+        /// </param>
+        /// <param name="pixelFormat">
+        /// The pixel format to use. This must be <see cref="VncPixelFormat.RGB32"/>.
+        /// </param>
+        /// <param name="region">
+        /// The rectangle to send.
+        /// </param>
+        /// <param name="contents">
+        /// A buffer holding the raw pixel data for the rectangle.
+        /// </param>
+        /// <param name="jpegQualityLevel">
+        /// The JPEG quality level to use.
+        /// </param>
+        protected void SendWithJpegCompression(Stream stream, VncPixelFormat pixelFormat, VncRectangle region, byte[] contents, int jpegQualityLevel)
+        {
+            var subsamplingOption = TJSubsamplingOption.Chrominance420;
+
+            var size = this.compressor.GetBufferSize(region.Width, region.Height, subsamplingOption) + 5;
+
+            byte[] buffer = null;
+
+            try
+            {
+                // The first 5 bytes will hold the compression control byte and the size of the
+                // JPEG buffer.
+                buffer = ArrayPool<byte>.Shared.Rent(size);
+
+                var qualityLevel = GetQualityLevel(this.VncServerSession);
+
+                var jpeg = this.compressor.Compress(
+                    contents.AsSpan(),
+                    buffer.AsSpan(5),
+                    region.Width,
+                    region.Width,
+                    region.Height,
+                    PixelFormat.Format32bppArgb,
+                    subsamplingOption,
+                    jpegQualityLevel,
+                    TJFlags.NoRealloc);
+
+                // Write the JPEG compression control byte and the size of the JPEG buffer.
+                buffer[0] = (byte)TightCompressionControl.JpegCompression;
+                var length = WriteEncodedValue(buffer, 1, jpeg.Length);
+
+                stream.Write(buffer, 0, length);
+                stream.Write(buffer, 5, jpeg.Length);
+            }
+            finally
+            {
+                if (buffer != null)
+                {
+                    ArrayPool<byte>.Shared.Return(buffer);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Sends a rectangle using basic compression.
+        /// </summary>
+        /// <param name="stream">
+        /// The <see cref="Stream"/> which represents connectivity with the client.
+        /// </param>
+        /// <param name="pixelFormat">
+        /// The pixel format to use.
+        /// </param>
+        /// <param name="region">
+        /// The rectangle to send.
+        /// </param>
+        /// <param name="contents">
+        /// A buffer holding the raw pixel data for the rectangle.
+        /// </param>
+        protected void SendWithBasicCompression(Stream stream, VncPixelFormat pixelFormat, VncRectangle region, byte[] contents)
         {
             if (contents.Length < 12)
             {

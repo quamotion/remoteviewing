@@ -31,6 +31,7 @@ using RemoteViewing.Vnc;
 using RemoteViewing.Vnc.Server;
 using SharpCompress.Compressors.Deflate;
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Text;
@@ -69,7 +70,10 @@ namespace RemoteViewing.Tests.Vnc.Server
         [Fact]
         public void SendTestStandardPixelFormat()
         {
-            TightEncoder encoder = new TightEncoder(Mock.Of<IVncServerSession>());
+            TightEncoder encoder = new TightEncoder(Mock.Of<IVncServerSession>())
+            {
+                Compression = TightCompression.Basic,
+            };
 
             byte[] raw = null;
 
@@ -101,7 +105,10 @@ namespace RemoteViewing.Tests.Vnc.Server
         [Fact]
         public void SendTightPixelFormat()
         {
-            TightEncoder encoder = new TightEncoder(Mock.Of<IVncServerSession>());
+            TightEncoder encoder = new TightEncoder(Mock.Of<IVncServerSession>())
+            {
+                Compression = TightCompression.Basic,
+            };
 
             byte[] raw = null;
 
@@ -134,7 +141,10 @@ namespace RemoteViewing.Tests.Vnc.Server
         [Fact]
         public void SendSmallRectangleFormat()
         {
-            TightEncoder encoder = new TightEncoder(Mock.Of<IVncServerSession>());
+            TightEncoder encoder = new TightEncoder(Mock.Of<IVncServerSession>())
+            {
+                Compression = TightCompression.Basic,
+            };
 
             byte[] raw = null;
 
@@ -232,6 +242,43 @@ namespace RemoteViewing.Tests.Vnc.Server
 
             var compressionLevel = TightEncoder.GetQualityLevel(mock.Object);
             Assert.Equal(expectedQualityLevel, compressionLevel);
+        }
+
+        /// <summary>
+        /// Tests the <see cref="TightEncoder.Send(Stream, VncPixelFormat, VncRectangle, byte[])"/> method in a scenario
+        /// where the data will be compressed using a JPEG encoder.
+        /// </summary>
+        [Fact]
+        public void SendJpegFormat()
+        {
+            var serverSession = new Mock<IVncServerSession>();
+            serverSession
+                .Setup(s => s.ClientEncodings)
+                .Returns(new List<VncEncoding>()
+                {
+                    VncEncoding.TightQualityLevel4,
+                });
+
+            TightEncoder encoder = new TightEncoder(serverSession.Object)
+            {
+                Compression = TightCompression.Jpeg
+            };
+
+            byte[] raw = null;
+
+            using (MemoryStream output = new MemoryStream())
+            {
+                var contents = new byte[512];
+                encoder.Send(output, VncPixelFormat.RGB32, new VncRectangle() { Width = 1, Height = 1 }, contents);
+                raw = output.ToArray();
+            }
+
+            Assert.Equal((byte)TightCompressionControl.JpegCompression, raw[0]);
+
+            // Make sure the compressed image is a valid JPEG image,
+            // by checking for the JPEG magic.
+            Assert.Equal(0xFF, raw[3]);
+            Assert.Equal(0xD8, raw[4]);
         }
     }
 }
