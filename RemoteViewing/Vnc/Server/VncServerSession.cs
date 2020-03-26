@@ -521,7 +521,7 @@ namespace RemoteViewing.Vnc.Server
                     this.c.SendRectangle(rectangle.Region);
                     this.c.SendUInt32BE((uint)this.Encoder.Encoding);
 
-                    this.Encoder.Send(this.c.Stream, this.clientPixelFormat, rectangle.Contents);
+                    this.Encoder.Send(this.c.Stream, this.clientPixelFormat, rectangle.Region, rectangle.Contents);
                 }
 
                 this.fbuRectangles.Clear();

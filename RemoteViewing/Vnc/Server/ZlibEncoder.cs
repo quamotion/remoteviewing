@@ -55,7 +55,7 @@ namespace RemoteViewing.Vnc.Server
         public override VncEncoding Encoding => VncEncoding.Zlib;
 
         /// <inheritdoc/>
-        public override void Send(Stream stream, VncPixelFormat pixelFormat, byte[] contents)
+        public override void Send(Stream stream, VncPixelFormat pixelFormat, VncRectangle region, byte[] contents)
         {
             this.buffer.SetLength(0);
             this.deflater.Write(contents, 0, contents.Length);

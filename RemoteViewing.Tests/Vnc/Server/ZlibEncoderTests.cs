@@ -66,11 +66,11 @@ namespace RemoteViewing.Tests.Vnc.Server
 
                 // Individual rectangles are compressed using the _same_ zlib stream. Let's send two
                 // rectangles to make sure this is the case.
-                encoder.Send(output, new VncPixelFormat(), contents);
+                encoder.Send(output, new VncPixelFormat(), new VncRectangle(), contents);
                 raw1 = output.ToArray();
 
                 output.SetLength(0);
-                encoder.Send(output, new VncPixelFormat(), contents);
+                encoder.Send(output, new VncPixelFormat(), new VncRectangle(), contents);
                 raw2 = output.ToArray();
             }
 

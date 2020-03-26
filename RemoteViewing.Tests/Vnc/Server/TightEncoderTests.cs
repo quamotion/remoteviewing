@@ -73,7 +73,7 @@ namespace RemoteViewing.Tests.Vnc.Server
             using (MemoryStream output = new MemoryStream())
             {
                 var contents = Encoding.ASCII.GetBytes("hello, world\n");
-                encoder.Send(output, new VncPixelFormat(32, 24, 8, 0, 8, 0, 8, 0, false, true), contents);
+                encoder.Send(output, new VncPixelFormat(32, 24, 8, 0, 8, 0, 8, 0, false, true), new VncRectangle(), contents);
                 raw = output.ToArray();
             }
 
@@ -105,7 +105,7 @@ namespace RemoteViewing.Tests.Vnc.Server
             using (MemoryStream output = new MemoryStream())
             {
                 var contents = Encoding.ASCII.GetBytes("hello, world    ");
-                encoder.Send(output, new VncPixelFormat(), contents);
+                encoder.Send(output, new VncPixelFormat(), new VncRectangle(), contents);
                 raw = output.ToArray();
             }
 
@@ -138,7 +138,7 @@ namespace RemoteViewing.Tests.Vnc.Server
             using (MemoryStream output = new MemoryStream())
             {
                 var contents = new byte[] { 0x01, 0x02, 0x03, 0x04 };
-                encoder.Send(output, new VncPixelFormat(), contents);
+                encoder.Send(output, new VncPixelFormat(), new VncRectangle(), contents);
                 raw = output.ToArray();
             }
 

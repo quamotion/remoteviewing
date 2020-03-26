@@ -46,7 +46,7 @@ namespace RemoteViewing.Vnc.Server
         public override VncEncoding Encoding => VncEncoding.Raw;
 
         /// <inheritdoc/>
-        public override void Send(Stream stream, VncPixelFormat pixelFormat, byte[] contents)
+        public override void Send(Stream stream, VncPixelFormat pixelFormat, VncRectangle region, byte[] contents)
         {
             stream.Write(contents, 0, contents.Length);
         }
