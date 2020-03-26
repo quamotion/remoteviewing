@@ -28,6 +28,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 using SharpCompress.Compressors;
 using SharpCompress.Compressors.Deflate;
+using System;
 using System.Diagnostics;
 using System.IO;
 
@@ -42,10 +43,33 @@ namespace RemoteViewing.Vnc.Server
     /// which is reset after every rectangle.
     /// </remarks>
     /// <seealso href="https://github.com/rfbproto/rfbproto/blob/master/rfbproto.rst#tight-encoding"/>
-    internal class TightEncoder : VncEncoder
+    /// <seealso href="https://virtualgl.org/pmwiki/uploads/About/tighttoturbo.pdf"/>
+    public class TightEncoder : VncEncoder
     {
+        /// <summary>
+        /// Mapping of Tight quality levels to JPEG quality levels.
+        /// </summary>
+        /// <seealso href=""/>
+        private static readonly int[] QualityLevels = new int[] { 5, 10, 15, 25, 37, 50, 60, 70, 75, 80, 0 };
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="TightEncoder"/> class.
+        /// </summary>
+        /// <param name="vncServerSession">
+        /// The parent session to which this <see cref="TightEncoder"/> is linked.
+        /// </param>
+        public TightEncoder(IVncServerSession vncServerSession)
+        {
+            this.VncServerSession = vncServerSession ?? throw new ArgumentNullException(nameof(vncServerSession));
+        }
+
         /// <inheritdoc/>
         public override VncEncoding Encoding => VncEncoding.Tight;
+
+        /// <summary>
+        /// Gets the <see cref="VncServerSession"/> to which this <see cref="TightEncoder"/> is linked.
+        /// </summary>
+        protected IVncServerSession VncServerSession { get; private set; }
 
         /// <summary>Encode a value into a byte array</summary>
         /// <param name="buffer">The byte array to encode the 7-bit integer into</param>
@@ -65,6 +89,34 @@ namespace RemoteViewing.Vnc.Server
             buffer[startIndex++] = (byte)v;
 
             return startIndex;
+        }
+
+        /// <summary>
+        /// Gets the zlib compression level to use.
+        /// </summary>
+        /// <param name="vncServerSession">
+        /// The current VNC server session.
+        /// </param>
+        /// <returns>
+        /// The <see cref="CompressionLevel"/> to use for zlib streams for this session.
+        /// </returns>
+        public static CompressionLevel GetCompressionLevel(IVncServerSession vncServerSession)
+        {
+            return (CompressionLevel)GetLevel(vncServerSession, VncEncoding.TightCompressionLevel0, VncEncoding.TightCompressionLevel9, (int)CompressionLevel.Default);
+        }
+
+        /// <summary>
+        /// Gets the JPEG quality level to use.
+        /// </summary>
+        /// <param name="vncServerSession">
+        /// The current VNC server session.
+        /// </param>
+        /// <returns>
+        /// The JPEG quality level to use, or 0 when JPEG compression should be disabled.
+        /// </returns>
+        public static int GetQualityLevel(IVncServerSession vncServerSession)
+        {
+            return QualityLevels[GetLevel(vncServerSession, VncEncoding.TightQualityLevel0, VncEncoding.TightQualityLevel9, 10)];
         }
 
         /// <inheritdoc/>
@@ -88,10 +140,12 @@ namespace RemoteViewing.Vnc.Server
                     | TightCompressionControl.ResetStream0
                     | TightCompressionControl.UseStream0;
 
+                var compressionLevel = GetCompressionLevel(this.VncServerSession);
+
                 stream.WriteByte((byte)compressionControl);
 
                 using (var buffer = new MemoryStream())
-                using (var deflater = new ZlibStream(buffer, CompressionMode.Compress))
+                using (var deflater = new ZlibStream(buffer, CompressionMode.Compress, compressionLevel))
                 {
                     // The Tight encoding makes use of a new type TPIXEL (Tight pixel). This is the same as a PIXEL for the agreed
                     // pixel format, except where true-colour-flag is non-zero, bits-per-pixel is 32, depth is 24 and all of the bits
@@ -133,6 +187,24 @@ namespace RemoteViewing.Vnc.Server
                     buffer.CopyTo(stream);
                 }
             }
+        }
+
+        private static int GetLevel(IVncServerSession vncServerSession, VncEncoding lower, VncEncoding upper, int defaultValue)
+        {
+            if (vncServerSession?.ClientEncodings == null)
+            {
+                return defaultValue;
+            }
+
+            foreach (var encoding in vncServerSession.ClientEncodings)
+            {
+                if (encoding >= lower && encoding <= upper)
+                {
+                    return encoding - lower;
+                }
+            }
+
+            return defaultValue;
         }
     }
 }

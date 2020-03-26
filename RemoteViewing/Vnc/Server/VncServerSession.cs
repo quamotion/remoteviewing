@@ -46,7 +46,7 @@ namespace RemoteViewing.Vnc.Server
         private ILog logger;
         private IVncPasswordChallenge passwordChallenge;
         private VncStream c = new VncStream();
-        private VncEncoding[] clientEncoding = new VncEncoding[0];
+        private Collection<VncEncoding> clientEncoding = new Collection<VncEncoding>();
         private VncPixelFormat clientPixelFormat;
         private int clientWidth;
         private int clientHeight;
@@ -89,6 +89,9 @@ namespace RemoteViewing.Vnc.Server
             this.passwordChallenge = passwordChallenge;
             this.logger = logger;
             this.MaxUpdateRate = 15;
+
+            this.Encoders.Add(new TightEncoder(this));
+            this.Encoders.Add(new ZlibEncoder());
         }
 
         /// <summary>
@@ -275,12 +278,18 @@ namespace RemoteViewing.Vnc.Server
         /// Gets a list of encoders which this <see cref="VncServerSession"/> can use.
         /// </summary>
         public Collection<VncEncoder> Encoders
-        { get; } =
-            new Collection<VncEncoder>()
+        { get; } = new Collection<VncEncoder>();
+
+        /// <summary>
+        /// Gets a list of encodings supported by the client.
+        /// </summary>
+        public IReadOnlyList<VncEncoding> ClientEncodings
+        {
+            get
             {
-                new TightEncoder(),
-                new ZlibEncoder(),
-            };
+                return this.clientEncoding;
+            }
+        }
 
         /// <summary>
         /// Gets or sets the encoder which is currently in use.
@@ -691,19 +700,18 @@ namespace RemoteViewing.Vnc.Server
 
             int encodingCount = this.c.ReceiveUInt16BE();
             VncStream.SanityCheck(encodingCount <= 0x1ff);
-            var clientEncoding = new VncEncoding[encodingCount];
+            this.clientEncoding.Clear();
 
             this.logger?.Log(LogLevel.Info, () => "The client supports {0} encodings:", null, encodingCount);
 
-            for (int i = 0; i < clientEncoding.Length; i++)
+            for (int i = 0; i < encodingCount; i++)
             {
                 var encoding = (VncEncoding)this.c.ReceiveUInt32BE();
-                clientEncoding[i] = encoding;
+                this.clientEncoding.Add(encoding);
 
                 this.logger?.Log(LogLevel.Info, () => "- {0}", null, encoding);
             }
 
-            this.clientEncoding = clientEncoding;
             this.InitFramebufferEncoder();
         }
 
