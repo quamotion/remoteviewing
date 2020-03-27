@@ -43,8 +43,20 @@ namespace RemoteViewing.NoVncExample
             using (Bitmap image = new Bitmap(400, 400))
             using (Graphics gfx = Graphics.FromImage(image))
             using (SolidBrush brush = new SolidBrush(color))
+            using (var font = new Font(FontFamily.GenericSansSerif, 12.0f, FontStyle.Bold, GraphicsUnit.Pixel))
             {
                 gfx.FillRectangle(brush, 0, 0, image.Width, image.Height);
+
+                var text = $"RemoteViewing {ThisAssembly.AssemblyInformationalVersion}";
+                var size = gfx.MeasureString(text, font);
+
+                var position = new PointF((image.Width - size.Width) / 2.0f, (image.Height - size.Height) / 2.0f);
+
+                gfx.DrawString(
+                    text,
+                    font,
+                    Brushes.Black,
+                    position);
 
                 if (this.framebuffer == null
                     || this.framebuffer.Width != image.Width
