@@ -86,11 +86,11 @@ namespace RemoteViewing.Vnc.Server
         /// </summary>
         protected IVncServerSession VncServerSession { get; private set; }
 
-        /// <summary>Encode a value into a byte array</summary>
-        /// <param name="buffer">The byte array to encode the 7-bit integer into</param>
-        /// <param name="startIndex">The index of the first byte for the 7-bit integer</param>
-        /// <param name="value">The value to encode into <paramref name="buffer"/></param>
-        /// <returns>Index of the first byte after the encoded value in <paramref name="buffer"/></returns>
+        /// <summary>Encode a value into a byte array.</summary>
+        /// <param name="buffer">The byte array to encode the 7-bit integer into.</param>
+        /// <param name="startIndex">The index of the first byte for the 7-bit integer.</param>
+        /// <param name="value">The value to encode into <paramref name="buffer"/>.</param>
+        /// <returns>Index of the first byte after the encoded value in <paramref name="buffer"/>.</returns>
         public static int WriteEncodedValue(byte[] buffer, int startIndex, int value)
         {
             // Write out an int 7 bits at a time.  The high bit of the byte,

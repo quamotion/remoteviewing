@@ -34,7 +34,7 @@ namespace RemoteViewing.Utility
 {
     /// <summary>
     /// Represents a <seealso cref="Thread"/> that invokes a specific action at a
-    /// specific interval
+    /// specific interval.
     /// </summary>
     internal sealed class PeriodicThread
     {

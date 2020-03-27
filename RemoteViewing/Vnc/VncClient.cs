@@ -153,7 +153,7 @@ namespace RemoteViewing.Vnc
                 {
                     throw new ArgumentOutOfRangeException(
                         "Max update rate must be positive.",
-                                                          (Exception)null);
+                        (Exception)null);
                 }
 
                 this.maxUpdateRate = value;
@@ -356,11 +356,11 @@ namespace RemoteViewing.Vnc
         /// <summary>
         /// Loads the framebuffer from the specified location and returns a function that can be used to copy the data to a bitmap.
         /// </summary>
-        /// <param name="x">The x offset. (0 if null)</param>
-        /// <param name="y">The y offset. (0 if null)</param>
-        /// <param name="width">The width. (Framebuffer.Width if null)</param>
-        /// <param name="height">The height (Framebuffer.Height if null)</param>
-        /// <returns>An action with 2 parameters (BitmapData.Scan0 and BitmapData.Stride) that copies the framebuffer data to the specfied address</returns>
+        /// <param name="x">The x offset. (0 if null).</param>
+        /// <param name="y">The y offset. (0 if null).</param>
+        /// <param name="width">The width. (Framebuffer.Width if null).</param>
+        /// <param name="height">The height (Framebuffer.Height if null).</param>
+        /// <returns>An action with 2 parameters (BitmapData.Scan0 and BitmapData.Stride) that copies the framebuffer data to the specfied address.</returns>
         public Action<IntPtr, int> GetFramebuffer(int? x = null, int? y = null, int? width = null, int? height = null)
         {
             var xValue = x ?? 0;
@@ -394,7 +394,7 @@ namespace RemoteViewing.Vnc
         }
 
         /// <summary>
-        /// Raises the <see cref="Bell"/> event
+        /// Raises the <see cref="Bell"/> event.
         /// </summary>
         protected virtual void OnBell()
         {
@@ -537,8 +537,8 @@ namespace RemoteViewing.Vnc
             this.serverVersion = this.c.ReceiveVersion();
             VncStream.Require(
                 this.serverVersion >= new Version(3, 8),
-                                  "RFB 3.8 not supported by server.",
-                                  VncFailureReason.UnsupportedProtocolVersion);
+                "RFB 3.8 not supported by server.",
+                VncFailureReason.UnsupportedProtocolVersion);
 
             this.c.SendVersion(new Version(3, 8));
         }
@@ -574,8 +574,8 @@ namespace RemoteViewing.Vnc
 
                     VncStream.Require(
                         this.options.Password != null,
-                                          "Password required.",
-                                          VncFailureReason.PasswordRequired);
+                        "Password required.",
+                        VncFailureReason.PasswordRequired);
                 }
 
                 this.c.SendByte((byte)AuthenticationMethod.Password);
@@ -595,8 +595,8 @@ namespace RemoteViewing.Vnc
             {
                 VncStream.Require(
                     false,
-                                      "No supported authentication methods.",
-                                      VncFailureReason.NoSupportedAuthenticationMethods);
+                    "No supported authentication methods.",
+                    VncFailureReason.NoSupportedAuthenticationMethods);
             }
 
             uint status = this.c.ReceiveUInt32BE();
@@ -641,7 +641,7 @@ namespace RemoteViewing.Vnc
                 VncEncoding.Hextile,
                 VncEncoding.CopyRect,
                 VncEncoding.Raw,
-                VncEncoding.PseudoDesktopSize
+                VncEncoding.PseudoDesktopSize,
             };
 
             this.c.Send(new[] { (byte)2, (byte)0 });

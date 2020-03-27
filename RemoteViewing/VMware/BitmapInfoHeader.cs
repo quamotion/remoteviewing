@@ -40,7 +40,7 @@ namespace RemoteViewing.VMware
     {
         /// <summary>
         /// Specifies the number of bytes required by the structure. This value does not include the size of
-        /// the color table or the size of the color masks, if they are appended to the end of structure
+        /// the color table or the size of the color masks, if they are appended to the end of structure.
         /// </summary>
         public uint Size;
 

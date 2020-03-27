@@ -4,7 +4,7 @@ using System;
 namespace RemoteViewing.Vnc.Server
 {
     /// <summary>
-    /// WinApiMouseEventFlags
+    /// WinApiMouseEventFlags.
     /// </summary>
     [Flags]
     public enum WinApiMouseEventFlags : int
@@ -62,11 +62,11 @@ namespace RemoteViewing.Vnc.Server
         /// <summary>
         /// XUP
         /// </summary>
-        XUP = 0x00000100
+        XUP = 0x00000100,
     }
 
     /// <summary>
-    /// X11MouseEventFlags
+    /// X11MouseEventFlags.
     /// </summary>
     [Flags]
     public enum X11MouseEventFlags : byte
@@ -94,7 +94,7 @@ namespace RemoteViewing.Vnc.Server
         /// <summary>
         /// SCROLLUP
         /// </summary>
-        SCROLLUP = 16
+        SCROLLUP = 16,
     }
 
     /// <summary>
@@ -123,8 +123,8 @@ namespace RemoteViewing.Vnc.Server
         /// <summary>
         /// Callback function for mouse updates.
         /// </summary>
-        /// <param name="sender">Sender</param>
-        /// <param name="e">EventArgs</param>
+        /// <param name="sender">Sender.</param>
+        /// <param name="e">EventArgs.</param>
         public void OnMouseUpdate(object sender, PointerChangedEventArgs e)
         {
             byte newState = (byte)e.PressedButtons;

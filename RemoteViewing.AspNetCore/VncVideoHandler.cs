@@ -100,7 +100,7 @@ namespace RemoteViewing.AspNetCore
         }
 
         /// <summary>
-        /// Listen to the given <see cref="HttpContext"/>
+        /// Listen to the given <see cref="HttpContext"/>.
         /// </summary>
         /// <returns>
         /// A <see cref="Task"/> corresponding to the listen process.

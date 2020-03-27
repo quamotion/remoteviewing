@@ -61,7 +61,7 @@ namespace RemoteViewing.Tests.Vnc.Server
             using (MemoryStream stream = new MemoryStream())
             {
                 // The encoder should write the content 'as is' to the stream.
-                encoder.Send(stream, new VncPixelFormat(), new VncRectangle(), content);
+                encoder.Send(stream, new VncPixelFormat(), default(VncRectangle), content);
 
                 Assert.Equal(content, stream.ToArray());
             }

@@ -248,7 +248,7 @@ namespace RemoteViewing.Vnc.Server
                 {
                     throw new ArgumentOutOfRangeException(
                         "Max update rate must be positive.",
-                                                          (Exception)null);
+                        (Exception)null);
                 }
 
                 this.maxUpdateRate = value;
@@ -324,7 +324,7 @@ namespace RemoteViewing.Vnc.Server
         /// </summary>
         /// <param name="stream">The stream containing the connection.</param>
         /// <param name="options">Session options, if any.</param>
-        /// <param name="startThread">A value indicating whether to start the </param>
+        /// <param name="startThread">A value indicating whether to start the thread.</param>
         /// <param name="forceConnected">A value indicated whether to immediately set <see cref="IsConnected"/>. Intended for unit tests only.</param>
         public void Connect(Stream stream, VncServerSessionOptions options = null, bool startThread = true, bool forceConnected = false)
         {
@@ -605,7 +605,7 @@ namespace RemoteViewing.Vnc.Server
                 methods = new[]
                 {
                     this.options.AuthenticationMethod == AuthenticationMethod.Password
-                        ? AuthenticationMethod.Password : AuthenticationMethod.None
+                        ? AuthenticationMethod.Password : AuthenticationMethod.None,
                 };
             }
             else
@@ -679,7 +679,7 @@ namespace RemoteViewing.Vnc.Server
                 }
             }
 
-            this.c.SendUInt32BE(success ? 0 : (uint)1);
+            this.c.SendUInt32BE(success ? 0 : 1U);
 
             if (!success)
             {
@@ -931,8 +931,8 @@ namespace RemoteViewing.Vnc.Server
             this.Framebuffer = fbSource != null ? fbSource.Capture() : null;
             VncStream.Require(
                 this.Framebuffer != null,
-                              "No framebuffer. Make sure you've called SetFramebufferSource. It can be set to a VncFramebuffer.",
-                              VncFailureReason.SanityCheckFailed);
+                "No framebuffer. Make sure you've called SetFramebufferSource. It can be set to a VncFramebuffer.",
+                VncFailureReason.SanityCheckFailed);
             this.clientPixelFormat = this.Framebuffer.PixelFormat;
             this.clientWidth = this.Framebuffer.Width;
             this.clientHeight = this.Framebuffer.Height;

@@ -384,8 +384,8 @@ namespace RemoteViewing.Vnc
         /// </summary>
         /// <param name="source">The framebuffer to read.</param>
         /// <param name="sourceRectangle">The framebuffer region to copy.</param>
-        /// <param name="scan0">The bitmap buffer start address</param>
-        /// <param name="stride">The bitmap width stride</param>
+        /// <param name="scan0">The bitmap buffer start address.</param>
+        /// <param name="stride">The bitmap width stride.</param>
         /// <param name="targetX">The leftmost X coordinate of the bitmap to draw to.</param>
         /// <param name="targetY">The topmost Y coordinate of the bitmap to draw to.</param>
         public static unsafe void CopyFromFramebuffer(

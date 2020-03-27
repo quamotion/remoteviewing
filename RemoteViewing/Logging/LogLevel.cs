@@ -33,6 +33,6 @@
         /// <summary>
         /// Logs a fatal error.
         /// </summary>
-        Fatal
+        Fatal,
     }
 }
