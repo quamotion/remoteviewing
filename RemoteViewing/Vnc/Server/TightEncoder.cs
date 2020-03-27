@@ -274,6 +274,10 @@ namespace RemoteViewing.Vnc.Server
                     {
                         Debug.Assert(contents.Length % 4 == 0, "The size of the raw pixel data must be a multiple of 4 when using a 32bpp pixel format.");
 
+                        int redOffset = pixelFormat.RedShift / 8;
+                        int blueOffset = pixelFormat.BlueShift / 8;
+                        int greenOffset = pixelFormat.GreenShift / 8;
+
                         for (int i = 0; i < contents.Length; i += 4)
                         {
                             if (i == contents.Length - 4)
@@ -281,7 +285,11 @@ namespace RemoteViewing.Vnc.Server
                                 deflater.FlushMode = FlushType.Full;
                             }
 
-                            deflater.Write(contents, i, 3);
+                            // The first byte is the red component, the second byte is the
+                            // green component, and the third byte is the blue component of the pixel color value.
+                            deflater.Write(contents, i + redOffset, 1);
+                            deflater.Write(contents, i + greenOffset, 1);
+                            deflater.Write(contents, i + blueOffset, 1);
                         }
                     }
                     else
