@@ -34,6 +34,8 @@ using SharpCompress.Compressors.Deflate;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Drawing;
+using System.Drawing.Imaging;
 using System.IO;
 using System.Text;
 using Xunit;
@@ -286,12 +288,12 @@ namespace RemoteViewing.Tests.Vnc.Server
                 .Setup(s => s.ClientEncodings)
                 .Returns(new List<VncEncoding>()
                 {
-                    VncEncoding.TightQualityLevel4,
+                    VncEncoding.TightQualityLevel9,
                 });
 
             TightEncoder encoder = new TightEncoder(serverSession.Object)
             {
-                Compression = TightCompression.Jpeg
+                Compression = TightCompression.Jpeg,
             };
 
             byte[] raw = null;
@@ -299,7 +301,13 @@ namespace RemoteViewing.Tests.Vnc.Server
             using (MemoryStream output = new MemoryStream())
             {
                 var contents = new byte[512];
-                encoder.Send(output, VncPixelFormat.RGB32, new VncRectangle() { Width = 1, Height = 1 }, contents);
+
+                // An entirely blue picture
+                Array.Copy(new byte[] { 0xFF, 0x00, 0x00, 0x00 }, 0, contents, 0, 4);
+                Array.Copy(new byte[] { 0xFF, 0x00, 0x00, 0x00 }, 0, contents, 4, 4);
+                Array.Copy(new byte[] { 0xFF, 0x00, 0x00, 0x00 }, 0, contents, 8, 4);
+                Array.Copy(new byte[] { 0xFF, 0x00, 0x00, 0x00 }, 0, contents, 12, 4);
+                encoder.Send(output, VncPixelFormat.RGB32, new VncRectangle() { Width = 2, Height = 2 }, contents);
                 raw = output.ToArray();
             }
 
@@ -309,6 +317,30 @@ namespace RemoteViewing.Tests.Vnc.Server
             // by checking for the JPEG magic.
             Assert.Equal(0xFF, raw[3]);
             Assert.Equal(0xD8, raw[4]);
+
+            var jpeg = new byte[raw.Length - 3];
+            Array.Copy(raw, 3, jpeg, 0, raw.Length - 3);
+
+            // Make sure the decoded image is blue, too.
+            using (Stream stream = new MemoryStream(jpeg))
+            using (var bitmap = new Bitmap(stream))
+            {
+                Assert.Equal(PixelFormat.Format24bppRgb, bitmap.PixelFormat);
+                Assert.Equal(2, bitmap.Width);
+                Assert.Equal(2, bitmap.Height);
+
+                for (int i = 0; i < 2; i++)
+                {
+                    for (int j = 0; j < 2; j++)
+                    {
+                        var color = bitmap.GetPixel(i, j);
+                        Assert.Equal(0, color.R);
+                        Assert.Equal(0, color.G);
+                        Assert.True(color.B > 250);
+                        Assert.Equal(255, color.A);
+                    }
+                }
+            }
         }
     }
 }
