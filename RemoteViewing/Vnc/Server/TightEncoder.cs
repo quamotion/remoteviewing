@@ -194,7 +194,7 @@ namespace RemoteViewing.Vnc.Server
                 var jpeg = this.compressor.Compress(
                     contents.AsSpan(),
                     buffer.AsSpan(5),
-                    region.Width,
+                    0, /* auto-calculate pitch */
                     region.Width,
                     region.Height,
                     PixelFormat.Format32bppArgb,
