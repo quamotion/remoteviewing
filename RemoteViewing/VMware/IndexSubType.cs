@@ -42,6 +42,6 @@ namespace RemoteViewing.VMware
         /// <summary>
         /// Fiels within frames are also indexed.
         /// </summary>
-        AviIndexToField = 0x01
+        AviIndexToField = 0x01,
     }
 }

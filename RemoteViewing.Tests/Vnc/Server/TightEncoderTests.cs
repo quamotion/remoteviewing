@@ -29,6 +29,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 using Moq;
 using RemoteViewing.Vnc;
 using RemoteViewing.Vnc.Server;
+using SharpCompress.Compressors;
 using SharpCompress.Compressors.Deflate;
 using System;
 using System.Collections.Generic;
@@ -80,7 +81,7 @@ namespace RemoteViewing.Tests.Vnc.Server
             using (MemoryStream output = new MemoryStream())
             {
                 var contents = Encoding.ASCII.GetBytes("hello, world\n");
-                encoder.Send(output, new VncPixelFormat(32, 24, 8, 0, 8, 0, 8, 0, false, true), new VncRectangle(), contents);
+                encoder.Send(output, new VncPixelFormat(32, 24, 8, 0, 8, 0, 8, 0, false, true), default(VncRectangle), contents);
                 raw = output.ToArray();
             }
 
@@ -114,8 +115,17 @@ namespace RemoteViewing.Tests.Vnc.Server
 
             using (MemoryStream output = new MemoryStream())
             {
-                var contents = Encoding.ASCII.GetBytes("hello, world    ");
-                encoder.Send(output, new VncPixelFormat(), new VncRectangle(), contents);
+                var contents = new byte[]
+                {
+                    // A 2x2 framebuffer in
+                    // BGRX format
+                    0x01, 0x02, 0x03, 0x04,
+                    0x01, 0x02, 0x03, 0x04,
+                    0x01, 0x02, 0x03, 0x04,
+                    0x01, 0x02, 0x03, 0x04,
+                };
+
+                encoder.Send(output, VncPixelFormat.RGB32, new VncRectangle(0, 0, 2, 2), contents);
                 raw = output.ToArray();
             }
 
@@ -125,13 +135,33 @@ namespace RemoteViewing.Tests.Vnc.Server
             // - Reset stream 0
             Assert.Equal(0b0000_0001, raw[0]);
 
-            byte[] expectedZlibData = new byte[] { 0x78, 0x9c, 0xca, 0x48, 0xcd, 0xc9, 0xd7, 0x51, 0xc8, 0x2f, 0xca, 0x51, 0x50, 0x50, 0x00, 0x00, 0x00, 0x00, 0xff, 0xff };
+            byte[] expectedZlibData = new byte[] { 0x78, 0x9c, 0x62, 0x66, 0x62, 0x64, 0x86, 0x20, 0x00, 0x00, 0x00, 0x00, 0xff, 0xff, 0x62, 0x02, 0x00, 0x00, 0x00, 0xff, 0xff, 0x62, 0x04, 0x00, 0x00, 0x00, 0xff, 0xff };
 
             byte[] actualZlibData = new byte[raw.Length - 2];
             Array.Copy(raw, 2, actualZlibData, 0, raw.Length - 2);
 
             Assert.Equal((byte)expectedZlibData.Length, raw[1]);
             Assert.Equal(expectedZlibData, actualZlibData);
+
+            // Decompress the data and make sure the pixel format is correct (RGB, the 'VncPixelFormat.RGB32' actually represents BGRX)
+            using (var compressedStream = new MemoryStream(actualZlibData))
+            using (var stream = new ZlibStream(compressedStream, CompressionMode.Decompress))
+            {
+                byte[] decompressed = new byte[0x09];
+                Assert.Equal(9, stream.Read(decompressed, 0, 9));
+
+                // Make sure all data was read
+                Assert.Equal(0, stream.Read(decompressed, 0, 0));
+
+                var expectedDecompressedData = new byte[]
+                {
+                    0x03, 0x02, 0x01,
+                    0x03, 0x02, 0x01,
+                    0x03, 0x02, 0x01,
+                };
+
+                Assert.Equal(expectedDecompressedData, decompressed);
+            }
         }
 
         /// <summary>

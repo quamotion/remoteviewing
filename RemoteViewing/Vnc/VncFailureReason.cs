@@ -86,6 +86,6 @@ namespace RemoteViewing.Vnc
         /// <summary>
         /// The server sent an unrecognized protocol element. This shouldn't happen in normal conditions.
         /// </summary>
-        UnrecognizedProtocolElement
+        UnrecognizedProtocolElement,
     }
 }

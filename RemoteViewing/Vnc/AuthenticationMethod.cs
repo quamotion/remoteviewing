@@ -41,6 +41,6 @@ namespace RemoteViewing.Vnc
         /// <summary>
         /// A password is used.
         /// </summary>
-        Password = 2
+        Password = 2,
     }
 }

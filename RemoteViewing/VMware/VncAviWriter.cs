@@ -124,7 +124,7 @@ namespace RemoteViewing.VMware
                 {
                     ListType = FourCC.Riff,
                     FourCC = FourCC.Avi,
-                    Size = this.ExpectedSize
+                    Size = this.ExpectedSize,
                 },
                 cancellationToken).ConfigureAwait(false);
 
@@ -134,7 +134,7 @@ namespace RemoteViewing.VMware
                 {
                     ListType = FourCC.List,
                     FourCC = FourCC.Hdrl,
-                    Size = 0x449c // TBC
+                    Size = 0x449c, // TBC
                 },
                 cancellationToken).ConfigureAwait(false);
 
@@ -143,7 +143,7 @@ namespace RemoteViewing.VMware
                 new Chunk()
                 {
                     FourCC = FourCC.Avih,
-                    Size = Unsafe.SizeOf<AviMainHeader>()
+                    Size = Unsafe.SizeOf<AviMainHeader>(),
                 },
                 cancellationToken).ConfigureAwait(false);
 
@@ -176,7 +176,7 @@ namespace RemoteViewing.VMware
                 new Chunk()
                 {
                     FourCC = FourCC.Strh,
-                    Size = 0x38
+                    Size = 0x38,
                 },
                 cancellationToken).ConfigureAwait(false);
 
@@ -191,7 +191,7 @@ namespace RemoteViewing.VMware
                     Scale = this.Scale,
                     SuggestedBufferSize = 0x00046bc4,
                     Bottom = (short)framebuffer.Height,
-                    Right = (short)framebuffer.Width
+                    Right = (short)framebuffer.Width,
                 },
                 cancellationToken).ConfigureAwait(false);
 
@@ -200,7 +200,7 @@ namespace RemoteViewing.VMware
                 new Chunk()
                 {
                     FourCC = FourCC.Strf,
-                    Size = 0x28
+                    Size = 0x28,
                 },
                 cancellationToken).ConfigureAwait(false);
 
@@ -213,7 +213,7 @@ namespace RemoteViewing.VMware
                     Height = framebuffer.Height,
                     Planes = 1,
                     Size = 0x28, // TBC
-                    Width = framebuffer.Width
+                    Width = framebuffer.Width,
                 },
                 cancellationToken).ConfigureAwait(false);
 
@@ -228,7 +228,7 @@ namespace RemoteViewing.VMware
                     ChunkId = FourCC.Dc00,
                     LongsPerEntry = 4,
                     IndexType = IndexType.IndexOfIndexes,
-                    IndexSubType = IndexSubType.None
+                    IndexSubType = IndexSubType.None,
                 },
                 cancellationToken).ConfigureAwait(false);
 
@@ -238,7 +238,7 @@ namespace RemoteViewing.VMware
                 {
                     Duration = this.ExpectedTotalFrames,
                     Offset = 0x000000000004196a,
-                    Size = 0x4000
+                    Size = 0x4000,
                 },
                 cancellationToken);
 
@@ -250,7 +250,7 @@ namespace RemoteViewing.VMware
                 {
                     ListType = FourCC.List,
                     FourCC = FourCC.Odml,
-                    Size = 0x00000104
+                    Size = 0x00000104,
                 },
                 cancellationToken).ConfigureAwait(false);
 
@@ -265,7 +265,7 @@ namespace RemoteViewing.VMware
                     IndexSubType = IndexSubType.None,
                     ChunkId = (FourCC)BinaryPrimitives.ReverseEndianness((uint)VncEncoding.Raw),
                     EntriesInUse = 0,
-                    LongsPerEntry = 0x13e
+                    LongsPerEntry = 0x13e,
                 },
                 cancellationToken);
 
@@ -276,7 +276,7 @@ namespace RemoteViewing.VMware
                 new Chunk()
                 {
                     FourCC = FourCC.Junk,
-                    Size = junkSize // TBC
+                    Size = junkSize, // TBC
                 },
                 cancellationToken).ConfigureAwait(false);
 
@@ -293,14 +293,14 @@ namespace RemoteViewing.VMware
                 {
                     FourCC = FourCC.Movi,
                     ListType = FourCC.List,
-                    Size = this.ExpectedSize - 0x4800
+                    Size = this.ExpectedSize - 0x4800,
                 },
                 cancellationToken);
 
             FramebufferUpdate framebufferUpdate = new FramebufferUpdate()
             {
                 MessageType = 0,
-                NumberOfRectangles = 2
+                NumberOfRectangles = 2,
             };
 
             FramebufferUpdateRectangle rectangle = new FramebufferUpdateRectangle();
@@ -313,7 +313,7 @@ namespace RemoteViewing.VMware
                     4
                     + (2 * framebufferUpdate.Buffer.Length)
                     + displayModeChange.Buffer.Length
-                    + (framebuffer.Stride * framebuffer.Width * framebuffer.PixelFormat.BytesPerPixel)
+                    + (framebuffer.Stride * framebuffer.Width * framebuffer.PixelFormat.BytesPerPixel),
             };
 
             Stopwatch timer = new Stopwatch();

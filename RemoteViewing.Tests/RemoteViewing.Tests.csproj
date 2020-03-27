@@ -5,7 +5,8 @@
 
     <IsPackable>false</IsPackable>
     <AssemblyOriginatorKeyFile>../RemoteViewing/RemoteViewing.snk</AssemblyOriginatorKeyFile>
-    <SignAssembly>true</SignAssembly>
+    <SignAssembly>true</SignAssembly>    
+    <CodeAnalysisRuleSet>..\RemoteViewing.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
 
   <ItemGroup>

@@ -36,7 +36,6 @@ namespace RemoteViewing.Tests
         public TestStream()
             : this(new MemoryStream(), new MemoryStream())
         {
-
         }
 
         public TestStream(Stream input, Stream output)
@@ -46,6 +45,7 @@ namespace RemoteViewing.Tests
         }
 
         public Stream Input { get; private set; }
+
         public Stream Output { get; private set; }
 
         public override bool CanRead => true;

@@ -238,14 +238,14 @@ namespace RemoteViewing.Vnc
                             {
                                 VncStream.Require(
                                     false,
-                                                      "Bad data compressed.",
-                                                      VncFailureReason.UnrecognizedProtocolElement);
+                                    "Bad data compressed.",
+                                    VncFailureReason.UnrecognizedProtocolElement);
                             }
 
                             VncStream.Require(
                                 count > 0,
-                                                  "No data compressed.",
-                                                  VncFailureReason.UnrecognizedProtocolElement);
+                                "No data compressed.",
+                                VncFailureReason.UnrecognizedProtocolElement);
                             j += count;
                         }
 
@@ -266,8 +266,8 @@ namespace RemoteViewing.Vnc
                     default:
                         VncStream.Require(
                             false,
-                                              "Unsupported encoding.",
-                                              VncFailureReason.UnrecognizedProtocolElement);
+                            "Unsupported encoding.",
+                            VncFailureReason.UnrecognizedProtocolElement);
                         break;
                 }
 

@@ -57,14 +57,14 @@ namespace RemoteViewing.NoVncExample
                 (context) => new VncContext()
                 {
                     Password = "demo",
-                    FramebufferSource = new DummyFramebufferSource()
+                    FramebufferSource = new DummyFramebufferSource(),
                 });
 
             app.UseVncVideoRecording(
                 "/vnc/video",
                 (context) => new VncContext()
                 {
-                    FramebufferSource = new DummyFramebufferSource()
+                    FramebufferSource = new DummyFramebufferSource(),
                 });
 
             app.Use(async (context, next) =>

@@ -86,11 +86,11 @@ namespace RemoteViewing.Vnc.Server
         /// </summary>
         protected IVncServerSession VncServerSession { get; private set; }
 
-        /// <summary>Encode a value into a byte array</summary>
-        /// <param name="buffer">The byte array to encode the 7-bit integer into</param>
-        /// <param name="startIndex">The index of the first byte for the 7-bit integer</param>
-        /// <param name="value">The value to encode into <paramref name="buffer"/></param>
-        /// <returns>Index of the first byte after the encoded value in <paramref name="buffer"/></returns>
+        /// <summary>Encode a value into a byte array.</summary>
+        /// <param name="buffer">The byte array to encode the 7-bit integer into.</param>
+        /// <param name="startIndex">The index of the first byte for the 7-bit integer.</param>
+        /// <param name="value">The value to encode into <paramref name="buffer"/>.</param>
+        /// <returns>Index of the first byte after the encoded value in <paramref name="buffer"/>.</returns>
         public static int WriteEncodedValue(byte[] buffer, int startIndex, int value)
         {
             // Write out an int 7 bits at a time.  The high bit of the byte,
@@ -274,6 +274,10 @@ namespace RemoteViewing.Vnc.Server
                     {
                         Debug.Assert(contents.Length % 4 == 0, "The size of the raw pixel data must be a multiple of 4 when using a 32bpp pixel format.");
 
+                        int redOffset = pixelFormat.RedShift / 8;
+                        int blueOffset = pixelFormat.BlueShift / 8;
+                        int greenOffset = pixelFormat.GreenShift / 8;
+
                         for (int i = 0; i < contents.Length; i += 4)
                         {
                             if (i == contents.Length - 4)
@@ -281,7 +285,11 @@ namespace RemoteViewing.Vnc.Server
                                 deflater.FlushMode = FlushType.Full;
                             }
 
-                            deflater.Write(contents, i, 3);
+                            // The first byte is the red component, the second byte is the
+                            // green component, and the third byte is the blue component of the pixel color value.
+                            deflater.Write(contents, i + redOffset, 1);
+                            deflater.Write(contents, i + greenOffset, 1);
+                            deflater.Write(contents, i + blueOffset, 1);
                         }
                     }
                     else

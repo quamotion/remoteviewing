@@ -51,6 +51,6 @@ namespace RemoteViewing.VMware
         /// <summary>
         /// The index contains data.
         /// </summary>
-        IndexIsData = 0x80
+        IndexIsData = 0x80,
     }
 }

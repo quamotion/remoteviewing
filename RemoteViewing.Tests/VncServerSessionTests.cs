@@ -26,14 +26,14 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 #endregion
 
+using Moq;
 using RemoteViewing.Vnc;
 using RemoteViewing.Vnc.Server;
+using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using Xunit;
-using Moq;
-using System;
-using System.Collections.Generic;
 
 namespace RemoteViewing.Tests
 {
@@ -121,7 +121,7 @@ namespace RemoteViewing.Tests
 
                 stream.Output.Position = 0;
 
-                Assert.Equal(Encoding.UTF8.GetBytes("RFB 003.008\n"), ((MemoryStream)((stream).Output)).ToArray());
+                Assert.Equal(Encoding.UTF8.GetBytes("RFB 003.008\n"), ((MemoryStream)stream.Output).ToArray());
             }
         }
 
@@ -147,7 +147,7 @@ namespace RemoteViewing.Tests
 
                 stream.Output.Position = 0;
 
-                Assert.Equal(Encoding.UTF8.GetBytes("RFB 003.008\n"), ((MemoryStream)((stream).Output)).ToArray());
+                Assert.Equal(Encoding.UTF8.GetBytes("RFB 003.008\n"), ((MemoryStream)stream.Output).ToArray());
             }
         }
 
