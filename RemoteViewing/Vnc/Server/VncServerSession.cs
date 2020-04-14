@@ -176,7 +176,7 @@ namespace RemoteViewing.Vnc.Server
         public FramebufferUpdateRequest FramebufferUpdateRequest
         {
             get;
-            internal set;
+            set;
         }
 
         /// <summary>
@@ -294,7 +294,16 @@ namespace RemoteViewing.Vnc.Server
         /// <summary>
         /// Gets or sets the encoder which is currently in use.
         /// </summary>
-        public VncEncoder Encoder { get; protected set; } = new RawEncoder();
+        public VncEncoder Encoder { get; set; } = new RawEncoder();
+
+        /// <summary>
+        /// Gets or sets the pixel format currently used by the client.
+        /// </summary>
+        public VncPixelFormat ClientPixelFormat
+        {
+            get { return this.clientPixelFormat; }
+            set { this.clientPixelFormat = value; }
+        }
 
         /// <summary>
         /// Closes the connection with the remote client.
@@ -525,12 +534,19 @@ namespace RemoteViewing.Vnc.Server
 
                 foreach (var rectangle in this.fbuRectangles)
                 {
-                    Debug.Assert(rectangle.Encoding == VncEncoding.Raw, "Rectangles should be in raw format");
+                    if (rectangle.Encoding != VncEncoding.Raw)
+                    {
+                        this.c.SendRectangle(rectangle.Region);
+                        this.c.SendUInt32BE((uint)rectangle.Encoding);
+                        this.c.Send(rectangle.Contents);
+                    }
+                    else
+                    {
+                        this.c.SendRectangle(rectangle.Region);
+                        this.c.SendUInt32BE((uint)this.Encoder.Encoding);
 
-                    this.c.SendRectangle(rectangle.Region);
-                    this.c.SendUInt32BE((uint)this.Encoder.Encoding);
-
-                    this.Encoder.Send(this.c.Stream, this.clientPixelFormat, rectangle.Region, rectangle.Contents);
+                        this.Encoder.Send(this.c.Stream, this.clientPixelFormat, rectangle.Region, rectangle.Contents);
+                    }
                 }
 
                 this.fbuRectangles.Clear();
@@ -538,7 +554,14 @@ namespace RemoteViewing.Vnc.Server
             }
         }
 
-        internal bool FramebufferSendChanges()
+        /// <summary>
+        /// Sends the framebuffer changes to the client.
+        /// </summary>
+        /// <returns>
+        /// <see langword="true"/> if the changes have been pushed correctly;
+        /// otherwise, <see langword="false"/>.
+        /// </returns>
+        public bool FramebufferSendChanges()
         {
             var e = new FramebufferUpdatingEventArgs();
 
