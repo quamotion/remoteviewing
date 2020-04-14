@@ -26,7 +26,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 #endregion
 
-using RemoteViewing.Logging;
+using Microsoft.Extensions.Logging;
 using System;
 
 namespace RemoteViewing.Vnc.Server
@@ -41,7 +41,7 @@ namespace RemoteViewing.Vnc.Server
         // dividing the framebuffer in blocks of 32x32 and are invalidating them one at a time.
         private const int TileSize = 64;
 
-        private readonly ILog logger;
+        private readonly ILogger logger;
 
         private readonly bool[] isLineInvalid;
 
@@ -57,9 +57,9 @@ namespace RemoteViewing.Vnc.Server
         /// The <see cref="VncFramebuffer"/> to cache.
         /// </param>
         /// <param name="logger">
-        /// The <see cref="ILog"/> logger to use when logging diagnostic messages.
+        /// The <see cref="ILogger"/> logger to use when logging diagnostic messages.
         /// </param>
-        public VncFramebufferCache(VncFramebuffer framebuffer, ILog logger)
+        public VncFramebufferCache(VncFramebuffer framebuffer, ILogger logger)
         {
             if (framebuffer == null)
             {
@@ -107,7 +107,7 @@ namespace RemoteViewing.Vnc.Server
             var region = fbr.Region;
             int bpp = fb.PixelFormat.BytesPerPixel;
 
-            this.logger?.Log(LogLevel.Debug, () => $"Responding to an update request for region {region}.");
+            this.logger?.LogDebug($"Responding to an update request for region {region}.");
 
             session.FramebufferManualBeginUpdate();
 

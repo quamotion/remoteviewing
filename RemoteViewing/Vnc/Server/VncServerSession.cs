@@ -26,7 +26,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 #endregion
 
-using RemoteViewing.Logging;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -34,7 +34,6 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading;
-using System.Threading.Tasks;
 
 namespace RemoteViewing.Vnc.Server
 {
@@ -43,7 +42,7 @@ namespace RemoteViewing.Vnc.Server
     /// </summary>
     public class VncServerSession : IVncServerSession
     {
-        private ILog logger;
+        private ILogger logger;
         private IVncPasswordChallenge passwordChallenge;
         private VncStream c = new VncStream();
         private Collection<VncEncoding> clientEncoding = new Collection<VncEncoding>();
@@ -79,7 +78,7 @@ namespace RemoteViewing.Vnc.Server
         /// <param name="logger">
         /// The logger to use when logging diagnostic messages.
         /// </param>
-        public VncServerSession(IVncPasswordChallenge passwordChallenge, ILog logger)
+        public VncServerSession(IVncPasswordChallenge passwordChallenge, ILogger logger)
         {
             if (passwordChallenge == null)
             {
@@ -201,9 +200,9 @@ namespace RemoteViewing.Vnc.Server
         }
 
         /// <summary>
-        /// Gets or sets the <see cref="ILog"/> logger to use when logging.
+        /// Gets or sets the <see cref="ILogger"/> logger to use when logging.
         /// </summary>
-        public ILog Logger
+        public ILogger Logger
         {
             get { return this.logger; }
             set { this.logger = value; }
@@ -271,7 +270,7 @@ namespace RemoteViewing.Vnc.Server
         /// Gets or sets a function which initializes a new <see cref="IVncFramebufferCache"/> for use by
         /// this <see cref="VncServerSession"/>.
         /// </summary>
-        public Func<VncFramebuffer, ILog, IVncFramebufferCache> CreateFramebufferCache
+        public Func<VncFramebuffer, ILogger, IVncFramebufferCache> CreateFramebufferCache
         { get; set; } = (framebuffer, log) => new VncFramebufferCache(framebuffer, log);
 
         /// <summary>
@@ -582,7 +581,7 @@ namespace RemoteViewing.Vnc.Server
                         }
                         catch (Exception exc)
                         {
-                            this.logger?.Log(LogLevel.Error, () => $"Capturing the framebuffer source failed: {exc}.");
+                            this.logger?.LogError(exc, $"Capturing the framebuffer source failed: {exc}.");
                         }
                     }
 
@@ -618,7 +617,7 @@ namespace RemoteViewing.Vnc.Server
         /// </returns>
         internal bool NegotiateVersion(out AuthenticationMethod[] methods)
         {
-            this.logger?.Log(LogLevel.Info, () => "Negotiating the version.");
+            this.logger?.LogInformation("Negotiating the version.");
 
             this.c.SendVersion(new Version(3, 8));
 
@@ -641,8 +640,8 @@ namespace RemoteViewing.Vnc.Server
 
             var supportedMethods = $"Supported autentication method are {string.Join(" ", methods)}";
 
-            this.logger?.Log(LogLevel.Info, () => $"The client version is {this.clientVersion}");
-            this.logger?.Log(LogLevel.Info, () => supportedMethods);
+            this.logger?.LogInformation($"The client version is {this.clientVersion}");
+            this.logger?.LogInformation(supportedMethods);
 
             return true;
         }
@@ -659,13 +658,13 @@ namespace RemoteViewing.Vnc.Server
         /// <seealso href="https://github.com/rfbproto/rfbproto/blob/master/rfbproto.rst#712security"/>
         internal bool NegotiateSecurity(AuthenticationMethod[] methods)
         {
-            this.logger?.Log(LogLevel.Info, () => "Negotiating security");
+            this.logger?.LogInformation("Negotiating security");
 
             this.c.SendByte((byte)methods.Length);
 
             if (methods.Length == 0)
             {
-                this.logger?.Log(LogLevel.Warn, () => "The server and client could not agree on any authentication method.");
+                this.logger?.LogWarning("The server and client could not agree on any authentication method.");
                 this.c.SendString("The server and client could not agree on any authentication method.", includeLength: true);
                 return false;
             }
@@ -679,7 +678,7 @@ namespace RemoteViewing.Vnc.Server
             if (!methods.Contains(selectedMethod))
             {
                 this.c.SendUInt32BE(1);
-                this.logger?.Log(LogLevel.Info, () => "Invalid authentication method.");
+                this.logger?.LogInformation("Invalid authentication method.");
                 this.c.SendString("Invalid authentication method.", includeLength: true);
                 return false;
             }
@@ -706,12 +705,12 @@ namespace RemoteViewing.Vnc.Server
 
             if (!success)
             {
-                this.logger?.Log(LogLevel.Info, () => "The user failed to authenticate.");
+                this.logger?.LogInformation("The user failed to authenticate.");
                 this.c.SendString("Failed to authenticate", includeLength: true);
                 return false;
             }
 
-            this.logger?.Log(LogLevel.Info, () => "The user authenticated successfully.");
+            this.logger?.LogInformation("The user authenticated successfully.");
             this.securityNegotiated = true;
 
             return true;
@@ -725,14 +724,14 @@ namespace RemoteViewing.Vnc.Server
             VncStream.SanityCheck(encodingCount <= 0x1ff);
             this.clientEncoding.Clear();
 
-            this.logger?.Log(LogLevel.Info, () => "The client supports {0} encodings:", null, encodingCount);
+            this.logger?.LogInformation($"The client supports {encodingCount} encodings:");
 
             for (int i = 0; i < encodingCount; i++)
             {
                 var encoding = (VncEncoding)this.c.ReceiveUInt32BE();
                 this.clientEncoding.Add(encoding);
 
-                this.logger?.Log(LogLevel.Info, () => "- {0}", null, encoding);
+                this.logger?.LogInformation($"- {encoding}");
             }
 
             this.InitFramebufferEncoder();
@@ -854,7 +853,7 @@ namespace RemoteViewing.Vnc.Server
                     this.requester.Start(() => this.FramebufferSendChanges(), () => this.MaxUpdateRate, false);
 
                     this.IsConnected = true;
-                    this.logger?.Log(LogLevel.Info, () => "The client has connected successfully");
+                    this.logger?.LogInformation("The client has connected successfully");
 
                     this.OnConnected();
 
@@ -870,15 +869,15 @@ namespace RemoteViewing.Vnc.Server
                         {
                             if (commandCount > 0)
                             {
-                                this.logger?.Log(LogLevel.Info, () => $"Suppressed {commandCount} notifications of the {command} command at the Info level.");
+                                this.logger?.LogInformation($"Suppressed {commandCount} notifications of the {command} command at the Info level.");
                             }
 
-                            this.logger?.Log(LogLevel.Info, () => $"Received the {command} command.");
+                            this.logger?.LogInformation($"Received the {command} command.");
                             commandCount = 0;
                         }
                         else
                         {
-                            this.logger?.Log(LogLevel.Debug, () => $"Received the {command} command");
+                            this.logger?.LogDebug($"Received the {command} command");
                             commandCount++;
                         }
 
@@ -923,7 +922,7 @@ namespace RemoteViewing.Vnc.Server
             }
             catch (Exception exception)
             {
-                this.logger?.Log(LogLevel.Error, () => $"VNC server session stopped due to: {exception.Message}");
+                this.logger?.LogError(exception, $"VNC server session stopped due to: {exception.Message}");
             }
 
             this.requester.Stop();
@@ -942,7 +941,7 @@ namespace RemoteViewing.Vnc.Server
 
         private void NegotiateDesktop()
         {
-            this.logger?.Log(LogLevel.Info, () => "Negotiating desktop settings");
+            this.logger?.LogInformation("Negotiating desktop settings");
 
             byte shareDesktopSetting = this.c.ReceiveByte();
             bool shareDesktop = shareDesktopSetting != 0;
@@ -968,7 +967,7 @@ namespace RemoteViewing.Vnc.Server
             this.c.Send(pixelFormat);
             this.c.SendString(this.Framebuffer.Name, true);
 
-            this.logger?.Log(LogLevel.Info, () => $"The desktop {this.Framebuffer.Name} has initialized with pixel format {this.clientPixelFormat}; the screen size is {this.clientWidth}x{this.clientHeight}");
+            this.logger?.LogInformation($"The desktop {this.Framebuffer.Name} has initialized with pixel format {this.clientPixelFormat}; the screen size is {this.clientWidth}x{this.clientHeight}");
         }
 
         private void HandleSetPixelFormat()
@@ -988,7 +987,7 @@ namespace RemoteViewing.Vnc.Server
 
             lock (this.FramebufferUpdateRequestLock)
             {
-                this.logger?.Log(LogLevel.Debug, () => $"Received a FramebufferUpdateRequest command for {region}");
+                this.logger?.LogDebug($"Received a FramebufferUpdateRequest command for {region}");
 
                 region = VncRectangle.Intersect(region, new VncRectangle(0, 0, this.Framebuffer.Width, this.Framebuffer.Height));
 
@@ -1044,7 +1043,7 @@ namespace RemoteViewing.Vnc.Server
 
         private void InitFramebufferEncoder()
         {
-            this.logger?.Log(LogLevel.Info, () => "Initializing the frame buffer encoder");
+            this.logger?.LogInformation("Initializing the frame buffer encoder");
 
             // For RealVNC compatibility: make sure we only start using encodings _after_
             // the connection has been initialized correctly.
@@ -1065,10 +1064,10 @@ namespace RemoteViewing.Vnc.Server
             }
             else
             {
-                this.logger?.Log(LogLevel.Info, () => "Not selecting any encoder because the connection setup phase has not completed.");
+                this.logger?.LogInformation("Not selecting any encoder because the connection setup phase has not completed.");
             }
 
-            this.logger?.Log(LogLevel.Info, () => $"Initialized the frame buffer encoder. Using {this.Encoder.GetType().Name} ({this.Encoder.Encoding})");
+            this.logger?.LogInformation($"Initialized the frame buffer encoder. Using {this.Encoder.GetType().Name} ({this.Encoder.Encoding})");
         }
 
         private struct Rectangle

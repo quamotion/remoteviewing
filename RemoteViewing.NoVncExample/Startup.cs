@@ -50,9 +50,9 @@ namespace RemoteViewing.NoVncExample
                 app.UseDeveloperExceptionPage();
             }
 
+            // By default, noVNC will use the /websockify path. You can specify any other
+            // path, though.
             app.UseVncServer(
-                // By default, noVNC will use the /websockify path. You can specify any other
-                // path, though.
                 "/websockify",
                 (context) => new VncContext()
                 {
