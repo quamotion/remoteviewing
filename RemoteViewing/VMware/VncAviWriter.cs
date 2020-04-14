@@ -72,7 +72,6 @@ namespace RemoteViewing.VMware
         /// Gets or sets the expected size of the AVI file. Set to the maximum value by default,
         /// useful when streaming to FFmpeg.
         /// </summary>
-        [CLSCompliant(false)]
         public uint ExpectedSize
         { get; set; } = uint.MaxValue;
 

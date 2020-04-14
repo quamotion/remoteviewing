@@ -314,7 +314,6 @@ namespace RemoteViewing.Vnc
         /// </summary>
         /// <param name="keysym">The X11 keysym of the key. For many keys this is the ASCII value.</param>
         /// <param name="pressed"><c>true</c> for a key press event, or <c>false</c> for a key release event.</param>
-        [CLSCompliant(false)]
         public void SendKeyEvent(KeySym keysym, bool pressed)
         {
             var p = new byte[8];

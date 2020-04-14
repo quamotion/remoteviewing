@@ -27,7 +27,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 #endregion
 
-using RemoteViewing.Logging;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -71,9 +71,9 @@ namespace RemoteViewing.Vnc.Server
         event EventHandler<PasswordProvidedEventArgs> PasswordProvided;
 
         /// <summary>
-        /// Gets or sets the <see cref="ILog"/> logger to use when logging.
+        /// Gets or sets the <see cref="ILogger"/> logger to use when logging.
         /// </summary>
-        ILog Logger { get; set; }
+        ILogger Logger { get; set; }
 
         /// <summary>
         /// Gets or sets the <see cref="IVncPasswordChallenge"/> to use when authenticating clients.
@@ -92,7 +92,7 @@ namespace RemoteViewing.Vnc.Server
         /// Gets or sets a function which initializes a new <see cref="IVncFramebufferCache"/> for use by
         /// this <see cref="VncServerSession"/>.
         /// </summary>
-        Func<VncFramebuffer, ILog, IVncFramebufferCache> CreateFramebufferCache { get; set; }
+        Func<VncFramebuffer, ILogger, IVncFramebufferCache> CreateFramebufferCache { get; set; }
 
         /// <summary>
         /// Gets information about the client's most recent framebuffer update request.

@@ -33,7 +33,6 @@ namespace RemoteViewing.Vnc
     /// <summary>
     /// Provides helper methods for working with <see cref="KeySym"/> value.
     /// </summary>
-    [CLSCompliant(false)]
     public static class KeySymHelpers
     {
         /// <summary>

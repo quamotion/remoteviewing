@@ -49,7 +49,6 @@ namespace RemoteViewing.Vnc
     /// </summary>
     /// <seealso href="https://cgit.freedesktop.org/xorg/proto/x11proto/tree/keysymdef.h"/>
     /// <seealso href="https://tools.ietf.org/pdf/rfc6143.pdf"/>
-    [CLSCompliant(false)]
     [SuppressMessage("StyleCop.CSharp.NamingRules", "SA1300", Justification = "Match actual key values.", Scope = "type")]
     public enum KeySym
     {

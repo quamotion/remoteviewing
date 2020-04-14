@@ -26,7 +26,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 #endregion
 
-using RemoteViewing.Logging;
+using Microsoft.Extensions.Logging;
 using RemoteViewing.Vnc;
 using RemoteViewing.Vnc.Server;
 using System;
@@ -51,7 +51,7 @@ namespace RemoteViewing.AspNetCore
         /// Gets or sets the a function which creates a new <see cref="IVncFramebufferCache"/> for use with
         /// the <see cref="FramebufferSource"/>.
         /// </summary>
-        public Func<VncFramebuffer, ILog, IVncFramebufferCache> CreateFramebufferCache
+        public Func<VncFramebuffer, ILogger, IVncFramebufferCache> CreateFramebufferCache
         {
             get;
             set;
@@ -98,7 +98,7 @@ namespace RemoteViewing.AspNetCore
         /// Gets or sets the logger to use when logging diagnostic messages. No logging will happen when
         /// set to <see langword="null"/>.
         /// </summary>
-        public ILog Logger
+        public ILogger Logger
         {
             get;
             set;

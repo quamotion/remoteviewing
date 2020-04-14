@@ -29,6 +29,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 using System;
 using System.Net;
 using System.Net.Sockets;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Console;
 using RemoteViewing.NoVncExample;
 using RemoteViewing.Vnc;
 using RemoteViewing.Vnc.Server;
@@ -78,7 +80,7 @@ namespace RemoteViewing.ServerExample
             // Create a session.
             session = new VncServerSession(
                 new VncPasswordChallenge(),
-                new ConsoleLogger());
+                new ConsoleLogger("VNC", (s, l) => l <= LogLevel.Debug, true));
             session.Connected += HandleConnected;
             session.ConnectionFailed += HandleConnectionFailed;
             session.Closed += HandleClosed;

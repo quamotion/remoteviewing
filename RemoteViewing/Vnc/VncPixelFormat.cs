@@ -145,7 +145,6 @@ namespace RemoteViewing.Vnc
         /// <summary>
         /// Gets the maximum value of the red color.
         /// </summary>
-        [CLSCompliant(false)]
         public ushort RedMax
         {
             get
@@ -157,7 +156,6 @@ namespace RemoteViewing.Vnc
         /// <summary>
         /// Gets the maximum value of the blue color.
         /// </summary>
-        [CLSCompliant(false)]
         public ushort BlueMax
         {
             get
@@ -169,7 +167,6 @@ namespace RemoteViewing.Vnc
         /// <summary>
         /// Gets the maximum value of the green color.
         /// </summary>
-        [CLSCompliant(false)]
         public ushort GreenMax
         {
             get
