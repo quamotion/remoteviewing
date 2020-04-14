@@ -28,6 +28,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 using Microsoft.Extensions.Logging;
 using System;
+using System.Buffers.Binary;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
@@ -90,7 +91,6 @@ namespace RemoteViewing.Vnc.Server
             this.MaxUpdateRate = 15;
 
             this.Encoders.Add(new TightEncoder(this));
-            this.Encoders.Add(new ZlibEncoder());
         }
 
         /// <summary>
@@ -536,31 +536,9 @@ namespace RemoteViewing.Vnc.Server
 
             this.FramebufferUpdateRequest = null;
 
-            lock (this.c.SyncRoot)
-            {
-                this.c.Send(new byte[2] { 0, 0 });
-                this.c.SendUInt16BE((ushort)this.fbuRectangles.Count);
-
-                foreach (var rectangle in this.fbuRectangles)
-                {
-                    if (rectangle.Encoding != VncEncoding.Raw)
-                    {
-                        this.c.SendRectangle(rectangle.Region);
-                        this.c.SendUInt32BE((uint)rectangle.Encoding);
-                        this.c.Send(rectangle.Contents);
-                    }
-                    else
-                    {
-                        this.c.SendRectangle(rectangle.Region);
-                        this.c.SendUInt32BE((uint)this.Encoder.Encoding);
-
-                        this.Encoder.Send(this.c.Stream, this.clientPixelFormat, rectangle.Region, rectangle.Contents);
-                    }
-                }
-
-                this.fbuRectangles.Clear();
-                return true;
-            }
+            this.SendRectangles(this.fbuRectangles);
+            this.fbuRectangles.Clear();
+            return true;
         }
 
         /// <summary>
@@ -845,6 +823,32 @@ namespace RemoteViewing.Vnc.Server
             this.RemoteClipboardChanged?.Invoke(this, e);
         }
 
+        private void SendRectangles(List<Rectangle> rectangles)
+        {
+            lock (this.c.SyncRoot)
+            {
+                this.c.Send(new byte[2] { 0, 0 });
+                this.c.SendUInt16BE((ushort)rectangles.Count);
+
+                foreach (var rectangle in rectangles)
+                {
+                    if (rectangle.Encoding != VncEncoding.Raw)
+                    {
+                        this.c.SendRectangle(rectangle.Region);
+                        this.c.SendUInt32BE((uint)rectangle.Encoding);
+                        this.c.Send(rectangle.Contents);
+                    }
+                    else
+                    {
+                        this.c.SendRectangle(rectangle.Region);
+                        this.c.SendUInt32BE((uint)this.Encoder.Encoding);
+
+                        this.Encoder.Send(this.c.Stream, this.clientPixelFormat, rectangle.Region, rectangle.Contents);
+                    }
+                }
+            }
+        }
+
         private void ThreadMain()
         {
             this.requester = new Utility.PeriodicThread();
@@ -919,6 +923,10 @@ namespace RemoteViewing.Vnc.Server
                                 this.HandleReceiveClipboardData();
                                 break;
 
+                            case VncMessageType.SetDesktopSize:
+                                this.HandleSetDesktopSize();
+                                break;
+
                             default:
                                 VncStream.Require(
                                     false,
@@ -990,10 +998,54 @@ namespace RemoteViewing.Vnc.Server
             this.InitFramebufferEncoder();
         }
 
+        private Rectangle GetExtendedDesktopSizeRectangle(ExtendedDesktopSizeReason reason, ExtendedDesktopSizeStatus status)
+        {
+            // https://github.com/rfbproto/rfbproto/blob/master/rfbproto.rst#extendeddesktopsize-pseudo-encoding
+            // The server must send an ExtendedDesktopSize rectangle in response to a FramebufferUpdateRequest with
+            // incremental set to zero, assuming the client has requested the ExtendedDesktopSize pseudo-encoding
+            // using the SetEncodings message.
+            byte[] encodingData = new byte[20];
+
+            // Header
+            encodingData[0] = 1; // number of screens
+
+            // SCREEN array
+            BinaryPrimitives.WriteUInt32BigEndian(encodingData.AsSpan(4, 4), 0); // Screen id
+            BinaryPrimitives.WriteUInt16BigEndian(encodingData.AsSpan(8, 2), 0); // X-position
+            BinaryPrimitives.WriteUInt16BigEndian(encodingData.AsSpan(10, 2), 0); // Y-position
+            BinaryPrimitives.WriteUInt16BigEndian(encodingData.AsSpan(12, 2), (ushort)this.Framebuffer.Width); // Width
+            BinaryPrimitives.WriteUInt16BigEndian(encodingData.AsSpan(14, 2), (ushort)this.Framebuffer.Height); // Height
+            BinaryPrimitives.WriteUInt16BigEndian(encodingData.AsSpan(16, 4), 0); // Flags. Currently unused.
+
+            return
+                new Rectangle()
+                {
+                    Region = new VncRectangle()
+                    {
+                        X = (int)reason,
+                        Y = 0,
+                        Width = this.Framebuffer.Width,
+                        Height = this.Framebuffer.Height,
+                    },
+                    Contents = encodingData,
+                    Encoding = VncEncoding.ExtendedDesktopSize,
+                };
+        }
+
         private void HandleFramebufferUpdateRequest()
         {
             var incremental = this.c.ReceiveByte() != 0;
             var region = this.c.ReceiveRectangle();
+
+            if (!incremental && this.ClientEncodings.Contains(VncEncoding.ExtendedDesktopSize) && this.fbSource.SupportsResizing)
+            {
+                List<Rectangle> rectangles = new List<Rectangle>();
+                rectangles.Add(
+                    this.GetExtendedDesktopSizeRectangle(
+                        ExtendedDesktopSizeReason.External,
+                        ExtendedDesktopSizeStatus.Success));
+                this.SendRectangles(rectangles);
+            }
 
             lock (this.FramebufferUpdateRequestLock)
             {
@@ -1036,6 +1088,25 @@ namespace RemoteViewing.Vnc.Server
             var clipboard = this.c.ReceiveString(0xffffff);
 
             this.OnRemoteClipboardChanged(new RemoteClipboardChangedEventArgs(clipboard));
+        }
+
+        private void HandleSetDesktopSize()
+        {
+            var message = this.c.Receive(7);
+            var width = BinaryPrimitives.ReadUInt16BigEndian(message.AsSpan(1, 2));
+            var height = BinaryPrimitives.ReadUInt16BigEndian(message.AsSpan(3, 2));
+            var numberOfScreens = message[5];
+
+            var screens = this.c.Receive(16 * numberOfScreens);
+
+            var result = this.fbSource.SetDesktopSize(width, height);
+
+            List<Rectangle> rectangles = new List<Rectangle>();
+            rectangles.Add(
+                this.GetExtendedDesktopSizeRectangle(
+                    ExtendedDesktopSizeReason.Client,
+                    result));
+            this.SendRectangles(rectangles);
         }
 
         private void AddRegion(VncRectangle region, VncEncoding encoding, byte[] contents)

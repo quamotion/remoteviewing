@@ -2,6 +2,7 @@
 /*
 RemoteViewing VNC Client/Server Library for .NET
 Copyright (c) 2013 James F. Bellinger <http://www.zer7.com/software/remoteviewing>
+Copyright (c) 2020 Quamotion bvba <http://quamotion.mobi>
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -29,35 +30,27 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 namespace RemoteViewing.Vnc
 {
     /// <summary>
-    /// Provides a framebuffer.
+    /// Indicates the reason for a change in screen layout.
     /// </summary>
-    public interface IVncFramebufferSource
+    public enum ExtendedDesktopSizeReason : int
     {
         /// <summary>
-        /// Gets a value indicating whether the <see cref="IVncFramebufferSource"/> supports resizing.
+        /// The screen layout was changed via non-RFB means on the server. For example the server may have provided means for server-side
+        /// applications to manipulate the screen layout. This code is also used when the client sends a non-incremental FrameBufferUpdateRequest
+        /// to learn the server's current state.
         /// </summary>
-        bool SupportsResizing { get; }
+        External = 0,
 
         /// <summary>
-        /// Called when a framebuffer update is needed.
-        /// You can use this opportunity to switch framebuffers if desired.
+        /// The client receiving this message requested a change of the screen layout. The change may or may not have happened depending on server
+        /// policy or available resources. The status code in the y-position field must be used to determine which.
         /// </summary>
-        /// <returns>A framebuffer.</returns>
-        VncFramebuffer Capture();
+        Client = 1,
 
         /// <summary>
-        /// Handles a client request to resize the framebuffer.
+        /// Another client requested a change of the screen layout and the server approved it. A rectangle with this code is never sent if
+        /// the server denied the request.
         /// </summary>
-        /// <param name="width">
-        /// The width requested by the client.
-        /// </param>
-        /// <param name="height">
-        /// The height requested by the client.
-        /// </param>
-        /// <returns>
-        /// A <see cref="ExtendedDesktopSizeStatus"/> value indicating how the <see cref="IVncFramebufferSource"/> handled
-        /// the update request.
-        /// </returns>
-        ExtendedDesktopSizeStatus SetDesktopSize(int width, int height);
+        OtherClient = 2,
     }
 }

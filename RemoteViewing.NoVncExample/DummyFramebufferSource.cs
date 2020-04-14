@@ -18,11 +18,32 @@ namespace RemoteViewing.NoVncExample
 
         private VncFramebuffer framebuffer;
 
+        // The width and height of the framebuffer source.
+        // These values can be changed by the client
+        private int width = 400;
+        private int height = 400;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="DummyFramebufferSource"/> class.
         /// </summary>
         public DummyFramebufferSource()
         {
+        }
+
+        /// <inheritdoc/>
+        public bool SupportsResizing => true;
+
+        /// <inheritdoc/>
+        public ExtendedDesktopSizeStatus SetDesktopSize(int width, int height)
+        {
+            if (width <= 0 || height <= 0)
+            {
+                return ExtendedDesktopSizeStatus.Prohibited;
+            }
+
+            this.width = width;
+            this.height = height;
+            return ExtendedDesktopSizeStatus.Success;
         }
 
         /// <inheritdoc/>
@@ -40,7 +61,7 @@ namespace RemoteViewing.NoVncExample
 
             var color = Color.FromArgb(this.colors[0], this.colors[1], this.colors[2]);
 
-            using (Bitmap image = new Bitmap(400, 400))
+            using (Bitmap image = new Bitmap(this.width, this.height))
             using (Graphics gfx = Graphics.FromImage(image))
             using (SolidBrush brush = new SolidBrush(color))
             using (var font = new Font(FontFamily.GenericSansSerif, 12.0f, FontStyle.Bold, GraphicsUnit.Pixel))
