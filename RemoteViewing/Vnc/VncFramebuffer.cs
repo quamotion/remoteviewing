@@ -46,9 +46,25 @@ namespace RemoteViewing.Vnc
         /// <param name="pixelFormat">The framebuffer pixel format.</param>
         public VncFramebuffer(string name, int width, int height, VncPixelFormat pixelFormat)
         {
-            Throw.If.Null(name, "name");
-            Throw.If.Negative(width, "width").Negative(height, "height");
-            Throw.If.Null(pixelFormat, "pixelFormat");
+            if (name == null)
+            {
+                throw new ArgumentNullException(nameof(name));
+            }
+
+            if (width < 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(width));
+            }
+
+            if (height < 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(height));
+            }
+
+            if (pixelFormat == null)
+            {
+                throw new ArgumentNullException(nameof(pixelFormat));
+            }
 
             this.Name = name;
             this.Width = width;
@@ -147,8 +163,15 @@ namespace RemoteViewing.Vnc
         /// </param>
         public void SetPixel(int x, int y, byte[] color)
         {
-            Throw.If.False((uint)x < (uint)this.Width, "x");
-            Throw.If.False((uint)y < (uint)this.Height, "y");
+            if (x < 0 || x >= this.Width)
+            {
+                throw new ArgumentOutOfRangeException(nameof(x));
+            }
+
+            if (y < 0 || y >= this.Height)
+            {
+                throw new ArgumentOutOfRangeException(nameof(y));
+            }
 
             lock (this.SyncRoot)
             {

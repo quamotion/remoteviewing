@@ -2,6 +2,7 @@
 /*
 RemoteViewing VNC Client/Server Library for .NET
 Copyright (c) 2013 James F. Bellinger <http://www.zer7.com/software/remoteviewing>
+Copyright (c) 2020 Quamotion bvba <http://quamotion.mobi>
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -26,49 +27,28 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 #endregion
 
+using RemoteViewing.Utility;
 using System;
-using System.Collections.Generic;
-using System.Linq;
+using Xunit;
 
-namespace RemoteViewing.Vnc
+namespace RemoteViewing.Tests.Vnc
 {
     /// <summary>
-    /// Provides data for the <see cref="VncClient.FramebufferChanged"/> event.
+    /// Tests the <see cref="PeriodicThread"/> class.
     /// </summary>
-    public class FramebufferChangedEventArgs : EventArgs
+    public class PeriodicThreadTests
     {
-        private List<VncRectangle> rectangles;
-
         /// <summary>
-        /// Initializes a new instance of the <see cref="FramebufferChangedEventArgs"/> class.
+        /// Tests the <see cref="PeriodicThread.Start(Action, Func{double}, bool)"/> method, when passed
+        /// invalid arguments.
         /// </summary>
-        /// <param name="rectangles">The bounding rectangles of the changed regions.</param>
-        public FramebufferChangedEventArgs(IEnumerable<VncRectangle> rectangles)
+        [Fact]
+        public void StartInvalidArgumentTest()
         {
-            if (rectangles == null)
-            {
-                throw new ArgumentNullException(nameof(rectangles));
-            }
+            var t = new PeriodicThread();
 
-            this.rectangles = rectangles.ToList();
-        }
-
-        /// <summary>
-        /// Gets the number of changed regions.
-        /// </summary>
-        public int RectangleCount
-        {
-            get { return this.rectangles.Count; }
-        }
-
-        /// <summary>
-        /// Gets one of the changed regions.
-        /// </summary>
-        /// <param name="index">The index of the changed region. The first region has an index of 0.</param>
-        /// <returns>A rectangle describing the changed region.</returns>
-        public VncRectangle GetRectangle(int index)
-        {
-            return this.rectangles[index];
+            Assert.Throws<ArgumentNullException>(() => t.Start(null, () => 0, false));
+            Assert.Throws<ArgumentNullException>(() => t.Start(() => { }, null, false));
         }
     }
 }

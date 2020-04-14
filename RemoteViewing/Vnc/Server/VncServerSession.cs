@@ -336,7 +336,10 @@ namespace RemoteViewing.Vnc.Server
         /// <param name="forceConnected">A value indicated whether to immediately set <see cref="IsConnected"/>. Intended for unit tests only.</param>
         public void Connect(Stream stream, VncServerSessionOptions options = null, bool startThread = true, bool forceConnected = false)
         {
-            Throw.If.Null(stream, "stream");
+            if (stream == null)
+            {
+                throw new ArgumentNullException(nameof(stream));
+            }
 
             lock (this.c.SyncRoot)
             {
@@ -382,7 +385,10 @@ namespace RemoteViewing.Vnc.Server
         /// <param name="data">The contents of the local clipboard.</param>
         public void SendLocalClipboardChange(string data)
         {
-            Throw.If.Null(data, "data");
+            if (data == null)
+            {
+                throw new ArgumentNullException(nameof(data));
+            }
 
             lock (this.c.SyncRoot)
             {
@@ -497,7 +503,11 @@ namespace RemoteViewing.Vnc.Server
         /// <inheritdoc/>
         public void FramebufferManualInvalidate(VncRectangle[] regions)
         {
-            Throw.If.Null(regions, "regions");
+            if (regions == null)
+            {
+                throw new ArgumentNullException(nameof(regions));
+            }
+
             foreach (var region in regions)
             {
                 this.FramebufferManualInvalidate(region);

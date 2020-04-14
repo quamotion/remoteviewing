@@ -204,7 +204,15 @@ namespace RemoteViewing.Vnc
         /// <param name="options">Connection options, if any. You can specify a password here.</param>
         public void Connect(string hostname, int port = 5900, VncClientConnectOptions options = null)
         {
-            Throw.If.Null(hostname, "hostname").Negative(port, "port");
+            if (hostname == null)
+            {
+                throw new ArgumentNullException(nameof(hostname));
+            }
+
+            if (port < 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(port));
+            }
 
             lock (this.c.SyncRoot)
             {
@@ -239,7 +247,10 @@ namespace RemoteViewing.Vnc
         /// <param name="options">Connection options, if any. You can specify a password here.</param>
         public void Connect(Stream stream, VncClientConnectOptions options = null)
         {
-            Throw.If.Null(stream, "stream");
+            if (stream == null)
+            {
+                throw new ArgumentNullException(nameof(stream));
+            }
 
             lock (this.c.SyncRoot)
             {
@@ -293,7 +304,10 @@ namespace RemoteViewing.Vnc
         /// <param name="data">The contents of the local clipboard.</param>
         public void SendLocalClipboardChange(string data)
         {
-            Throw.If.Null(data, "data");
+            if (data == null)
+            {
+                throw new ArgumentNullException(nameof(data));
+            }
 
             var bytes = VncStream.EncodeString(data);
 
