@@ -45,7 +45,25 @@ namespace RemoteViewing.Vnc
         public VncRectangle(int x, int y, int width, int height)
             : this()
         {
-            Throw.If.Negative(x, "x").Negative(y, "y").Negative(width, "width").Negative(height, "height");
+            if (x < 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(x));
+            }
+
+            if (y < 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(y));
+            }
+
+            if (width < 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(width));
+            }
+
+            if (height < 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(height));
+            }
 
             this.X = x;
             this.Y = y;
@@ -126,10 +144,10 @@ namespace RemoteViewing.Vnc
             {
                 return rect1;
             }
-else if (rect2.IsEmpty)
-{
-    return rect2;
-}
+            else if (rect2.IsEmpty)
+            {
+                return rect2;
+            }
 
             int x = Math.Max(rect1.X, rect2.X), y = Math.Max(rect1.Y, rect2.Y);
             int w = Math.Min(rect1.X + rect1.Width, rect2.X + rect2.Width) - x;
@@ -149,10 +167,10 @@ else if (rect2.IsEmpty)
             {
                 return rect2;
             }
-else if (rect2.IsEmpty)
-{
-    return rect1;
-}
+            else if (rect2.IsEmpty)
+            {
+                return rect1;
+            }
 
             int x = Math.Min(rect1.X, rect2.X), y = Math.Min(rect1.Y, rect2.Y);
             int w = Math.Max(rect1.X + rect1.Width, rect2.X + rect2.Width) - x;

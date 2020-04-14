@@ -2,6 +2,7 @@
 /*
 RemoteViewing VNC Client/Server Library for .NET
 Copyright (c) 2013 James F. Bellinger <http://www.zer7.com/software/remoteviewing>
+Copyright (c) 2020 Quamotion bvba <http://quamotion.mobi>
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -26,49 +27,47 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 #endregion
 
+using RemoteViewing.Vnc;
 using System;
-using System.Collections.Generic;
-using System.Linq;
+using System.IO;
+using Xunit;
 
-namespace RemoteViewing.Vnc
+namespace RemoteViewing.Tests.Vnc
 {
     /// <summary>
-    /// Provides data for the <see cref="VncClient.FramebufferChanged"/> event.
+    /// Tests the <see cref="VncClient"/> class.
     /// </summary>
-    public class FramebufferChangedEventArgs : EventArgs
+    public class VncClientTests
     {
-        private List<VncRectangle> rectangles;
-
         /// <summary>
-        /// Initializes a new instance of the <see cref="FramebufferChangedEventArgs"/> class.
+        /// Testst the <see cref="VncClient.Connect(string, int, VncClientConnectOptions)"/> method with invalid arguments.
         /// </summary>
-        /// <param name="rectangles">The bounding rectangles of the changed regions.</param>
-        public FramebufferChangedEventArgs(IEnumerable<VncRectangle> rectangles)
+        [Fact]
+        public void ConnectTcpArgumentsTest()
         {
-            if (rectangles == null)
-            {
-                throw new ArgumentNullException(nameof(rectangles));
-            }
-
-            this.rectangles = rectangles.ToList();
+            VncClient client = new VncClient();
+            Assert.Throws<ArgumentNullException>(() => client.Connect(null, 5900, null));
+            Assert.Throws<ArgumentOutOfRangeException>(() => client.Connect("localhost", -1, null));
         }
 
         /// <summary>
-        /// Gets the number of changed regions.
+        /// Testst the <see cref="VncClient.Connect(Stream, VncClientConnectOptions)"/> method with invalid arguments.
         /// </summary>
-        public int RectangleCount
+        [Fact]
+        public void ConnectStreamArgumentsTest()
         {
-            get { return this.rectangles.Count; }
+            VncClient client = new VncClient();
+            Assert.Throws<ArgumentNullException>(() => client.Connect(null, null));
         }
 
         /// <summary>
-        /// Gets one of the changed regions.
+        /// Tests the <see cref="VncClient.SendLocalClipboardChange(string)"/> methdo with invalid arguments.
         /// </summary>
-        /// <param name="index">The index of the changed region. The first region has an index of 0.</param>
-        /// <returns>A rectangle describing the changed region.</returns>
-        public VncRectangle GetRectangle(int index)
+        [Fact]
+        public void SendLocalClipboardChangeNullTest()
         {
-            return this.rectangles[index];
+            VncClient client = new VncClient();
+            Assert.Throws<ArgumentNullException>(() => client.SendLocalClipboardChange(null));
         }
     }
 }

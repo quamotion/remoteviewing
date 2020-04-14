@@ -2,6 +2,7 @@
 /*
 RemoteViewing VNC Client/Server Library for .NET
 Copyright (c) 2013 James F. Bellinger <http://www.zer7.com/software/remoteviewing>
+Copyright (c) 2020 Quamotion bvba <http://quamotion.mobi>
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -26,30 +27,26 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 #endregion
 
+using RemoteViewing.Vnc;
 using System;
 using System.Collections.Generic;
+using Xunit;
 
-namespace RemoteViewing
+namespace RemoteViewing.Tests.Vnc
 {
     /// <summary>
-    /// Throws exceptions if certain conditions are not met.
+    /// Tests the <see cref="FramebufferChangedEventArgs"/> class.
     /// </summary>
-    internal sealed class Throw
+    public class FramebufferChangedEventArgsTests
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="Throw"/> class.
+        /// Tests the <see cref="FramebufferChangedEventArgs.FramebufferChangedEventArgs(IEnumerable{VncRectangle})"/> constructor,
+        /// when passed invalid arguments.
         /// </summary>
-        private Throw()
+        [Fact]
+        public void ConstructorArgumentNullTest()
         {
-        }
-
-        /// <summary>
-        /// Gets a value which is always <see langword="null"/>, but extension methods for the
-        /// <see cref="Throw"/> class can still operate on this property.
-        /// </summary>
-        public static Throw If
-        {
-            get { return null; }
+            Assert.Throws<ArgumentNullException>(() => new FramebufferChangedEventArgs(null));
         }
     }
 }

@@ -59,7 +59,15 @@ namespace RemoteViewing.Utility
         /// </param>
         public void Start(Action action, Func<double> getUpdateRateFunc, bool useSignal)
         {
-            Throw.If.Null(action, "action").Null(getUpdateRateFunc, "getUpdateRateFunc");
+            if (action == null)
+            {
+                throw new ArgumentNullException(nameof(action));
+            }
+
+            if (getUpdateRateFunc == null)
+            {
+                throw new ArgumentNullException(nameof(getUpdateRateFunc));
+            }
 
             this.requestExit = new ManualResetEvent(false);
             this.requestUpdate = new AutoResetEvent(false);

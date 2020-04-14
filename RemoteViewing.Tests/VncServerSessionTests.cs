@@ -311,5 +311,38 @@ namespace RemoteViewing.Tests
                 Assert.Equal(expectedEncoding, session.Encoder.Encoding);
             }
         }
+
+        /// <summary>
+        /// Tests the <see cref="VncServerSession.Connect(Stream, VncServerSessionOptions)"/> method, when passed
+        /// invalid arguments.
+        /// </summary>
+        [Fact]
+        public void ConnectNullTest()
+        {
+            var session = new VncServerSession();
+            Assert.Throws<ArgumentNullException>(() => session.Connect(null, null));
+        }
+
+        /// <summary>
+        /// Tests the <see cref="VncServerSession.SendLocalClipboardChange(string)"/> method, when passed
+        /// invalid arguments.
+        /// </summary>
+        [Fact]
+        public void SendLocalClipboardChangeNullTest()
+        {
+            var session = new VncServerSession();
+            Assert.Throws<ArgumentNullException>(() => session.SendLocalClipboardChange(null));
+        }
+
+        /// <summary>
+        /// Tests the <see cref="VncServerSession.FramebufferManualInvalidate(VncRectangle[])"/> method, when passed
+        /// invalid arguments.
+        /// </summary>
+        [Fact]
+        public void FramebufferManualInvalidateNullTest()
+        {
+            var session = new VncServerSession();
+            Assert.Throws<ArgumentNullException>(() => session.FramebufferManualInvalidate(null));
+        }
     }
 }
