@@ -62,6 +62,10 @@ namespace RemoteViewing.Vnc.Server
         private Thread threadMain;
         private bool securityNegotiated = false;
 
+        // Used by HandleMessage to avoid flooding the event log.
+        private VncMessageType previousCommand = VncMessageType.Unknown;
+        private int commandCount = 0;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="VncServerSession"/> class.
         /// </summary>
@@ -593,6 +597,77 @@ namespace RemoteViewing.Vnc.Server
         }
 
         /// <summary>
+        /// Reads the next client message and handles it.
+        /// </summary>
+        /// <remarks>
+        /// The <see cref="VncServerSession"/> starts a main thread which read and processes messages.
+        /// You don't normally need to call this method yourself; but it can be usefull when writing
+        /// unit tests.
+        /// </remarks>
+        public void HandleMessage()
+        {
+            var command = (VncMessageType)this.c.ReceiveByte();
+
+            // If the same command is sent repeatedly (e.g. FramebufferUpdateRequest), suppress repeated requests
+            if (this.previousCommand != command || this.commandCount >= 25)
+            {
+                if (this.commandCount > 0)
+                {
+                    this.logger?.LogInformation($"Suppressed {this.commandCount} notifications of the {command} command at the Info level.");
+                }
+
+                this.logger?.LogInformation($"Received the {command} command.");
+                this.commandCount = 0;
+            }
+            else
+            {
+                this.logger?.LogDebug($"Received the {command} command");
+                this.commandCount++;
+            }
+
+            this.previousCommand = command;
+
+            switch (command)
+            {
+                case VncMessageType.SetPixelFormat:
+                    this.HandleSetPixelFormat();
+                    break;
+
+                case VncMessageType.SetEncodings:
+                    this.HandleSetEncodings();
+                    break;
+
+                case VncMessageType.FrameBufferUpdateRequest:
+                    this.HandleFramebufferUpdateRequest();
+                    break;
+
+                case VncMessageType.KeyEvent:
+                    this.HandleKeyEvent();
+                    break;
+
+                case VncMessageType.PointerEvent:
+                    this.HandlePointerEvent();
+                    break;
+
+                case VncMessageType.ClientCutText:
+                    this.HandleReceiveClipboardData();
+                    break;
+
+                case VncMessageType.SetDesktopSize:
+                    this.HandleSetDesktopSize();
+                    break;
+
+                default:
+                    VncStream.Require(
+                        false,
+                        "Unsupported command.",
+                        VncFailureReason.UnrecognizedProtocolElement);
+
+                    break;
+            }
+        }
+
+        /// <summary>
         /// Negotiates the version of the RFB protocol used by server and client.
         /// </summary>
         /// <param name="methods">
@@ -871,70 +946,9 @@ namespace RemoteViewing.Vnc.Server
 
                     this.OnConnected();
 
-                    var previousCommand = VncMessageType.Unknown;
-                    var commandCount = 0;
-
                     while (true)
                     {
-                        var command = (VncMessageType)this.c.ReceiveByte();
-
-                        // If the same command is sent repeatedly (e.g. FramebufferUpdateRequest), suppress repeated requests
-                        if (previousCommand != command || commandCount >= 25)
-                        {
-                            if (commandCount > 0)
-                            {
-                                this.logger?.LogInformation($"Suppressed {commandCount} notifications of the {command} command at the Info level.");
-                            }
-
-                            this.logger?.LogInformation($"Received the {command} command.");
-                            commandCount = 0;
-                        }
-                        else
-                        {
-                            this.logger?.LogDebug($"Received the {command} command");
-                            commandCount++;
-                        }
-
-                        previousCommand = command;
-
-                        switch (command)
-                        {
-                            case VncMessageType.SetPixelFormat:
-                                this.HandleSetPixelFormat();
-                                break;
-
-                            case VncMessageType.SetEncodings:
-                                this.HandleSetEncodings();
-                                break;
-
-                            case VncMessageType.FrameBufferUpdateRequest:
-                                this.HandleFramebufferUpdateRequest();
-                                break;
-
-                            case VncMessageType.KeyEvent:
-                                this.HandleKeyEvent();
-                                break;
-
-                            case VncMessageType.PointerEvent:
-                                this.HandlePointerEvent();
-                                break;
-
-                            case VncMessageType.ClientCutText:
-                                this.HandleReceiveClipboardData();
-                                break;
-
-                            case VncMessageType.SetDesktopSize:
-                                this.HandleSetDesktopSize();
-                                break;
-
-                            default:
-                                VncStream.Require(
-                                    false,
-                                    "Unsupported command.",
-                                    VncFailureReason.UnrecognizedProtocolElement);
-
-                                break;
-                        }
+                        this.HandleMessage();
                     }
                 }
             }
@@ -957,7 +971,7 @@ namespace RemoteViewing.Vnc.Server
             }
         }
 
-        private void NegotiateDesktop()
+        public void NegotiateDesktop()
         {
             this.logger?.LogInformation("Negotiating desktop settings");
 
@@ -1099,7 +1113,12 @@ namespace RemoteViewing.Vnc.Server
 
             var screens = this.c.Receive(16 * numberOfScreens);
 
-            var result = this.fbSource.SetDesktopSize(width, height);
+            ExtendedDesktopSizeStatus result = ExtendedDesktopSizeStatus.Prohibited;
+
+            if (this.fbSource != null)
+            {
+                result = this.fbSource.SetDesktopSize(width, height);
+            }
 
             List<Rectangle> rectangles = new List<Rectangle>();
             rectangles.Add(

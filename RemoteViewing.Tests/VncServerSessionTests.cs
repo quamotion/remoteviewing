@@ -344,5 +344,93 @@ namespace RemoteViewing.Tests
             var session = new VncServerSession();
             Assert.Throws<ArgumentNullException>(() => session.FramebufferManualInvalidate(null));
         }
+
+        /// <summary>
+        /// Tests the handling of a SetDesktopSize message.
+        /// </summary>
+        [Fact]
+        public void SetDesktopSizeTest()
+        {
+            var framebuffer1 = new VncFramebuffer("test-1", 100, 200, VncPixelFormat.RGB32);
+            var framebuffer2 = new VncFramebuffer("test-2", 200, 400, VncPixelFormat.RGB32);
+            var framebuffer = framebuffer1;
+
+            var framebufferSourceMock = new Mock<IVncFramebufferSource>(MockBehavior.Strict);
+            framebufferSourceMock
+                .Setup(m => m.SetDesktopSize(200, 300))
+                .Returns(ExtendedDesktopSizeStatus.Success)
+                .Callback(() => { framebuffer = framebuffer2; });
+
+            framebufferSourceMock
+                .Setup(m => m.Capture())
+                .Returns(() => framebuffer);
+
+            using (var stream = new TestStream())
+            {
+                VncStream clientStream = new VncStream(stream.Input);
+
+                // Negotiating the dessktop size
+                clientStream.SendByte(0); // share desktop setting
+
+                // Send a SetDesktopSize request
+                clientStream.SendByte((byte)VncMessageType.SetDesktopSize);
+                clientStream.SendByte(0); // padding
+                clientStream.SendUInt16BE(200); // width
+                clientStream.SendUInt16BE(300); // height
+                clientStream.SendByte(1); // number of screens
+                clientStream.SendByte(0); // padding
+                clientStream.SendUInt32BE(1); // screen id
+                clientStream.SendUInt16BE(0); // x position
+                clientStream.SendUInt16BE(0); // x position
+                clientStream.SendUInt16BE(200); // width
+                clientStream.SendUInt16BE(300); // height
+                clientStream.SendUInt32BE(0); // flags
+
+                stream.Input.Position = 0;
+
+                var session = new VncServerSession();
+                session.SetFramebufferSource(framebufferSourceMock.Object);
+                session.Connect(stream, null, startThread: false);
+
+                // Negotiate the desktop
+                session.NegotiateDesktop();
+                Assert.Equal(VncPixelFormat.RGB32, session.ClientPixelFormat);
+
+                // Handle the SetDesktopSize request
+                session.HandleMessage();
+
+                VncStream serverStream = new VncStream(stream.Output);
+                stream.Output.Position = 0;
+
+                // Desktop negotiation result
+                Assert.Equal(100, serverStream.ReceiveUInt16BE());
+                Assert.Equal(200, serverStream.ReceiveUInt16BE());
+                var format = serverStream.Receive(16);
+                Assert.Equal("test-1", serverStream.ReceiveString());
+
+                // SetDesktopSize result
+                Assert.Equal(0, serverStream.ReceiveUInt16BE()); // Update rectangle request
+                Assert.Equal(1, serverStream.ReceiveUInt16BE()); // 1 rectangle;
+
+                Assert.Equal((ushort)ExtendedDesktopSizeReason.Client, serverStream.ReceiveUInt16BE()); // x
+                Assert.Equal((ushort)ExtendedDesktopSizeStatus.Success, serverStream.ReceiveUInt16BE()); // y
+                Assert.Equal(100, serverStream.ReceiveUInt16BE()); // width
+                Assert.Equal(200, serverStream.ReceiveUInt16BE()); // height
+
+                Assert.Equal((int)VncEncoding.ExtendedDesktopSize, (int)serverStream.ReceiveUInt32BE()); // encoding
+
+                Assert.Equal(1u, serverStream.ReceiveByte()); // Number of screens
+                serverStream.Receive(3); // Padding
+                Assert.Equal(0u, serverStream.ReceiveUInt32BE()); // screen ID
+                Assert.Equal(0u, serverStream.ReceiveUInt16BE()); // x-position
+                Assert.Equal(0u, serverStream.ReceiveUInt16BE()); // y-position
+                Assert.Equal(100u, serverStream.ReceiveUInt16BE()); // width
+                Assert.Equal(200u, serverStream.ReceiveUInt16BE()); // height
+                Assert.Equal(0u, serverStream.ReceiveUInt32BE()); // flags
+
+                Assert.Equal(stream.Output.Length, stream.Output.Position);
+                Assert.Equal(stream.Input.Length, stream.Input.Position);
+            }
+        }
     }
 }
