@@ -76,6 +76,9 @@ namespace RemoteViewing.Vnc
             this.buffer = new byte[this.Width * this.Height * this.PixelFormat.BytesPerPixel];
         }
 
+        /// <inheritdoc/>
+        public bool SupportsResizing => false;
+
         /// <summary>
         /// Gets the framebuffer name. Many VNC clients set their titlebar to this name.
         /// </summary>
@@ -184,6 +187,12 @@ namespace RemoteViewing.Vnc
                     throw new NotSupportedException();
                 }
             }
+        }
+
+        /// <inheritdoc/>
+        public ExtendedDesktopSizeStatus SetDesktopSize(int width, int height)
+        {
+            return ExtendedDesktopSizeStatus.Prohibited;
         }
 
         /// <inheritdoc/>

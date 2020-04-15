@@ -2,6 +2,7 @@
 /*
 RemoteViewing VNC Client/Server Library for .NET
 Copyright (c) 2013 James F. Bellinger <http://www.zer7.com/software/remoteviewing>
+Copyright (c) 2020 Quamotion bvba <http://quamotion.mobi>
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -29,35 +30,28 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 namespace RemoteViewing.Vnc
 {
     /// <summary>
-    /// Provides a framebuffer.
+    /// Indicates the status code for a change requested by a client.
     /// </summary>
-    public interface IVncFramebufferSource
+    public enum ExtendedDesktopSizeStatus : int
     {
         /// <summary>
-        /// Gets a value indicating whether the <see cref="IVncFramebufferSource"/> supports resizing.
+        /// No error
         /// </summary>
-        bool SupportsResizing { get; }
+        Success = 0,
 
         /// <summary>
-        /// Called when a framebuffer update is needed.
-        /// You can use this opportunity to switch framebuffers if desired.
+        /// Resize is administratively prohibited
         /// </summary>
-        /// <returns>A framebuffer.</returns>
-        VncFramebuffer Capture();
+        Prohibited = 1,
 
         /// <summary>
-        /// Handles a client request to resize the framebuffer.
+        /// Out of resources
         /// </summary>
-        /// <param name="width">
-        /// The width requested by the client.
-        /// </param>
-        /// <param name="height">
-        /// The height requested by the client.
-        /// </param>
-        /// <returns>
-        /// A <see cref="ExtendedDesktopSizeStatus"/> value indicating how the <see cref="IVncFramebufferSource"/> handled
-        /// the update request.
-        /// </returns>
-        ExtendedDesktopSizeStatus SetDesktopSize(int width, int height);
+        OutOfResources = 2,
+
+        /// <summary>
+        /// Invalid screen layout
+        /// </summary>
+        InvalidScreenLayout = 3,
     }
 }

@@ -78,6 +78,15 @@ namespace RemoteViewing.Windows.Forms.Server
             this.getScreenBounds = getBoundsCallback ?? throw new ArgumentNullException(nameof(getBoundsCallback));
         }
 
+        /// <inheritdoc/>
+        public bool SupportsResizing => false;
+
+        /// <inheritdoc/>
+        public ExtendedDesktopSizeStatus SetDesktopSize(int width, int height)
+        {
+            return ExtendedDesktopSizeStatus.Prohibited;
+        }
+
         /// <summary>
         /// Captures the screen.
         /// </summary>
