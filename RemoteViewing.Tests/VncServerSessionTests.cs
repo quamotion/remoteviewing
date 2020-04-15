@@ -268,8 +268,7 @@ namespace RemoteViewing.Tests
             var session = new VncServerSession();
             Assert.Collection(
                 session.Encoders,
-                (e) => Assert.IsType<TightEncoder>(e),
-                (e) => Assert.IsType<ZlibEncoder>(e));
+                (e) => Assert.IsType<TightEncoder>(e));
         }
 
         /// <summary>
@@ -282,7 +281,7 @@ namespace RemoteViewing.Tests
         /// The expected encoding.
         /// </param>
         [InlineData(false, VncEncoding.Raw)]
-        [InlineData(true, VncEncoding.Zlib)]
+        [InlineData(true, VncEncoding.Raw)]
         [Theory]
         public void HandleSetEncodingsTest(bool forceConnect, VncEncoding expectedEncoding)
         {
