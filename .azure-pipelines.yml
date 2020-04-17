@@ -29,6 +29,10 @@ jobs:
       make install
     workingDirectory: build
     displayName: Compile LibVNC
+  - script: |
+      gcc -o $(Build.ArtifactStagingDirectory)/$(rid)/get_offsets -I . -I ../libvncserver/ $(Build.SourcesDirectory)/RemoteViewing.LibVnc/get_offsets.c
+      $(Build.ArtifactStagingDirectory)/$(rid)/get_offsets > $(Build.ArtifactStagingDirectory)/$(rid)/get_offsets.txt
+    workingDirectory: build
   - task: PublishBuildArtifacts@1
     inputs:
       pathtoPublish: '$(Build.ArtifactStagingDirectory)'
@@ -53,7 +57,7 @@ jobs:
   pool:
     vmImage: ubuntu-16.04
   container:
-    image: ubuntu:18.04
+    image: ubuntu:20.04
     options: "--name ci-container -v /usr/bin/docker:/tmp/docker:ro"
   steps:
   - script: |
@@ -61,7 +65,7 @@ jobs:
       sh -c "apt-get update && DEBIAN_FRONTEND=noninteractive apt-get -o Dpkg::Options::="--force-confold" -y install sudo"
     displayName: Set up sudo
   - script: |
-      sudo apt-get install -y build-essential gcc-mingw-$(package) g++-mingw-$(package) wget git pkg-config cmake
+      sudo DEBIAN_FRONTEND=noninteractive apt-get install -y build-essential gcc-mingw-$(package) g++-mingw-$(package) wget git pkg-config cmake
     displayName: Install cross-compiler
   - script: |
       wget -nv -nc https://github.com/LibVNC/libvncserver/archive/LibVNCServer-$(LIBVNC_VERSION).tar.gz -O LibVNCServer-$(LIBVNC_VERSION).tar.gz
@@ -81,10 +85,38 @@ jobs:
     workingDirectory: build
     displayName: Compile LibVNC
   - script: |
+      $(arch)-w64-mingw32-gcc -o $(Build.ArtifactStagingDirectory)/$(rid)/get_offsets.exe -I . -I ../libvncserver/ $(Build.SourcesDirectory)/RemoteViewing.LibVnc/get_offsets.c
+    workingDirectory: build
+  - script: |
       cp /usr/$(arch)-w64-mingw32/lib/libwinpthread-1.dll $(Build.ArtifactStagingDirectory)/$(rid)/lib
-      if [ "$(rid)" = "win7-x86" ]; then cp /usr/lib/gcc/i686-w64-mingw32/7.3-win32/libgcc_s_sjlj-1.dll $(Build.ArtifactStagingDirectory)/$(rid)/lib; fi
-      if [ "$(rid)" = "win7-x64" ]; then cp /usr/lib/gcc/x86_64-w64-mingw32/7.3-win32/libgcc_s_seh-1.dll $(Build.ArtifactStagingDirectory)/$(rid)/lib; fi
+      if [ "$(rid)" = "win7-x86" ]; then cp /usr/lib/gcc/i686-w64-mingw32/9.3-win32/libgcc_s_sjlj-1.dll $(Build.ArtifactStagingDirectory)/$(rid)/lib; fi
+      if [ "$(rid)" = "win7-x64" ]; then cp /usr/lib/gcc/x86_64-w64-mingw32/9.3-win32/libgcc_s_seh-1.dll $(Build.ArtifactStagingDirectory)/$(rid)/lib; fi
     displayName: Copy additional files
+  - task: PublishBuildArtifacts@1
+    inputs:
+      pathtoPublish: '$(Build.ArtifactStagingDirectory)'
+      artifactName: libvnc
+    displayName: Publish LibVNC
+
+- job: native_unix
+  pool:
+    vmImage: ubuntu-16.04
+  variables:
+    rid: linux-x64
+  container:
+    image: ubuntu:20.04
+    options: "--name ci-container -v /usr/bin/docker:/tmp/docker:ro"
+  steps:
+  - script: |
+      /tmp/docker exec -t -u 0 ci-container \
+      sh -c "apt-get update && DEBIAN_FRONTEND=noninteractive apt-get -o Dpkg::Options::="--force-confold" -y install sudo"
+    displayName: Set up sudo
+  - script: |
+      sudo apt-get install -y libvncserver-dev gcc
+      
+      mkdir -p $(Build.ArtifactStagingDirectory)/$(rid)
+      gcc -o $(Build.ArtifactStagingDirectory)/$(rid)/get_offsets -I . -I .. $(Build.SourcesDirectory)/RemoteViewing.LibVnc/get_offsets.c
+      $(Build.ArtifactStagingDirectory)/$(rid)/get_offsets > $(Build.ArtifactStagingDirectory)/$(rid)/get_offsets.txt
   - task: PublishBuildArtifacts@1
     inputs:
       pathtoPublish: '$(Build.ArtifactStagingDirectory)'
