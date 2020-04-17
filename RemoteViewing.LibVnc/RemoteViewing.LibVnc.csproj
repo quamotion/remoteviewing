@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    
+    <Description>RemoteViewing.LibVnc is a .NET  VNC server library, which wraps around libvncserver.</Description>
+    <AssemblyTitle>RemoteViewing.LibVnc - A .NET VNC server library.</AssemblyTitle>
+    <Copyright>Copyright © 2020 Quamotion bvba</Copyright>
+    <Authors>Frederik Carlier</Authors>
+
+    <PackageId>Quamotion.RemoteViewing.LibVnc</PackageId>
+
+    <PackageProjectUrl>https://github.com/quamotion/remoteviewing/</PackageProjectUrl>
+    <PackageTags>VNC RFB remote desktop client server Hextile Copyrect Zlib</PackageTags>
+    <CodeAnalysisRuleSet>..\RemoteViewing.ruleset</CodeAnalysisRuleSet>
+
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+    <PackageLicenseExpression>BSD-2-Clause</PackageLicenseExpression>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="StyleCop.Analyzers" Version="1.1.118" PrivateAssets="All" />
+    <PackageReference Include="Nerdbank.GitVersioning" Version="3.1.71" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="All" />
+  </ItemGroup>
+</Project>
