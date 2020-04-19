@@ -1,0 +1,51 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    
+    <Description>RemoteViewing.LibVnc.NativeBinaries contains the native libvnc binaries, compiled for Windows and macOS.</Description>
+    <AssemblyTitle>RemoteViewing.LibVnc - A .NET VNC server library.</AssemblyTitle>
+    <Copyright>Copyright © libvncserver contributors</Copyright>
+    <Authors>Frederik Carlier</Authors>
+
+    <PackageId>Quamotion.RemoteViewing.LibVnc.NativeBinaries</PackageId>
+
+    <PackageProjectUrl>https://github.com/quamotion/remoteviewing/</PackageProjectUrl>
+    <PackageTags>VNC RFB remote desktop client server Hextile Copyrect Zlib</PackageTags>
+    <CodeAnalysisRuleSet>..\RemoteViewing.ruleset</CodeAnalysisRuleSet>
+
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+    <PackageLicenseExpression>GPL-2.0-or-later</PackageLicenseExpression>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Content Include="$(SYSTEM_ARTIFACTSDIRECTORY)/libvnc/osx-x64/lib/libvncserver.dylib">
+      <PackagePath>runtimes/osx-64/native/%(Filename)%(Extension)</PackagePath>
+      <Pack>true</Pack>
+    </Content>
+
+    <Content Include="$(SYSTEM_ARTIFACTSDIRECTORY)/libvnc/osx-x64/lib/libvncclient.dylib">
+      <PackagePath>runtimes/osx-64/native/%(Filename)%(Extension)</PackagePath>
+      <Pack>true</Pack>
+    </Content>
+
+    <Content Include="$(SYSTEM_ARTIFACTSDIRECTORY)/libvnc/win7-x64/lib/*.dll">
+      <PackagePath>runtimes/win7-x64/native/%(Filename)%(Extension)</PackagePath>
+      <Pack>true</Pack>
+    </Content>
+
+    <Content Include="$(SYSTEM_ARTIFACTSDIRECTORY)/libvnc/win7-x86/lib/*.dll">
+      <PackagePath>runtimes/win7-x86/native/%(Filename)%(Extension)</PackagePath>
+      <Pack>true</Pack>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="StyleCop.Analyzers" Version="1.1.118" PrivateAssets="All" />
+    <PackageReference Include="Nerdbank.GitVersioning" Version="3.1.71" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="All" />
+  </ItemGroup>
+
+</Project>

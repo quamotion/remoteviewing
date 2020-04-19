@@ -1,8 +1,106 @@
+variables:
+  # At the moment, we're building from git master.  This version has better support for (cross-)compiling
+  # for Windows.
+  # When 0.9.13 is released, we can probably start building off released versions.
+  LIBVNC_VERSION: "0.9.12"
+
 jobs:
+
+- job: native_macos
+  variables:
+    rid: osx-x64
+  pool:
+    vmImage: 'macOS-10.14'
+  steps:
+  - script: |
+      wget -nv -nc https://github.com/LibVNC/libvncserver/archive/LibVNCServer-$(LIBVNC_VERSION).tar.gz -O LibVNCServer-$(LIBVNC_VERSION).tar.gz
+      tar xzf LibVNCServer-$(LIBVNC_VERSION).tar.gz
+    condition: false
+    displayName: Download LibVNCServer
+  - script: |
+      git clone --depth 1 https://github.com/LibVNC/libvncserver/
+    displayName: Clone LibVNCServer
+  - script: |
+      mkdir build
+      cd build
+      cmake -DBUILD_SHARED_LIBS=ON -DCMAKE_INSTALL_PREFIX=$(Build.ArtifactStagingDirectory)/$(rid) ../libvncserver/
+    displayName: Configure LibVNC
+  - script: |
+      make install
+    workingDirectory: build
+    displayName: Compile LibVNC
+  - task: PublishBuildArtifacts@1
+    inputs:
+      pathtoPublish: '$(Build.ArtifactStagingDirectory)'
+      artifactName: libvnc
+    displayName: Publish LibVNC
+
+# Build native libvnc libraries for Windows, cross-compiled from Ubuntu
+- job: native_windows
+  strategy:
+    maxParallel: 2
+    matrix: 
+      x86:
+        arch: i686
+        targetOs: mingw32
+        rid: win7-x86
+        package: w64-i686
+      x64:
+        arch: x86_64
+        targetOs: mingw64
+        rid: win7-x64
+        package: w64-x86-64
+  pool:
+    vmImage: ubuntu-16.04
+  container:
+    image: ubuntu:18.04
+    options: "--name ci-container -v /usr/bin/docker:/tmp/docker:ro"
+  steps:
+  - script: |
+      /tmp/docker exec -t -u 0 ci-container \
+      sh -c "apt-get update && DEBIAN_FRONTEND=noninteractive apt-get -o Dpkg::Options::="--force-confold" -y install sudo"
+    displayName: Set up sudo
+  - script: |
+      sudo apt-get install -y build-essential gcc-mingw-$(package) g++-mingw-$(package) wget git pkg-config cmake
+    displayName: Install cross-compiler
+  - script: |
+      wget -nv -nc https://github.com/LibVNC/libvncserver/archive/LibVNCServer-$(LIBVNC_VERSION).tar.gz -O LibVNCServer-$(LIBVNC_VERSION).tar.gz
+      tar xzf LibVNCServer-$(LIBVNC_VERSION).tar.gz
+    condition: false
+    displayName: Download LibVNCServer
+  - script: |
+      git clone --depth 1 https://github.com/LibVNC/libvncserver/
+    displayName: Clone LibVNCServer
+  - script: |
+      mkdir build
+      cd build
+      cmake -DCMAKE_TOOLCHAIN_FILE=../RemoteViewing.LibVnc.NativeBinaries/$(targetOS).cmake -DBUILD_SHARED_LIBS=ON -DCMAKE_INSTALL_PREFIX=$(Build.ArtifactStagingDirectory)/$(rid) ../libvncserver/
+    displayName: Configure LibVNC
+  - script: |
+      make install
+    workingDirectory: build
+    displayName: Compile LibVNC
+  - script: |
+      cp /usr/$(arch)-w64-mingw32/lib/libwinpthread-1.dll $(Build.ArtifactStagingDirectory)/$(rid)/lib
+      if [ "$(rid)" = "win7-x86" ]; then cp /usr/lib/gcc/i686-w64-mingw32/7.3-win32/libgcc_s_sjlj-1.dll $(Build.ArtifactStagingDirectory)/$(rid)/lib; fi
+      if [ "$(rid)" = "win7-x64" ]; then cp /usr/lib/gcc/x86_64-w64-mingw32/7.3-win32/libgcc_s_seh-1.dll $(Build.ArtifactStagingDirectory)/$(rid)/lib; fi
+    displayName: Copy additional files
+  - task: PublishBuildArtifacts@1
+    inputs:
+      pathtoPublish: '$(Build.ArtifactStagingDirectory)'
+      artifactName: libvnc
+    displayName: Publish LibVNC
+
 - job: build
   pool:
     vmImage: 'windows-latest'
+  dependsOn:
+  - native_windows
+  - native_macos
   steps:
+  - task: DownloadBuildArtifacts@0
+    inputs:
+      artifactName: libvnc
   - script: |
       mkdir $(Build.ArtifactStagingDirectory)/opencover
       mkdir $(Build.ArtifactStagingDirectory)/codecoverage
