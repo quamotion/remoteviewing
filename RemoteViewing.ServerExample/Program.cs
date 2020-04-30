@@ -26,30 +26,24 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 #endregion
 
-using System;
-using System.Net;
-using System.Net.Sockets;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Console;
 using RemoteViewing.NoVncExample;
 using RemoteViewing.Vnc;
 using RemoteViewing.Vnc.Server;
+using System;
+using System.Net;
+using System.Net.Sockets;
 
 namespace RemoteViewing.ServerExample
 {
     internal class Program
     {
         private static string password = "test";
-        private static VncServerSession session;
 
         private static void HandleConnected(object sender, EventArgs e)
         {
             Console.WriteLine("Connected");
-        }
-
-        private static void HandleConnectionFailed(object sender, EventArgs e)
-        {
-            Console.WriteLine("Connection Failed");
         }
 
         private static void HandleClosed(object sender, EventArgs e)
@@ -62,35 +56,36 @@ namespace RemoteViewing.ServerExample
             e.Accept(password.ToCharArray());
         }
 
-        [STAThread]
-        private static void Main(string[] args)
+        public static void Main(string[] args)
         {
+            Console.WriteLine($"64-bit: {Environment.Is64BitProcess}");
+
             Console.WriteLine("Listening on local port 5900.");
             Console.WriteLine("Try to connect! The password is: {0}", password);
 
-            // Wait for a connection.
-            var listener = new TcpListener(IPAddress.Loopback, 5900);
-            listener.Start();
-            var client = listener.AcceptTcpClient();
+            using (var server = GetServer(useManaged: false))
+            {
+                server.Closed += HandleClosed;
+                server.Connected += HandleConnected;
+                server.PasswordProvided += HandlePasswordProvided;
 
-            // Set up a framebuffer and options.
-            var options = new VncServerSessionOptions();
-            options.AuthenticationMethod = AuthenticationMethod.Password;
+                server.Start(new IPEndPoint(IPAddress.Loopback, 5900));
 
-            // Create a session.
-            session = new VncServerSession(
-                new VncPasswordChallenge(),
-                new ConsoleLogger("VNC", (s, l) => l <= LogLevel.Debug, true));
-            session.Connected += HandleConnected;
-            session.ConnectionFailed += HandleConnectionFailed;
-            session.Closed += HandleClosed;
-            session.PasswordProvided += HandlePasswordProvided;
-            session.SetFramebufferSource(new DummyFramebufferSource());
-            session.Connect(client.GetStream(), options);
+                Console.WriteLine("Hit ENTER to exit");
+                Console.ReadLine();
+            }
+        }
 
-            // Let's go.
-            Console.WriteLine("Hit ENTER to exit");
-            Console.ReadLine();
+        private static IVncServer GetServer(bool useManaged)
+        {
+            var framebufferSource = new DummyFramebufferSource();
+            var logger = new ConsoleLogger("VNC", (s, l) => l <= LogLevel.Debug, true);
+
+            return new VncServer(
+                framebufferSource,
+                framebufferSource,
+                framebufferSource,
+                logger);
         }
     }
 }
