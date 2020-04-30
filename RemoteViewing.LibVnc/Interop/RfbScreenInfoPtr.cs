@@ -222,23 +222,37 @@ namespace RemoteViewing.LibVnc.Interop
             set { Marshal.WriteIntPtr(this.handle, FieldOffsets[(int)RfbScreenInfoPtrField.PasswordCheck], value); }
         }
 
+        /// <summary>
+        /// Gets or sets a pointer to data which is passed to the password check. This is normally a list of passwords.
+        /// The password check is not enforced if this value is <see cref="IntPtr.Zero"/>.
+        /// </summary>
         public IntPtr AuthPasswdData
         {
             get { return Marshal.ReadIntPtr(this.handle, FieldOffsets[(int)RfbScreenInfoPtrField.AuthPasswdData]); }
             set { Marshal.WriteIntPtr(this.handle, FieldOffsets[(int)RfbScreenInfoPtrField.AuthPasswdData], value); }
         }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether the first password in the <see cref="AuthPasswdData"/> list is
+        /// a view-only password.
+        /// </summary>
         public bool AuthPasswdFirstViewOnly
         {
             get { return this.GetBool(RfbScreenInfoPtrField.AuthPasswdFirstViewOnly); }
             set { this.SetBool(RfbScreenInfoPtrField.AuthPasswdFirstViewOnly, value); }
         }
 
+        /// <summary>
+        /// Gets the maximum number of rectangles to send in one update.
+        /// </summary>
         public int MaxRectsPerUpdate
         {
             get { return Marshal.ReadInt32(this.handle, FieldOffsets[(int)RfbScreenInfoPtrField.MaxRectsPerUpdate]); }
         }
 
+        /// <summary>
+        /// Gets the amount of time, in milliseconds, to wait before sending an update.
+        /// </summary>
         public int DeferUpdateTime
         {
             get { return Marshal.ReadInt32(this.handle, FieldOffsets[(int)RfbScreenInfoPtrField.DeferUpdateTime]); }
