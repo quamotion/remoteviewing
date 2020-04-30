@@ -167,6 +167,23 @@ namespace RemoteViewing.LibVnc.Interop
         public delegate int rfbGetKeyboardLedStateHookPtr(IntPtr screen);
 
         /// <summary>
+        /// A delegate which is invoked to validate the user password.
+        /// </summary>
+        /// <param name="cl">
+        /// The server structure.
+        /// </param>
+        /// <param name="encryptedPassWord">
+        /// A pointer to the password provided by the user.
+        /// </param>
+        /// <param name="len">
+        /// The length of the password.
+        /// </param>
+        /// <returns>
+        /// <see langword="true"/> if the password is correct; otherwise, <see langword="true"/>.
+        /// </returns>
+        public delegate bool rfbPasswordCheckProcPtr(IntPtr cl, sbyte* encryptedPassWord, int len);
+
+        /// <summary>
         /// Initialises a server structure.
         /// </summary>
         /// <param name="argc">

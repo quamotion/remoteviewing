@@ -27,6 +27,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #endregion
 
 using Microsoft.Win32.SafeHandles;
+using RemoteViewing.Vnc;
 using System;
 using System.Runtime.InteropServices;
 
@@ -77,6 +78,47 @@ namespace RemoteViewing.LibVnc.Interop
         }
 
         /// <summary>
+        /// Gets a back pointer to the screen.
+        /// </summary>
+        public RfbScreenInfoPtr Screen
+        {
+            get
+            {
+                var ptr = Marshal.ReadIntPtr(this.handle, FieldOffsets[(int)RfbClientRecPtrField.Screen]);
+                return new RfbScreenInfoPtr(ptr, false);
+            }
+        }
+
+        /// <summary>
+        /// Gets a back pointer to a scaled version of the screen.
+        /// </summary>
+        public RfbScreenInfoPtr ScaledScreen
+        {
+            get
+            {
+                var ptr = Marshal.ReadIntPtr(this.handle, FieldOffsets[(int)RfbClientRecPtrField.ScaledScreen]);
+                return new RfbScreenInfoPtr(ptr, false);
+            }
+        }
+
+        /// <summary>
+        /// Gets a value indicating whether the client requested a screen change in ultra style or palm style.
+        /// </summary>
+        public bool PalmVNC
+        {
+            get { return this.GetBool(RfbClientRecPtrField.PalmVNC); }
+        }
+
+        /// <summary>
+        /// Gets or sets a pointer to application-specific client data.
+        /// </summary>
+        public IntPtr ClientData
+        {
+            get { return Marshal.ReadIntPtr(this.handle, FieldOffsets[(int)RfbClientRecPtrField.ClientData]); }
+            set { Marshal.WriteIntPtr(this.handle, FieldOffsets[(int)RfbClientRecPtrField.ClientData], value); }
+        }
+
+        /// <summary>
         /// Gets or sets a pointer to a <see cref="NativeMethods.ClientGoneHookPtr"/> delegate which is invoked
         /// when the client disconnects.
         /// </summary>
@@ -84,6 +126,124 @@ namespace RemoteViewing.LibVnc.Interop
         {
             get { return Marshal.ReadIntPtr(this.handle, FieldOffsets[(int)RfbClientRecPtrField.ClientGoneHook]); }
             set { Marshal.WriteIntPtr(this.handle, FieldOffsets[(int)RfbClientRecPtrField.ClientGoneHook], value); }
+        }
+
+        /// <summary>
+        /// Gets the name or IP address of the remote host.
+        /// </summary>
+        public unsafe string Host
+        {
+            get
+            {
+                var host = (sbyte**)((sbyte*)this.handle.ToPointer() + FieldOffsets[(int)RfbClientRecPtrField.Host]);
+                return new string(*host);
+            }
+        }
+
+        /// <summary>
+        /// Gets the major version number of the RFB protocol in use by the client.
+        /// </summary>
+        public int ProtocolMajorVersion
+        {
+            get { return Marshal.ReadInt32(this.handle, FieldOffsets[(int)RfbClientRecPtrField.ProtocolMajorVersion]); }
+        }
+
+        /// <summary>
+        /// Gets the minor version number of the RFB protocol in use by the client.
+        /// </summary>
+        public int ProtocolMinorVersion
+        {
+            get { return Marshal.ReadInt32(this.handle, FieldOffsets[(int)RfbClientRecPtrField.ProtocolMinorVersion]); }
+        }
+
+        /// <summary>
+        /// Gets the state of the client.
+        /// </summary>
+        public RfbClientRecState State
+        {
+            get { return (RfbClientRecState)Marshal.ReadInt32(this.handle, FieldOffsets[(int)RfbClientRecPtrField.State]); }
+        }
+
+        /// <summary>
+        /// Gets a value indicating whether the client is reverse connection.
+        /// </summary>
+        public bool ReverseConnection
+        {
+            get { return this.GetBool(RfbClientRecPtrField.ReverseConnection); }
+        }
+
+        /// <summary>
+        /// Gets a value indicating whether the client is on hold.
+        /// </summary>
+        public bool OnHold
+        {
+            get { return this.GetBool(RfbClientRecPtrField.OnHold); }
+        }
+
+        /// <summary>
+        /// Gets a value indicating whether the client is ready to set colour map entries.
+        /// </summary>
+        public bool ReadyForSetColourMapEntries
+        {
+            get { return this.GetBool(RfbClientRecPtrField.ReadyForSetColourMapEntries); }
+        }
+
+        /// <summary>
+        /// Gets a value indicating whether the client is using Copy Rect encoding.
+        /// </summary>
+        public bool UseCopyRect
+        {
+            get { return this.GetBool(RfbClientRecPtrField.UseCopyRect); }
+        }
+
+        /// <summary>
+        /// Gets the preferred client encoding.
+        /// </summary>
+        public VncEncoding PreferredEncoding
+        {
+            get { return (VncEncoding)Marshal.ReadInt32(this.handle, FieldOffsets[(int)RfbClientRecPtrField.PreferredEncoding]); }
+        }
+
+        /// <summary>
+        /// Gets the maximum width of a CoRRE-encoded rectangle. 
+        /// </summary>
+        public int CorreMaxWidth
+        {
+            get { return Marshal.ReadInt32(this.handle, FieldOffsets[(int)RfbClientRecPtrField.CorreMaxWidth]); }
+        }
+
+        /// <summary>
+        /// Gets the maximum height of a CoRRE-encoded rectangle.
+        /// </summary>
+        public int CorreMaxHeight
+        {
+            get { return Marshal.ReadInt32(this.handle, FieldOffsets[(int)RfbClientRecPtrField.CorreMaxHeight]); }
+        }
+
+        /// <summary>
+        /// Gets a value indicating whether the client is in view-only mode.
+        /// </summary>
+        public bool ViewOnly
+        {
+            get { return this.GetBool(RfbClientRecPtrField.ViewOnly); }
+        }
+
+        /// <summary>
+        /// Gets the authentication challenge sent to the client.
+        /// </summary>
+        /// <remarks>
+        /// This value is only used during VNC authentication.
+        /// </remarks>
+        public unsafe Span<byte> AuthChallenge
+        {
+            get
+            {
+                const int CHALLENGESIZE = 16;
+
+                return new Span<byte>(
+                    (this.handle + FieldOffsets[(int)RfbClientRecPtrField.AuthChallenge]).ToPointer(),
+                    CHALLENGESIZE);
+            }
         }
 
         /// <summary>
@@ -101,6 +261,16 @@ namespace RemoteViewing.LibVnc.Interop
         {
             NativeMethods.rfbScreenCleanup(this.handle);
             return true;
+        }
+
+        private bool GetBool(RfbClientRecPtrField field)
+        {
+            return Marshal.ReadByte(this.handle, FieldOffsets[(int)field]) == 1;
+        }
+
+        private void SetBool(RfbClientRecPtrField field, bool value)
+        {
+            Marshal.WriteByte(this.handle, FieldOffsets[(int)field], value ? (byte)1 : (byte)0);
         }
     }
 }
