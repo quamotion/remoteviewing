@@ -170,7 +170,7 @@ namespace RemoteViewing.LibVnc.Interop
                     }
                 }
 
-                if (haveLibZ)
+                if (!haveLibZ)
                 {
                     fieldTypes[(int)RfbClientRecPtrField.ZrleData] = RfbType.Skip;
                     fieldTypes[(int)RfbClientRecPtrField.ZywrleLevel] = RfbType.Skip;
