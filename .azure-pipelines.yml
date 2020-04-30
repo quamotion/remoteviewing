@@ -133,33 +133,18 @@ jobs:
   - task: DownloadBuildArtifacts@0
     inputs:
       artifactName: libvnc
-  - script: |
-      mkdir $(Build.ArtifactStagingDirectory)/opencover
-      mkdir $(Build.ArtifactStagingDirectory)/codecoverage
-      mkdir $(Build.ArtifactStagingDirectory)/testResultsFiles
-
-      cd RemoteViewing.Tests
-      dotnet test RemoteViewing.Tests.csproj -l "trx;LogFileName=$(Build.ArtifactStagingDirectory)/testResultsFiles/RemoteViewing.Tests.trx" /p:CollectCoverage=true /p:CoverletOutputFormat=opencover /p:CoverletOutput="$(Build.ArtifactStagingDirectory)/opencover/RemoteViewing.Tests.opencover.xml"
-
-      dotnet tool install dotnet-reportgenerator-globaltool --tool-path tools
-      tools\reportgenerator.exe "-reports:$(Build.ArtifactStagingDirectory)/opencover/*.opencover.xml" "-targetdir:$(Build.ArtifactStagingDirectory)/codecoverage" -reporttypes:Cobertura
-    displayName: 'Test'
+    # Apparently code coverage isn't really supposed to work, but it should work soon. Sigh.
+    # https://github.com/microsoft/azure-pipelines-tasks/issues/11677
+    # https://github.com/microsoft/azure-pipelines-tasks/issues/9954
+  - task: DotNetCoreCLI@2
+    inputs:
+      command: test
+      projects: '**/*Tests/*.csproj'
+      arguments: ' --collect "Code coverage"'
   - script: |
       mkdir $(Build.ArtifactStagingDirectory)/nuget
       dotnet pack -c Release -o $(Build.ArtifactStagingDirectory)/nuget
     displayName: 'Package'
-  - task: PublishCodeCoverageResults@1
-    inputs:
-      codeCoverageTool: 'cobertura'
-      summaryFileLocation: $(Build.ArtifactStagingDirectory)/codecoverage/Cobertura.xml
-      reportDirectory: $(Build.ArtifactStagingDirectory)/codecoverage
-      failIfCoverageEmpty: true
-    condition: true
-  - task: PublishTestResults@2
-    inputs:
-      testRunner: VSTest
-      testResultsFiles: $(Build.ArtifactStagingDirectory)/testResultsFiles/*.trx
-    condition: true
   - task: PublishBuildArtifacts@1
     inputs:
       pathtoPublish: '$(Build.ArtifactStagingDirectory)/nuget'
