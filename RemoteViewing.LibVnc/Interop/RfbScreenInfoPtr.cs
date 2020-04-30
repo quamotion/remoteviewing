@@ -182,11 +182,12 @@ namespace RemoteViewing.LibVnc.Interop
         }
 
         /// <summary>
-        /// Gets a value indicating whether to use an auto-selected port.
+        /// Gets or sets a value indicating whether to use an auto-selected port.
         /// </summary>
         public bool AutoPort
         {
-            get { return this.GetBool(FieldOffsets[(int)RfbScreenInfoPtrField.AutoPort]); }
+            get { return this.GetBool(RfbScreenInfoPtrField.AutoPort); }
+            set { this.SetBool(RfbScreenInfoPtrField.AutoPort, value); }
         }
 
         /// <summary>
@@ -202,8 +203,45 @@ namespace RemoteViewing.LibVnc.Interop
         /// </summary>
         public RfbSocketState SocketState
         {
-            // 496 on Unix
             get { return (RfbSocketState)Marshal.ReadInt32(this.handle, FieldOffsets[(int)RfbScreenInfoPtrField.SocketState]); }
+        }
+
+        /// <summary>
+        /// Gets or sets a pointer to a <see cref="NativeMethods.rfbPasswordCheckProcPtr"/> delegate which is invoked
+        /// when the client provides a password.
+        /// </summary>
+        public IntPtr PasswordCheck
+        {
+            get { return Marshal.ReadIntPtr(this.handle, FieldOffsets[(int)RfbScreenInfoPtrField.PasswordCheck]); }
+            set { Marshal.WriteIntPtr(this.handle, FieldOffsets[(int)RfbScreenInfoPtrField.PasswordCheck], value); }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether to always treat new clients as shared.
+        /// </summary>
+        public bool AlwaysShared
+        {
+            get { return this.GetBool(RfbScreenInfoPtrField.AlwaysShared); }
+            set { this.SetBool(RfbScreenInfoPtrField.AlwaysShared, value); }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether to never treat new clients as shared.
+        /// </summary>
+        public bool NeverShared
+        {
+            get { return this.GetBool(RfbScreenInfoPtrField.NeverShared); }
+            set { this.SetBool(RfbScreenInfoPtrField.NeverShared, value); }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether to not disconnect existing clients when a new non-shared
+        /// connection comes in (and refuse the new connection instead).
+        /// </summary>
+        public bool DontDisconnect
+        {
+            get { return this.GetBool(RfbScreenInfoPtrField.DontDisconnect); }
+            set { this.SetBool(RfbScreenInfoPtrField.DontDisconnect, value); }
         }
 
         /// <summary>
@@ -211,7 +249,6 @@ namespace RemoteViewing.LibVnc.Interop
         /// </summary>
         public IntPtr Framebuffer
         {
-            // 664 on Unix
             get { return Marshal.ReadIntPtr(this.handle, FieldOffsets[(int)RfbScreenInfoPtrField.FrameBuffer]); }
             set { Marshal.WriteIntPtr(this.handle, FieldOffsets[(int)RfbScreenInfoPtrField.FrameBuffer], value); }
         }
@@ -332,9 +369,14 @@ namespace RemoteViewing.LibVnc.Interop
             return true;
         }
 
-        private bool GetBool(int offset)
+        private bool GetBool(RfbScreenInfoPtrField field)
         {
-            return Marshal.ReadByte(this.handle, offset) == 1;
+            return Marshal.ReadByte(this.handle, FieldOffsets[(int)field]) == 1;
+        }
+
+        private void SetBool(RfbScreenInfoPtrField field, bool value)
+        {
+            Marshal.WriteByte(this.handle, FieldOffsets[(int)field], value ? (byte)1 : (byte)0);
         }
     }
 }
