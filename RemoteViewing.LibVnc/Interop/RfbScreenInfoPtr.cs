@@ -59,6 +59,12 @@ namespace RemoteViewing.LibVnc.Interop
         {
         }
 
+        public RfbScreenInfoPtr(IntPtr handle, bool ownsHandle)
+            : base(ownsHandle)
+        {
+            this.handle = handle;
+        }
+
         /// <summary>
         /// Gets or sets a value indicating the number of clients for the current scaled screen.
         /// </summary>
@@ -214,6 +220,28 @@ namespace RemoteViewing.LibVnc.Interop
         {
             get { return Marshal.ReadIntPtr(this.handle, FieldOffsets[(int)RfbScreenInfoPtrField.PasswordCheck]); }
             set { Marshal.WriteIntPtr(this.handle, FieldOffsets[(int)RfbScreenInfoPtrField.PasswordCheck], value); }
+        }
+
+        public IntPtr AuthPasswdData
+        {
+            get { return Marshal.ReadIntPtr(this.handle, FieldOffsets[(int)RfbScreenInfoPtrField.AuthPasswdData]); }
+            set { Marshal.WriteIntPtr(this.handle, FieldOffsets[(int)RfbScreenInfoPtrField.AuthPasswdData], value); }
+        }
+
+        public bool AuthPasswdFirstViewOnly
+        {
+            get { return this.GetBool(RfbScreenInfoPtrField.AuthPasswdFirstViewOnly); }
+            set { this.SetBool(RfbScreenInfoPtrField.AuthPasswdFirstViewOnly, value); }
+        }
+
+        public int MaxRectsPerUpdate
+        {
+            get { return Marshal.ReadInt32(this.handle, FieldOffsets[(int)RfbScreenInfoPtrField.MaxRectsPerUpdate]); }
+        }
+
+        public int DeferUpdateTime
+        {
+            get { return Marshal.ReadInt32(this.handle, FieldOffsets[(int)RfbScreenInfoPtrField.DeferUpdateTime]); }
         }
 
         /// <summary>
