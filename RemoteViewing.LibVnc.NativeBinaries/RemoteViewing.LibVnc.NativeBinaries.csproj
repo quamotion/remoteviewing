@@ -31,12 +31,12 @@
       <Pack>true</Pack>
     </Content>
 
-    <Content Include="$(SYSTEM_ARTIFACTSDIRECTORY)/libvnc/win7-x64/lib/*.dll">
+    <Content Include="$(SYSTEM_ARTIFACTSDIRECTORY)/libvnc/win7-x64/*.dll">
       <PackagePath>runtimes/win7-x64/native/%(Filename)%(Extension)</PackagePath>
       <Pack>true</Pack>
     </Content>
 
-    <Content Include="$(SYSTEM_ARTIFACTSDIRECTORY)/libvnc/win7-x86/lib/*.dll">
+    <Content Include="$(SYSTEM_ARTIFACTSDIRECTORY)/libvnc/win7-x86/*.dll">
       <PackagePath>runtimes/win7-x86/native/%(Filename)%(Extension)</PackagePath>
       <Pack>true</Pack>
     </Content>
