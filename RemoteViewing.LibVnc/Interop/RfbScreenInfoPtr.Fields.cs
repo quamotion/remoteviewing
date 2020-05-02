@@ -105,7 +105,7 @@ namespace RemoteViewing.LibVnc.Interop
             RfbType.Pointer, // newClientHook,
             RfbType.Pointer, // displayHook,
             RfbType.Pointer, // getKeyboardLedStateHook,
-            RfbType.Mutex, // cursorMutex,
+            RfbType.PthreadMutex, // cursorMutex,
             RfbType.Bool, // backgroundLoop,
             RfbType.Bool, // ignoreSIGPIPE,
             RfbType.Int, // progressiveSliceHeight,
@@ -133,6 +133,40 @@ namespace RemoteViewing.LibVnc.Interop
 
         private static readonly int[] FieldOffsets = GetFieldOffsets(NativeLayout.GetOSPlatform(), Environment.Is64BitProcess);
 
-        public static int[] GetFieldOffsets(OSPlatform platform, bool is64Bit) => NativeLayout.GetFieldOffsets(FieldTypes, platform, is64Bit);
+        public static int[] GetFieldOffsets(OSPlatform platform, bool is64Bit)
+        {
+            NativeCapabilities nativeCapabilities;
+
+            if (platform == OSPlatform.Windows)
+            {
+                nativeCapabilities = new NativeCapabilities()
+                {
+                    HaveLibJpeg = false,
+                    HaveLibPng = false,
+                    HaveLibZ = false,
+                    HaveLibPthread = true,
+                    HaveWin32Threads = false,
+                };
+            }
+            else
+            {
+                nativeCapabilities = NativeCapabilities.Unix;
+            }
+
+            return GetFieldOffsets(platform, is64Bit, nativeCapabilities);
+        }
+
+        public static int[] GetFieldOffsets(OSPlatform platform, bool is64Bit, NativeCapabilities nativeCapabilities)
+        {
+            var fieldTypes = new RfbType[FieldTypes.Length];
+            Array.Copy(FieldTypes, fieldTypes, fieldTypes.Length);
+
+            if (nativeCapabilities.HaveWin32Threads)
+            {
+                fieldTypes[(int)RfbScreenInfoPtrField.CursorMutex] = RfbType.Win32Mutex;
+            }
+
+            return NativeLayout.GetFieldOffsets(fieldTypes, platform, is64Bit);
+        }
     }
 }

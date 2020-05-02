@@ -36,6 +36,10 @@ int main()
 	printf("sizeof(pthread_mutex_t): %zu\n", sizeof(pthread_mutex_t));
 #endif
 
+#ifdef LIBVNCSERVER_HAVE_WIN32THREADS
+   printf("sizeof(CRITICAL_SECTION): %zu\n", sizeof(CRITICAL_SECTION));
+#endif
+
 #ifdef LIBVNCSERVER_HAVE_LIBJPEG
 	printf("sizeof(z_stream): %zu\n", sizeof(z_stream));
 #endif

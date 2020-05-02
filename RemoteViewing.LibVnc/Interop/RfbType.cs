@@ -94,9 +94,9 @@ namespace RemoteViewing.LibVnc.Interop
         SockAddrIn,
 
         /// <summary>
-        /// The field is of type <c>MUTEX()</c>.
+        /// The field is of type <c>MUTEX()</c> when using Pthread.
         /// </summary>
-        Mutex,
+        PthreadMutex,
 
         /// <summary>
         /// The field is of type <c>in_addr_t</c>.
@@ -167,5 +167,10 @@ namespace RemoteViewing.LibVnc.Interop
         /// The field is of type <c>pthread_t</c>.
         /// </summary>
         PthreadT,
+
+        /// <summary>
+        /// The field is of type <c>MUTEX()</c> when using Win32 threading.
+        /// </summary>
+        Win32Mutex,
     }
 }
