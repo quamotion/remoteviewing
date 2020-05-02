@@ -40,7 +40,7 @@ namespace RemoteViewing.LibVnc.Interop
         /// <summary>
         /// The name of the libvncserver library.
         /// </summary>
-        public const string LibraryName = "libvncserver";
+        public const string LibraryName = @"vncserver";
 
         /// <summary>
         /// The calling convention used by the libvncserver library.
@@ -240,7 +240,14 @@ namespace RemoteViewing.LibVnc.Interop
             return rfbGetScreen(ref count, null, width, height, bitsPerSample, samplesPerPixel, bytesPerPixel);
         }
 
-        // TODO: Enable ZRLE
+        /// <summary>
+        /// Initialize the server.
+        /// </summary>
+        /// <param name="rfbScreen">
+        /// The server structure to initialize.
+        /// </param>
+        [DllImport(LibraryName, CallingConvention = LibraryCallingConvention, EntryPoint = "rfbInitServerWithoutPthreadsButWithZRLE")]
+        public static extern void rfbInitServerWithoutPthreadsButWithZRLE(RfbScreenInfoPtr rfbScreen);
 
         /// <summary>
         /// Initialize the server.
@@ -248,8 +255,8 @@ namespace RemoteViewing.LibVnc.Interop
         /// <param name="rfbScreen">
         /// The server structure to initialize.
         /// </param>
-        [DllImport(LibraryName, CallingConvention = LibraryCallingConvention, EntryPoint = "rfbInitServerWithPthreadsButWithoutZRLE")]
-        public static extern void rfbInitServer(RfbScreenInfoPtr rfbScreen);
+        [DllImport(LibraryName, CallingConvention = LibraryCallingConvention, EntryPoint = "rfbInitServerWithPthreadsAndZRLE")]
+        public static extern void rfbInitServerWithPthreadsAndZRLE(RfbScreenInfoPtr rfbScreen);
 
         /// <summary>
         /// Updates a server structure to use a new framebuffer.

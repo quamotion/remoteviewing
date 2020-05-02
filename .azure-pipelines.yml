@@ -30,7 +30,7 @@ jobs:
     workingDirectory: build
     displayName: Compile LibVNC
   - script: |
-      gcc -o $(Build.ArtifactStagingDirectory)/$(rid)/get_offsets -I . -I ../libvncserver/ $(Build.SourcesDirectory)/RemoteViewing.LibVnc/get_offsets.c
+      gcc -o $(Build.ArtifactStagingDirectory)/$(rid)/get_offsets -I . -I ../libvncserver/ -I ../libvncserver/common/ $(Build.SourcesDirectory)/RemoteViewing.LibVnc/get_offsets.c
       $(Build.ArtifactStagingDirectory)/$(rid)/get_offsets > $(Build.ArtifactStagingDirectory)/$(rid)/get_offsets.txt
     workingDirectory: build
   - task: PublishBuildArtifacts@1
@@ -39,62 +39,58 @@ jobs:
       artifactName: libvnc
     displayName: Publish LibVNC
 
-# Build native libvnc libraries for Windows, cross-compiled from Ubuntu
 - job: native_windows
   strategy:
     maxParallel: 2
     matrix: 
       x86:
-        arch: i686
-        targetOs: mingw32
+        arch: Win32
         rid: win7-x86
-        package: w64-i686
+        triplet: x86-windows
       x64:
-        arch: x86_64
-        targetOs: mingw64
+        arch: x64
         rid: win7-x64
-        package: w64-x86-64
+        triplet: x64-windows
   pool:
-    vmImage: ubuntu-16.04
-  container:
-    image: ubuntu:20.04
-    options: "--name ci-container -v /usr/bin/docker:/tmp/docker:ro"
+    vmImage: windows-2019
   steps:
-  - script: |
-      /tmp/docker exec -t -u 0 ci-container \
-      sh -c "apt-get update && DEBIAN_FRONTEND=noninteractive apt-get -o Dpkg::Options::="--force-confold" -y install sudo"
-    displayName: Set up sudo
-  - script: |
-      sudo DEBIAN_FRONTEND=noninteractive apt-get install -y build-essential gcc-mingw-$(package) g++-mingw-$(package) wget git pkg-config cmake
-    displayName: Install cross-compiler
-  - script: |
-      wget -nv -nc https://github.com/LibVNC/libvncserver/archive/LibVNCServer-$(LIBVNC_VERSION).tar.gz -O LibVNCServer-$(LIBVNC_VERSION).tar.gz
-      tar xzf LibVNCServer-$(LIBVNC_VERSION).tar.gz
-    condition: false
-    displayName: Download LibVNCServer
   - script: |
       git clone --depth 1 https://github.com/LibVNC/libvncserver/
     displayName: Clone LibVNCServer
+  - task: Cache@2
+    inputs:
+      key: 'vcpkg_downloads | $(triplet)'
+      path: "C:/vcpkg/downloads"
+    displayName: Cache VCPKG downloads
+  - task: Cache@2
+    inputs:
+      key: 'vcpkg_installed | $(triplet)'
+      path: "C:/vcpkg/installed"
+    displayName: Cache VCPKG installed packages
+  - script: |
+      %VCPKG_INSTALLATION_ROOT%\vcpkg.exe version
+      %VCPKG_INSTALLATION_ROOT%\vcpkg.exe install libpng:$(triplet)
+      %VCPKG_INSTALLATION_ROOT%\vcpkg.exe install zlib:$(triplet)
+      %VCPKG_INSTALLATION_ROOT%\vcpkg.exe install libjpeg-turbo:$(triplet)
+    displayName: Install dependencies
   - script: |
       mkdir build
       cd build
-      cmake -DCMAKE_TOOLCHAIN_FILE=../RemoteViewing.LibVnc.NativeBinaries/$(targetOS).cmake -DBUILD_SHARED_LIBS=ON -DCMAKE_INSTALL_PREFIX=$(Build.ArtifactStagingDirectory)/$(rid) ../libvncserver/
+      cmake -DCMAKE_TOOLCHAIN_FILE=%VCPKG_INSTALLATION_ROOT%/scripts/buildsystems/vcpkg.cmake -DBUILD_SHARED_LIBS=ON -DCMAKE_INSTALL_PREFIX=$(Build.ArtifactStagingDirectory)/$(rid) ../libvncserver/ -A $(arch)
     displayName: Configure LibVNC
   - script: |
-      make install
+      cmake --build . --target vncserver --config Release
     workingDirectory: build
     displayName: Compile LibVNC
   - script: |
-      $(arch)-w64-mingw32-gcc -o $(Build.ArtifactStagingDirectory)/$(rid)/get_offsets.exe -I . -I ../libvncserver/ $(Build.SourcesDirectory)/RemoteViewing.LibVnc/get_offsets.c
+      mkdir $(Build.ArtifactStagingDirectory)\$(rid)\
+      echo copy Release\*.* $(Build.ArtifactStagingDirectory)\$(rid)\
+      copy Release\*.* $(Build.ArtifactStagingDirectory)\$(rid)\
     workingDirectory: build
-  - script: |
-      cp /usr/$(arch)-w64-mingw32/lib/libwinpthread-1.dll $(Build.ArtifactStagingDirectory)/$(rid)/lib
-      if [ "$(rid)" = "win7-x86" ]; then cp /usr/lib/gcc/i686-w64-mingw32/9.3-win32/libgcc_s_sjlj-1.dll $(Build.ArtifactStagingDirectory)/$(rid)/lib; fi
-      if [ "$(rid)" = "win7-x64" ]; then cp /usr/lib/gcc/x86_64-w64-mingw32/9.3-win32/libgcc_s_seh-1.dll $(Build.ArtifactStagingDirectory)/$(rid)/lib; fi
-    displayName: Copy additional files
+    displayName: Install LibVNC
   - task: PublishBuildArtifacts@1
     inputs:
-      pathtoPublish: '$(Build.ArtifactStagingDirectory)'
+      pathtoPublish: '$(Build.ArtifactStagingDirectory)/'
       artifactName: libvnc
     displayName: Publish LibVNC
 
