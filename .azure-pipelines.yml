@@ -39,8 +39,63 @@ jobs:
       artifactName: libvnc
     displayName: Publish LibVNC
 
+- job: windows_native
+  strategy:
+    maxParallel: 2
+    matrix: 
+      x86:
+        arch: Win32
+        rid: win7-x86
+        triplet: x86-windows
+      x64:
+        arch: x64
+        rid: win7-x64
+        triplet: x64-windows
+  pool:
+    vmImage: windows-2019
+  steps:
+  - script: |
+      git clone --depth 1 https://github.com/LibVNC/libvncserver/
+    displayName: Clone LibVNCServer
+  - task: Cache@2
+    inputs:
+      key: 'vcpkg_downloads | $(triplet)'
+      path: "C:/vcpkg/downloads"
+    displayName: Cache VCPKG downloads
+  - task: Cache@2
+    inputs:
+      key: 'vcpkg_installed | $(triplet)'
+      path: "C:/vcpkg/installed"
+    displayName: Cache VCPKG installed packages
+  - script: |
+      %VCPKG_INSTALLATION_ROOT%\vcpkg.exe version
+      %VCPKG_INSTALLATION_ROOT%\vcpkg.exe install libpng:$(triplet)
+      %VCPKG_INSTALLATION_ROOT%\vcpkg.exe install zlib:$(triplet)
+      %VCPKG_INSTALLATION_ROOT%\vcpkg.exe install libjpeg-turbo:$(triplet)
+    displayName: Install dependencies
+  - script: |
+      mkdir build
+      cd build
+      cmake -DCMAKE_TOOLCHAIN_FILE=%VCPKG_INSTALLATION_ROOT%/scripts/buildsystems/vcpkg.cmake -DBUILD_SHARED_LIBS=ON -DCMAKE_INSTALL_PREFIX=$(Build.ArtifactStagingDirectory)/$(rid) ../libvncserver/ -A $(arch)
+    displayName: Configure LibVNC
+  - script: |
+      cmake --build . --target vncserver --config Release
+    workingDirectory: build
+    displayName: Compile LibVNC
+  - script: |
+      mkdir $(Build.ArtifactStagingDirectory)\$(rid)\
+      echo copy Release\*.* $(Build.ArtifactStagingDirectory)\$(rid)\
+      copy Release\*.* $(Build.ArtifactStagingDirectory)\$(rid)\
+    workingDirectory: build
+    displayName: Install LibVNC
+  - task: PublishBuildArtifacts@1
+    inputs:
+      pathtoPublish: '$(Build.ArtifactStagingDirectory)/'
+      artifactName: libvnc-cmake
+    displayName: Publish LibVNC
+
 # Build native libvnc libraries for Windows, cross-compiled from Ubuntu
-- job: native_windows
+- job: windows_cross
   strategy:
     maxParallel: 2
     matrix: 
@@ -127,7 +182,7 @@ jobs:
   pool:
     vmImage: 'windows-latest'
   dependsOn:
-  - native_windows
+  - windows_cross
   - native_macos
   steps:
   - task: DownloadBuildArtifacts@0
