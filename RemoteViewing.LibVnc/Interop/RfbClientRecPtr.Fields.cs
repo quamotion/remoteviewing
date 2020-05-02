@@ -106,10 +106,10 @@ namespace RemoteViewing.LibVnc.Interop
             RfbType.Pointer, // prev
             RfbType.Pointer, // next
             RfbType.Int, // refCount
-            RfbType.Mutex, // refCountMute
+            RfbType.PthreadMutex, // refCountMute
             RfbType.Pthread_cond_t, // deleteCond
-            RfbType.Mutex, // outputMutex
-            RfbType.Mutex, // updateMutex
+            RfbType.PthreadMutex, // outputMutex
+            RfbType.PthreadMutex, // updateMutex
             RfbType.Pthread_cond_t, // updateCond
             RfbType.Pointer, // zrleData
             RfbType.Int, // zywrleLevel
@@ -118,7 +118,7 @@ namespace RemoteViewing.LibVnc.Interop
             RfbType.Pointer, // extensions
             RfbType.Pointer, // zrleBeforeBuf
             RfbType.Pointer, // paletteHelper
-            RfbType.Mutex, // sendMutex
+            RfbType.PthreadMutex, // sendMutex
             RfbType.Pointer, // beforeEncBuf
             RfbType.Int, // beforeEncBufSize
             RfbType.Pointer, // afterEncBuf
@@ -141,52 +141,78 @@ namespace RemoteViewing.LibVnc.Interop
 
         public static int[] GetFieldOffsets(OSPlatform platform, bool is64Bit)
         {
-            var fieldTypes = new RfbType[FieldTypes.Length];
-            Array.Copy(FieldTypes, fieldTypes, fieldTypes.Length);
+            NativeCapabilities nativeCapabilities;
 
             if (platform == OSPlatform.Windows)
             {
-                bool haveLibZ = false;
-                bool haveLibPng = false;
-                bool haveLibJpeg = false;
-
-                if (!haveLibZ)
+                nativeCapabilities = new NativeCapabilities()
                 {
-                    fieldTypes[(int)RfbClientRecPtrField.CompStream] = RfbType.Skip;
-                    fieldTypes[(int)RfbClientRecPtrField.CompStreamInited] = RfbType.Skip;
-                    fieldTypes[(int)RfbClientRecPtrField.ZlibCompressLevel] = RfbType.Skip;
-                }
+                    HaveLibJpeg = false,
+                    HaveLibPng = false,
+                    HaveLibZ = false,
+                    HaveLibPthread = true,
+                    HaveWin32Threads = false,
+                };
+            }
+            else
+            {
+                nativeCapabilities = NativeCapabilities.Unix;
+            }
 
-                if (!haveLibZ && !haveLibPng)
+            return GetFieldOffsets(platform, is64Bit, nativeCapabilities);
+        }
+
+        public static int[] GetFieldOffsets(OSPlatform platform, bool is64Bit, NativeCapabilities nativeCapabilities)
+        {
+            var fieldTypes = new RfbType[FieldTypes.Length];
+            Array.Copy(FieldTypes, fieldTypes, fieldTypes.Length);
+
+            if (!nativeCapabilities.HaveLibZ)
+            {
+                fieldTypes[(int)RfbClientRecPtrField.CompStream] = RfbType.Skip;
+                fieldTypes[(int)RfbClientRecPtrField.CompStreamInited] = RfbType.Skip;
+                fieldTypes[(int)RfbClientRecPtrField.ZlibCompressLevel] = RfbType.Skip;
+            }
+
+            if (!nativeCapabilities.HaveLibZ && !nativeCapabilities.HaveLibPng)
+            {
+                fieldTypes[(int)RfbClientRecPtrField.TightQualityLevel] = RfbType.Skip;
+
+                if (!nativeCapabilities.HaveLibJpeg)
                 {
-                    fieldTypes[(int)RfbClientRecPtrField.TightQualityLevel] = RfbType.Skip;
-
-                    if (!haveLibJpeg)
-                    {
-                        fieldTypes[(int)RfbClientRecPtrField.ZsStruct] = RfbType.Skip;
-                        fieldTypes[(int)RfbClientRecPtrField.ZsActive] = RfbType.Skip;
-                        fieldTypes[(int)RfbClientRecPtrField.ZsLevel] = RfbType.Skip;
-                        fieldTypes[(int)RfbClientRecPtrField.TightCompressLevel] = RfbType.Skip;
-                    }
+                    fieldTypes[(int)RfbClientRecPtrField.ZsStruct] = RfbType.Skip;
+                    fieldTypes[(int)RfbClientRecPtrField.ZsActive] = RfbType.Skip;
+                    fieldTypes[(int)RfbClientRecPtrField.ZsLevel] = RfbType.Skip;
+                    fieldTypes[(int)RfbClientRecPtrField.TightCompressLevel] = RfbType.Skip;
                 }
+            }
 
-                if (!haveLibZ)
+            if (!nativeCapabilities.HaveLibZ)
+            {
+                fieldTypes[(int)RfbClientRecPtrField.ZrleData] = RfbType.Skip;
+                fieldTypes[(int)RfbClientRecPtrField.ZywrleLevel] = RfbType.Skip;
+                fieldTypes[(int)RfbClientRecPtrField.ZywrleBuf] = RfbType.Skip;
+            }
+
+            if (!nativeCapabilities.HaveLibZ && !nativeCapabilities.HaveLibPng)
+            {
+                fieldTypes[(int)RfbClientRecPtrField.TightEncoding] = RfbType.Skip;
+
+                if (!nativeCapabilities.HaveLibJpeg)
                 {
-                    fieldTypes[(int)RfbClientRecPtrField.ZrleData] = RfbType.Skip;
-                    fieldTypes[(int)RfbClientRecPtrField.ZywrleLevel] = RfbType.Skip;
-                    fieldTypes[(int)RfbClientRecPtrField.ZywrleBuf] = RfbType.Skip;
+                    fieldTypes[(int)RfbClientRecPtrField.TurboSubsampLevel] = RfbType.Skip;
+                    fieldTypes[(int)RfbClientRecPtrField.TurboQualityLevel] = RfbType.Skip;
                 }
+            }
 
-                if (!haveLibZ && !haveLibPng)
-                {
-                    fieldTypes[(int)RfbClientRecPtrField.TightEncoding] = RfbType.Skip;
+            if (nativeCapabilities.HaveWin32Threads)
+            {
+                fieldTypes[(int)RfbClientRecPtrField.OutputMutex] = RfbType.Win32Mutex;
+                fieldTypes[(int)RfbClientRecPtrField.RefCountMutex] = RfbType.Win32Mutex;
+                fieldTypes[(int)RfbClientRecPtrField.SendMutex] = RfbType.Win32Mutex;
+                fieldTypes[(int)RfbClientRecPtrField.UpdateMutex] = RfbType.Win32Mutex;
 
-                    if (!haveLibJpeg)
-                    {
-                        fieldTypes[(int)RfbClientRecPtrField.TurboSubsampLevel] = RfbType.Skip;
-                        fieldTypes[(int)RfbClientRecPtrField.TurboQualityLevel] = RfbType.Skip;
-                    }
-                }
+                fieldTypes[(int)RfbClientRecPtrField.Pipe_notify_client_thread] = RfbType.Skip;
             }
 
             return NativeLayout.GetFieldOffsets(fieldTypes, platform, is64Bit);

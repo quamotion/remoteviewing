@@ -73,6 +73,7 @@ namespace RemoteViewing.LibVnc.Interop
                     8, // Int_2,
                     16, // Byte_CHALLENGESIZE,
                     8, // PthreadT,
+                    40, // Win32Mutex
                 },
 
                 // alignments
@@ -106,6 +107,7 @@ namespace RemoteViewing.LibVnc.Interop
                     1, // Int_2,
                     1, // Byte_CHALLENGESIZE,
                     1, // PthreadT,
+                    8, // Win32Mutex
                 },
             };
 
@@ -146,6 +148,7 @@ namespace RemoteViewing.LibVnc.Interop
                     8, // Int_2,
                     16, // Byte_CHALLENGESIZE,
                     4, // PthreadT,
+                    40, // Win32Mutex
                 },
 
                 // alignments
@@ -179,6 +182,7 @@ namespace RemoteViewing.LibVnc.Interop
                     1, // Int_2,
                     1, // Byte_CHALLENGESIZE,
                     1, // PthreadT,
+                    4, // Win32Mutex
                 },
             };
 
@@ -219,6 +223,7 @@ namespace RemoteViewing.LibVnc.Interop
                     8, // Int_2,
                     16, // Byte_CHALLENGESIZE,
                     8, // PthreadT,
+                    0, // Win32Mutex
                 },
 
                 // alignments
@@ -252,6 +257,7 @@ namespace RemoteViewing.LibVnc.Interop
                     1, // Int_2,
                     1, // Byte_CHALLENGESIZE,
                     1, // PthreadT,
+                    1, // Win32Mutex
                 },
             };
 
@@ -292,6 +298,7 @@ namespace RemoteViewing.LibVnc.Interop
                     8, // Int_2,
                     16, // Byte_CHALLENGESIZE,
                     8, // PthreadT,
+                    0, // Win32Mutex
                 },
 
                 // alignments
@@ -325,6 +332,7 @@ namespace RemoteViewing.LibVnc.Interop
                     1, // Int_2,
                     1, // Byte_CHALLENGESIZE,
                     1, // PthreadT,
+                    1, // Win32Mutex
                 },
             };
 

@@ -45,9 +45,15 @@ namespace RemoteViewing.LibVnc.Tests
         /// Tests the <see cref="RfbClientRefPtr.GetFieldOffsets(OSPlatform, bool)"/> method for 64-bit Windows.
         /// </summary>
         [Fact]
-        public void GetFieldOffsetsTest_Win64()
+        public void GetFieldOffsetsTest_Win64_Pthread()
         {
-            var offsets = RfbClientRecPtr.GetFieldOffsets(OSPlatform.Windows, is64Bit: true);
+            var offsets = RfbClientRecPtr.GetFieldOffsets(
+                OSPlatform.Windows,
+                is64Bit: true,
+                new NativeCapabilities()
+                {
+                    HaveLibPthread = true,
+                });
 
             Assert.Equal(0, offsets[(int)RfbClientRecPtrField.Screen]);
             Assert.Equal(8, offsets[(int)RfbClientRecPtrField.ScaledScreen]);
@@ -132,6 +138,104 @@ namespace RemoteViewing.LibVnc.Tests
             Assert.Equal(30488, offsets[(int)RfbClientRecPtrField.UseExtDesktopSize]);
             Assert.Equal(30492, offsets[(int)RfbClientRecPtrField.RequestedDesktopSizeChange]);
             Assert.Equal(30496, offsets[(int)RfbClientRecPtrField.LastDesktopSizeChangeError]);
+        }
+
+        /// <summary>
+        /// Tests the <see cref="RfbClientRefPtr.GetFieldOffsets(OSPlatform, bool)"/> method for 64-bit Windows.
+        /// </summary>
+        [Fact]
+        public void GetFieldOffsetsTest_Win64()
+        {
+            var offsets = RfbClientRecPtr.GetFieldOffsets(
+                OSPlatform.Windows,
+                is64Bit: true,
+                new NativeCapabilities()
+                {
+                    HaveWin32Threads = true,
+                });
+
+            Assert.Equal(0, offsets[(int)RfbClientRecPtrField.Screen]);
+            Assert.Equal(8, offsets[(int)RfbClientRecPtrField.ScaledScreen]);
+            Assert.Equal(16, offsets[(int)RfbClientRecPtrField.PalmVNC]);
+            Assert.Equal(24, offsets[(int)RfbClientRecPtrField.ClientData]);
+            Assert.Equal(32, offsets[(int)RfbClientRecPtrField.ClientGoneHook]);
+            Assert.Equal(40, offsets[(int)RfbClientRecPtrField.Sock]);
+            Assert.Equal(48, offsets[(int)RfbClientRecPtrField.Host]);
+            Assert.Equal(56, offsets[(int)RfbClientRecPtrField.ProtocolMajorVersion]);
+            Assert.Equal(60, offsets[(int)RfbClientRecPtrField.ProtocolMinorVersion]);
+            Assert.Equal(64, offsets[(int)RfbClientRecPtrField.Client_thread]);
+            Assert.Equal(72, offsets[(int)RfbClientRecPtrField.State]);
+            Assert.Equal(76, offsets[(int)RfbClientRecPtrField.ReverseConnection]);
+            Assert.Equal(77, offsets[(int)RfbClientRecPtrField.OnHold]);
+            Assert.Equal(78, offsets[(int)RfbClientRecPtrField.ReadyForSetColourMapEntries]);
+            Assert.Equal(79, offsets[(int)RfbClientRecPtrField.UseCopyRect]);
+            Assert.Equal(80, offsets[(int)RfbClientRecPtrField.PreferredEncoding]);
+            Assert.Equal(84, offsets[(int)RfbClientRecPtrField.CorreMaxWidth]);
+            Assert.Equal(88, offsets[(int)RfbClientRecPtrField.CorreMaxHeight]);
+            Assert.Equal(92, offsets[(int)RfbClientRecPtrField.ViewOnly]);
+            Assert.Equal(93, offsets[(int)RfbClientRecPtrField.AuthChallenge]);
+            Assert.Equal(112, offsets[(int)RfbClientRecPtrField.CopyRegion]);
+            Assert.Equal(120, offsets[(int)RfbClientRecPtrField.CopyDX]);
+            Assert.Equal(124, offsets[(int)RfbClientRecPtrField.CopyDY]);
+            Assert.Equal(128, offsets[(int)RfbClientRecPtrField.ModifiedRegion]);
+            Assert.Equal(136, offsets[(int)RfbClientRecPtrField.RequestedRegion]);
+            Assert.Equal(144, offsets[(int)RfbClientRecPtrField.StartDeferring]);
+            Assert.Equal(152, offsets[(int)RfbClientRecPtrField.StartPtrDeferring]);
+            Assert.Equal(160, offsets[(int)RfbClientRecPtrField.LastPtrX]);
+            Assert.Equal(164, offsets[(int)RfbClientRecPtrField.LastPtrY]);
+            Assert.Equal(168, offsets[(int)RfbClientRecPtrField.LastPtrButtons]);
+            Assert.Equal(176, offsets[(int)RfbClientRecPtrField.TranslateFn]);
+            Assert.Equal(184, offsets[(int)RfbClientRecPtrField.TranslateLookupTable]);
+            Assert.Equal(192, offsets[(int)RfbClientRecPtrField.Format]);
+            Assert.Equal(208, offsets[(int)RfbClientRecPtrField.UpdateBuf]);
+            Assert.Equal(30208, offsets[(int)RfbClientRecPtrField.Ublen]);
+            Assert.Equal(30216, offsets[(int)RfbClientRecPtrField.StatEncList]);
+            Assert.Equal(30224, offsets[(int)RfbClientRecPtrField.StatMsgList]);
+            Assert.Equal(30232, offsets[(int)RfbClientRecPtrField.RawBytesEquivalent]);
+            Assert.Equal(30236, offsets[(int)RfbClientRecPtrField.BytesSent]);
+            Assert.Equal(30240, offsets[(int)RfbClientRecPtrField.CompStreamInitedLZO]);
+            Assert.Equal(30248, offsets[(int)RfbClientRecPtrField.LzoWrkMem]);
+            Assert.Equal(30256, offsets[(int)RfbClientRecPtrField.FileTransfer]);
+            Assert.Equal(30280, offsets[(int)RfbClientRecPtrField.LastKeyboardLedState]);
+            Assert.Equal(30284, offsets[(int)RfbClientRecPtrField.EnableSupportedMessages]);
+            Assert.Equal(30285, offsets[(int)RfbClientRecPtrField.EnableSupportedEncodings]);
+            Assert.Equal(30286, offsets[(int)RfbClientRecPtrField.EnableServerIdentity]);
+            Assert.Equal(30287, offsets[(int)RfbClientRecPtrField.EnableKeyboardLedState]);
+            Assert.Equal(30288, offsets[(int)RfbClientRecPtrField.EnableLastRectEncoding]);
+            Assert.Equal(30289, offsets[(int)RfbClientRecPtrField.EnableCursorShapeUpdates]);
+            Assert.Equal(30290, offsets[(int)RfbClientRecPtrField.EnableCursorPosUpdates]);
+            Assert.Equal(30291, offsets[(int)RfbClientRecPtrField.UseRichCursorEncoding]);
+            Assert.Equal(30292, offsets[(int)RfbClientRecPtrField.CursorWasChanged]);
+            Assert.Equal(30293, offsets[(int)RfbClientRecPtrField.CursorWasMoved]);
+            Assert.Equal(30296, offsets[(int)RfbClientRecPtrField.CursorX]);
+            Assert.Equal(30300, offsets[(int)RfbClientRecPtrField.CursorY]);
+            Assert.Equal(30304, offsets[(int)RfbClientRecPtrField.UseNewFBSize]);
+            Assert.Equal(30305, offsets[(int)RfbClientRecPtrField.NewFBSizePending]);
+            Assert.Equal(30312, offsets[(int)RfbClientRecPtrField.Prev]);
+            Assert.Equal(30320, offsets[(int)RfbClientRecPtrField.Next]);
+            Assert.Equal(30328, offsets[(int)RfbClientRecPtrField.RefCount]);
+            Assert.Equal(30336, offsets[(int)RfbClientRecPtrField.RefCountMutex]);
+            Assert.Equal(30376, offsets[(int)RfbClientRecPtrField.DeleteCond]);
+            Assert.Equal(30384, offsets[(int)RfbClientRecPtrField.OutputMutex]);
+            Assert.Equal(30424, offsets[(int)RfbClientRecPtrField.UpdateMutex]);
+            Assert.Equal(30464, offsets[(int)RfbClientRecPtrField.UpdateCond]);
+            Assert.Equal(30472, offsets[(int)RfbClientRecPtrField.ProgressiveSliceY]);
+            Assert.Equal(30480, offsets[(int)RfbClientRecPtrField.Extensions]);
+            Assert.Equal(30488, offsets[(int)RfbClientRecPtrField.ZrleBeforeBuf]);
+            Assert.Equal(30496, offsets[(int)RfbClientRecPtrField.PaletteHelper]);
+            Assert.Equal(30504, offsets[(int)RfbClientRecPtrField.SendMutex]);
+            Assert.Equal(30544, offsets[(int)RfbClientRecPtrField.BeforeEncBuf]);
+            Assert.Equal(30552, offsets[(int)RfbClientRecPtrField.BeforeEncBufSize]);
+            Assert.Equal(30560, offsets[(int)RfbClientRecPtrField.AfterEncBuf]);
+            Assert.Equal(30568, offsets[(int)RfbClientRecPtrField.AfterEncBufSize]);
+            Assert.Equal(30572, offsets[(int)RfbClientRecPtrField.AfterEncBufLen]);
+            Assert.Equal(30576, offsets[(int)RfbClientRecPtrField.Sslctx]);
+            Assert.Equal(30584, offsets[(int)RfbClientRecPtrField.Wsctx]);
+            Assert.Equal(30592, offsets[(int)RfbClientRecPtrField.Wspath]);
+            Assert.Equal(30600, offsets[(int)RfbClientRecPtrField.ClientFramebufferUpdateRequestHook]);
+            Assert.Equal(30608, offsets[(int)RfbClientRecPtrField.UseExtDesktopSize]);
+            Assert.Equal(30612, offsets[(int)RfbClientRecPtrField.RequestedDesktopSizeChange]);
+            Assert.Equal(30616, offsets[(int)RfbClientRecPtrField.LastDesktopSizeChangeError]);
         }
 
         /// <summary>
