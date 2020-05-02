@@ -30,7 +30,7 @@ jobs:
     workingDirectory: build
     displayName: Compile LibVNC
   - script: |
-      gcc -o $(Build.ArtifactStagingDirectory)/$(rid)/get_offsets -I . -I ../libvncserver/ $(Build.SourcesDirectory)/RemoteViewing.LibVnc/get_offsets.c
+      gcc -o $(Build.ArtifactStagingDirectory)/$(rid)/get_offsets -I . -I ../libvncserver/ -I ../libvncserver/common/ $(Build.SourcesDirectory)/RemoteViewing.LibVnc/get_offsets.c
       $(Build.ArtifactStagingDirectory)/$(rid)/get_offsets > $(Build.ArtifactStagingDirectory)/$(rid)/get_offsets.txt
     workingDirectory: build
   - task: PublishBuildArtifacts@1
