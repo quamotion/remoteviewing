@@ -239,12 +239,19 @@ namespace RemoteViewing.LibVnc.Tests
         }
 
         /// <summary>
-        /// Tests the <see cref="RfbClientRefPtr.GetFieldOffsets(OSPlatform, bool)"/> method for 32-bit Windows.
+        /// Tests the <see cref="RfbClientRefPtr.GetFieldOffsets(OSPlatform, bool)"/> method for 32-bit Windows, when
+        /// cross-compiled from Linux for Windows.
         /// </summary>
         [Fact]
-        public void GetFieldOffsetsTest_Win32()
+        public void GetFieldOffsetsTest_Win32_Pthread()
         {
-            var offsets = RfbClientRecPtr.GetFieldOffsets(OSPlatform.Windows, is64Bit: false);
+            var offsets = RfbClientRecPtr.GetFieldOffsets(
+                OSPlatform.Windows,
+                is64Bit: false,
+                new NativeCapabilities()
+                {
+                    HaveLibPthread = true,
+                });
 
             Assert.Equal(0, offsets[(int)RfbClientRecPtrField.Screen]);
             Assert.Equal(4, offsets[(int)RfbClientRecPtrField.ScaledScreen]);
