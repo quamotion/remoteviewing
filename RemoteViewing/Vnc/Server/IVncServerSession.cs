@@ -118,6 +118,11 @@ namespace RemoteViewing.Vnc.Server
         void Connect(Stream stream, VncServerSessionOptions options = null);
 
         /// <summary>
+        /// Closes the connection with the remote client.
+        /// </summary>
+        void Close();
+
+        /// <summary>
         /// Sets the framebuffer source.
         /// </summary>
         /// <param name="source">The framebuffer source, or <see langword="null"/> if you intend to handle the framebuffer manually.</param>
