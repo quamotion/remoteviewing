@@ -348,5 +348,17 @@ namespace RemoteViewing.LibVnc.Interop
         /// </returns>
         [DllImport(LibraryName, CallingConvention = LibraryCallingConvention, EntryPoint = "rfbProcessEvents")]
         public static extern byte rfbProcessEvents(RfbScreenInfoPtr screenInfo, long usec);
+
+        /// <summary>
+        /// Determines whether a VNC session is still active.
+        /// </summary>
+        /// <param name="screenInfo">
+        /// The server for which to determine whether it is still active.
+        /// </param>
+        /// <summary>
+        /// <see langword="true"/> if the server is still active; otherwise, <see langword="false"/>
+        /// </summary>
+        [DllImport(LibraryName, CallingConvention = LibraryCallingConvention, EntryPoint = "rfbIsActive")]
+        public static extern byte rfbIsActive(RfbScreenInfoPtr screenInfo);
     }
 }

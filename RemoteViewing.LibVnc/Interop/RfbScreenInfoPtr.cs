@@ -197,11 +197,12 @@ namespace RemoteViewing.LibVnc.Interop
         }
 
         /// <summary>
-        /// Gets the TCP port used.
+        /// Gets or sets the TCP port used.
         /// </summary>
         public int Port
         {
             get { return Marshal.ReadInt32(this.handle, FieldOffsets[(int)RfbScreenInfoPtrField.Port]); }
+            set { Marshal.WriteInt32(this.handle, FieldOffsets[(int)RfbScreenInfoPtrField.Port], value); }
         }
 
         /// <summary>
@@ -386,6 +387,15 @@ namespace RemoteViewing.LibVnc.Interop
         {
             get { return Marshal.ReadIntPtr(this.handle, FieldOffsets[(int)RfbScreenInfoPtrField.GetKeyboardLedStateHook]); }
             set { Marshal.WriteIntPtr(this.handle, FieldOffsets[(int)RfbScreenInfoPtrField.GetKeyboardLedStateHook], value); }
+        }
+
+        /// <summary>
+        /// Gets or sets the IP address of the IPv4 interface on which to listen for new connections.
+        /// </summary>
+        public int ListenInterface
+        {
+            get { return Marshal.ReadInt32(this.handle, FieldOffsets[(int)RfbScreenInfoPtrField.ListenInterface]); }
+            set { Marshal.WriteInt32(this.handle, FieldOffsets[(int)RfbScreenInfoPtrField.ListenInterface], value); }
         }
 
         /// <summary>

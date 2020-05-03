@@ -28,6 +28,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Console;
+using RemoteViewing.LibVnc;
 using RemoteViewing.NoVncExample;
 using RemoteViewing.Vnc;
 using RemoteViewing.Vnc.Server;
@@ -81,11 +82,22 @@ namespace RemoteViewing.ServerExample
             var framebufferSource = new DummyFramebufferSource();
             var logger = new ConsoleLogger("VNC", (s, l) => l <= LogLevel.Debug, true);
 
-            return new VncServer(
-                framebufferSource,
-                framebufferSource,
-                framebufferSource,
-                logger);
+            if (useManaged)
+            {
+                return new VncServer(
+                    framebufferSource,
+                    framebufferSource,
+                    framebufferSource,
+                    logger);
+            }
+            else
+            {
+                return new LibVncServer(
+                    framebufferSource,
+                    framebufferSource,
+                    framebufferSource,
+                    logger);
+            }
         }
     }
 }
