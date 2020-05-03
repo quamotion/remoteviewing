@@ -147,11 +147,11 @@ namespace RemoteViewing.LibVnc.Interop
             {
                 nativeCapabilities = new NativeCapabilities()
                 {
-                    HaveLibJpeg = false,
-                    HaveLibPng = false,
-                    HaveLibZ = false,
-                    HaveLibPthread = true,
-                    HaveWin32Threads = false,
+                    HaveLibJpeg = true,
+                    HaveLibPng = true,
+                    HaveLibZ = true,
+                    HaveLibPthread = false,
+                    HaveWin32Threads = true,
                 };
             }
             else

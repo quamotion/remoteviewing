@@ -45,7 +45,7 @@ namespace RemoteViewing.LibVnc.Tests
         /// <summary>
         /// Tests the basic layout of the <see cref="RfbScreenInfoPtr"/> class by accessing most properties.
         /// </summary>
-        [Fact(Skip = "Work in progress")]
+        [Fact]
         public void LayoutTest()
         {
             using (RfbScreenInfoPtr server = NativeMethods.rfbGetScreen(400, 300, 8, 3, 4))
@@ -113,7 +113,7 @@ namespace RemoteViewing.LibVnc.Tests
                 is64Bit: true,
                 new NativeCapabilities()
                 {
-                     HaveLibPthread = true,
+                    HaveLibPthread = true,
                 });
 
             Assert.Equal(0, offsets[(int)RfbScreenInfoPtrField.ScaledScreenNext]);
@@ -309,13 +309,133 @@ namespace RemoteViewing.LibVnc.Tests
             Assert.Equal(1368, offsets[(int)RfbScreenInfoPtrField.GetExtDesktopScreenHook]);
             Assert.Equal(1376, offsets[(int)RfbScreenInfoPtrField.FdQuota]);
         }
+
         /// <summary>
         /// Tests the <see cref="RfbScreenInfoPtr.GetFieldOffsets(OSPlatform, bool)"/> method for 32-bit Windows.
         /// </summary>
         [Fact]
         public void GetFieldOffsetsTest_Win32()
         {
-            var offsets = RfbScreenInfoPtr.GetFieldOffsets(OSPlatform.Windows, is64Bit: false);
+            var offsets = RfbScreenInfoPtr.GetFieldOffsets(
+                OSPlatform.Windows,
+                is64Bit: false,
+                new NativeCapabilities()
+                {
+                    HaveLibJpeg = true,
+                    HaveLibPng = true,
+                    HaveLibZ = true,
+                    HaveLibPthread = false,
+                    HaveWin32Threads = true,
+                });
+
+            Assert.Equal(0, offsets[(int)RfbScreenInfoPtrField.ScaledScreenNext]);
+            Assert.Equal(4, offsets[(int)RfbScreenInfoPtrField.ScaledScreenRefCount]);
+            Assert.Equal(8, offsets[(int)RfbScreenInfoPtrField.Width]);
+            Assert.Equal(12, offsets[(int)RfbScreenInfoPtrField.PaddedWidthInBytes]);
+            Assert.Equal(16, offsets[(int)RfbScreenInfoPtrField.Height]);
+            Assert.Equal(20, offsets[(int)RfbScreenInfoPtrField.Depth]);
+            Assert.Equal(24, offsets[(int)RfbScreenInfoPtrField.BitsPerPixel]);
+            Assert.Equal(28, offsets[(int)RfbScreenInfoPtrField.SizeInBytes]);
+            Assert.Equal(32, offsets[(int)RfbScreenInfoPtrField.BlackPixel]);
+            Assert.Equal(36, offsets[(int)RfbScreenInfoPtrField.WhitePixel]);
+            Assert.Equal(40, offsets[(int)RfbScreenInfoPtrField.ScreenData]);
+            Assert.Equal(44, offsets[(int)RfbScreenInfoPtrField.ServerFormat]);
+            Assert.Equal(60, offsets[(int)RfbScreenInfoPtrField.ColourMap]);
+            Assert.Equal(72, offsets[(int)RfbScreenInfoPtrField.DesktopName]);
+            Assert.Equal(76, offsets[(int)RfbScreenInfoPtrField.ThisHost]);
+            Assert.Equal(331, offsets[(int)RfbScreenInfoPtrField.AutoPort]);
+            Assert.Equal(332, offsets[(int)RfbScreenInfoPtrField.Port]);
+            Assert.Equal(336, offsets[(int)RfbScreenInfoPtrField.ListenSock]);
+            Assert.Equal(340, offsets[(int)RfbScreenInfoPtrField.MaxSock]);
+            Assert.Equal(344, offsets[(int)RfbScreenInfoPtrField.MaxFd]);
+            Assert.Equal(348, offsets[(int)RfbScreenInfoPtrField.AllFds]);
+            Assert.Equal(608, offsets[(int)RfbScreenInfoPtrField.SocketState]);
+            Assert.Equal(612, offsets[(int)RfbScreenInfoPtrField.InetdSock]);
+            Assert.Equal(616, offsets[(int)RfbScreenInfoPtrField.InetdInitDone]);
+            Assert.Equal(620, offsets[(int)RfbScreenInfoPtrField.UdpPort]);
+            Assert.Equal(624, offsets[(int)RfbScreenInfoPtrField.UdpSock]);
+            Assert.Equal(628, offsets[(int)RfbScreenInfoPtrField.UdpClient]);
+            Assert.Equal(632, offsets[(int)RfbScreenInfoPtrField.UdpSockConnected]);
+            Assert.Equal(636, offsets[(int)RfbScreenInfoPtrField.UdpRemoteAddr]);
+            Assert.Equal(652, offsets[(int)RfbScreenInfoPtrField.MaxClientWait]);
+            Assert.Equal(656, offsets[(int)RfbScreenInfoPtrField.HttpInitDone]);
+            Assert.Equal(657, offsets[(int)RfbScreenInfoPtrField.HttpEnableProxyConnect]);
+            Assert.Equal(660, offsets[(int)RfbScreenInfoPtrField.HttpPort]);
+            Assert.Equal(664, offsets[(int)RfbScreenInfoPtrField.HttpDir]);
+            Assert.Equal(668, offsets[(int)RfbScreenInfoPtrField.HttpListenSock]);
+            Assert.Equal(672, offsets[(int)RfbScreenInfoPtrField.HttpSock]);
+            Assert.Equal(676, offsets[(int)RfbScreenInfoPtrField.PasswordCheck]);
+            Assert.Equal(680, offsets[(int)RfbScreenInfoPtrField.AuthPasswdData]);
+            Assert.Equal(684, offsets[(int)RfbScreenInfoPtrField.AuthPasswdFirstViewOnly]);
+            Assert.Equal(692, offsets[(int)RfbScreenInfoPtrField.DeferUpdateTime]);
+            Assert.Equal(696, offsets[(int)RfbScreenInfoPtrField.AlwaysShared]);
+            Assert.Equal(697, offsets[(int)RfbScreenInfoPtrField.NeverShared]);
+            Assert.Equal(698, offsets[(int)RfbScreenInfoPtrField.DontDisconnect]);
+            Assert.Equal(700, offsets[(int)RfbScreenInfoPtrField.ClientHead]);
+            Assert.Equal(704, offsets[(int)RfbScreenInfoPtrField.PointerClient]);
+            Assert.Equal(708, offsets[(int)RfbScreenInfoPtrField.CursorX]);
+            Assert.Equal(712, offsets[(int)RfbScreenInfoPtrField.CursorY]);
+            Assert.Equal(716, offsets[(int)RfbScreenInfoPtrField.UnderCursorBufferLen]);
+            Assert.Equal(720, offsets[(int)RfbScreenInfoPtrField.UnderCursorBuffer]);
+            Assert.Equal(724, offsets[(int)RfbScreenInfoPtrField.DontConvertRichCursorToXCursor]);
+            Assert.Equal(728, offsets[(int)RfbScreenInfoPtrField.Cursor]);
+            Assert.Equal(732, offsets[(int)RfbScreenInfoPtrField.FrameBuffer]);
+            Assert.Equal(736, offsets[(int)RfbScreenInfoPtrField.KbdAddEvent]);
+            Assert.Equal(740, offsets[(int)RfbScreenInfoPtrField.KbdReleaseAllKeys]);
+            Assert.Equal(744, offsets[(int)RfbScreenInfoPtrField.PtrAddEvent]);
+            Assert.Equal(748, offsets[(int)RfbScreenInfoPtrField.SetXCutText]);
+            Assert.Equal(752, offsets[(int)RfbScreenInfoPtrField.GetCursorPtr]);
+            Assert.Equal(756, offsets[(int)RfbScreenInfoPtrField.SetTranslateFunction]);
+            Assert.Equal(760, offsets[(int)RfbScreenInfoPtrField.SetSingleWindow]);
+            Assert.Equal(764, offsets[(int)RfbScreenInfoPtrField.SetServerInput]);
+            Assert.Equal(768, offsets[(int)RfbScreenInfoPtrField.GetFileTransferPermission]);
+            Assert.Equal(772, offsets[(int)RfbScreenInfoPtrField.SetTextChat]);
+            Assert.Equal(776, offsets[(int)RfbScreenInfoPtrField.NewClientHook]);
+            Assert.Equal(780, offsets[(int)RfbScreenInfoPtrField.DisplayHook]);
+            Assert.Equal(784, offsets[(int)RfbScreenInfoPtrField.GetKeyboardLedStateHook]);
+            Assert.Equal(788, offsets[(int)RfbScreenInfoPtrField.CursorMutex]);
+            Assert.Equal(812, offsets[(int)RfbScreenInfoPtrField.BackgroundLoop]);
+            Assert.Equal(813, offsets[(int)RfbScreenInfoPtrField.IgnoreSIGPIPE]);
+            Assert.Equal(816, offsets[(int)RfbScreenInfoPtrField.ProgressiveSliceHeight]);
+            Assert.Equal(820, offsets[(int)RfbScreenInfoPtrField.ListenInterface]);
+            Assert.Equal(824, offsets[(int)RfbScreenInfoPtrField.DeferPtrUpdateTime]);
+            Assert.Equal(828, offsets[(int)RfbScreenInfoPtrField.HandleEventsEagerly]);
+            Assert.Equal(832, offsets[(int)RfbScreenInfoPtrField.VersionString]);
+            Assert.Equal(836, offsets[(int)RfbScreenInfoPtrField.ProtocolMajorVersion]);
+            Assert.Equal(840, offsets[(int)RfbScreenInfoPtrField.ProtocolMinorVersion]);
+            Assert.Equal(844, offsets[(int)RfbScreenInfoPtrField.PermitFileTransfer]);
+            Assert.Equal(848, offsets[(int)RfbScreenInfoPtrField.DisplayFinishedHook]);
+            Assert.Equal(852, offsets[(int)RfbScreenInfoPtrField.XvpHooka]);
+            Assert.Equal(856, offsets[(int)RfbScreenInfoPtrField.Sslkeyfile]);
+            Assert.Equal(860, offsets[(int)RfbScreenInfoPtrField.Sslcertfile]);
+            Assert.Equal(864, offsets[(int)RfbScreenInfoPtrField.Ipv6port]);
+            Assert.Equal(868, offsets[(int)RfbScreenInfoPtrField.Listen6Interface]);
+            Assert.Equal(872, offsets[(int)RfbScreenInfoPtrField.Listen6Sock]);
+            Assert.Equal(876, offsets[(int)RfbScreenInfoPtrField.Http6Port]);
+            Assert.Equal(880, offsets[(int)RfbScreenInfoPtrField.HttpListen6Sock]);
+            Assert.Equal(884, offsets[(int)RfbScreenInfoPtrField.SetDesktopSizeHook]);
+            Assert.Equal(888, offsets[(int)RfbScreenInfoPtrField.NumberOfExtDesktopScreensHook]);
+            Assert.Equal(892, offsets[(int)RfbScreenInfoPtrField.GetExtDesktopScreenHook]);
+            Assert.Equal(896, offsets[(int)RfbScreenInfoPtrField.FdQuota]);
+        }
+
+        /// <summary>
+        /// Tests the <see cref="RfbScreenInfoPtr.GetFieldOffsets(OSPlatform, bool)"/> method for 32-bit Windows.
+        /// </summary>
+        [Fact]
+        public void GetFieldOffsetsTest_Win32_Pthread()
+        {
+            var offsets = RfbScreenInfoPtr.GetFieldOffsets(
+                OSPlatform.Windows,
+                is64Bit: false,
+                new NativeCapabilities()
+                {
+                    HaveLibJpeg = false,
+                    HaveLibPng = false,
+                    HaveLibZ = false,
+                    HaveLibPthread = true,
+                    HaveWin32Threads = false,
+                });
 
             Assert.Equal(0, offsets[(int)RfbScreenInfoPtrField.ScaledScreenNext]);
             Assert.Equal(4, offsets[(int)RfbScreenInfoPtrField.ScaledScreenRefCount]);

@@ -148,7 +148,7 @@ namespace RemoteViewing.LibVnc.Interop
                     8, // Int_2,
                     16, // Byte_CHALLENGESIZE,
                     4, // PthreadT,
-                    40, // Win32Mutex
+                    24, // Win32Mutex
                 },
 
                 // alignments
