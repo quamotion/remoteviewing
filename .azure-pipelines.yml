@@ -33,6 +33,14 @@ jobs:
       gcc -o $(Build.ArtifactStagingDirectory)/$(rid)/get_offsets -I . -I ../libvncserver/ -I ../libvncserver/common/ $(Build.SourcesDirectory)/RemoteViewing.LibVnc/get_offsets.c
       $(Build.ArtifactStagingDirectory)/$(rid)/get_offsets > $(Build.ArtifactStagingDirectory)/$(rid)/get_offsets.txt
     workingDirectory: build
+  - script : |
+      mkdir build
+      cd build
+      cmake ..
+      make
+      cp *.dylib $(Build.ArtifactStagingDirectory)/$(rid)/lib/
+    workingDirectory: '$(Build.SourcesDirectory)/RemoteViewing.LibVnc.Logging'
+    displayName: Build vnclogger
   - task: PublishBuildArtifacts@1
     inputs:
       pathtoPublish: '$(Build.ArtifactStagingDirectory)'
@@ -84,10 +92,17 @@ jobs:
     displayName: Compile LibVNC
   - script: |
       mkdir $(Build.ArtifactStagingDirectory)\$(rid)\
-      echo copy Release\*.* $(Build.ArtifactStagingDirectory)\$(rid)\
       copy Release\*.* $(Build.ArtifactStagingDirectory)\$(rid)\
     workingDirectory: build
     displayName: Install LibVNC
+  - script : |
+      mkdir build
+      cd build
+      cmake ..
+      cmake --build . --config Release
+      copy Release\*.* $(Build.ArtifactStagingDirectory)\$(rid)\
+    workingDirectory: '$(Build.SourcesDirectory)/RemoteViewing.LibVnc.Logging'
+    displayName: Build vnclogger
   - task: PublishBuildArtifacts@1
     inputs:
       pathtoPublish: '$(Build.ArtifactStagingDirectory)/'
@@ -108,11 +123,19 @@ jobs:
       sh -c "apt-get update && DEBIAN_FRONTEND=noninteractive apt-get -o Dpkg::Options::="--force-confold" -y install sudo"
     displayName: Set up sudo
   - script: |
-      sudo apt-get install -y libvncserver-dev gcc
+      sudo DEBIAN_FRONTEND=noninteractive apt-get install -y libvncserver-dev gcc clang cmake
       
       mkdir -p $(Build.ArtifactStagingDirectory)/$(rid)
       gcc -o $(Build.ArtifactStagingDirectory)/$(rid)/get_offsets -I . -I .. $(Build.SourcesDirectory)/RemoteViewing.LibVnc/get_offsets.c
       $(Build.ArtifactStagingDirectory)/$(rid)/get_offsets > $(Build.ArtifactStagingDirectory)/$(rid)/get_offsets.txt
+  - script : |
+      mkdir build
+      cd build
+      cmake ..
+      make
+      cp *.so $(Build.ArtifactStagingDirectory)/$(rid)/
+    workingDirectory: '$(Build.SourcesDirectory)/RemoteViewing.LibVnc.Logging'
+    displayName: Build vnclogger
   - task: PublishBuildArtifacts@1
     inputs:
       pathtoPublish: '$(Build.ArtifactStagingDirectory)'

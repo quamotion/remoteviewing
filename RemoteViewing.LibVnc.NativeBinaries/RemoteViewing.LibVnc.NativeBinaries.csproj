@@ -26,7 +26,7 @@
       <Pack>true</Pack>
     </Content>
 
-    <Content Include="$(SYSTEM_ARTIFACTSDIRECTORY)/libvnc/osx-x64/lib/libvncclient.dylib">
+    <Content Include="$(SYSTEM_ARTIFACTSDIRECTORY)/libvnc/osx-x64/lib/libvnclogger.dylib">
       <PackagePath>runtimes/osx-64/native/%(Filename)%(Extension)</PackagePath>
       <Pack>true</Pack>
     </Content>
@@ -38,6 +38,11 @@
 
     <Content Include="$(SYSTEM_ARTIFACTSDIRECTORY)/libvnc/win7-x86/*.dll">
       <PackagePath>runtimes/win7-x86/native/%(Filename)%(Extension)</PackagePath>
+      <Pack>true</Pack>
+    </Content>
+
+    <Content Include="$(SYSTEM_ARTIFACTSDIRECTORY)/libvnc/linux-x64/libvnclogger.so">
+      <PackagePath>runtimes/linux-x64/native/%(Filename)%(Extension)</PackagePath>
       <Pack>true</Pack>
     </Content>
   </ItemGroup>
