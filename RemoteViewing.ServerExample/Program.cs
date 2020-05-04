@@ -80,7 +80,7 @@ namespace RemoteViewing.ServerExample
         private static IVncServer GetServer(bool useManaged)
         {
             var framebufferSource = new DummyFramebufferSource();
-            var logger = new ConsoleLogger("VNC", (s, l) => l <= LogLevel.Debug, true);
+            var logger = new ConsoleLogger("VNC", (s, l) => l > LogLevel.Debug, true);
 
             if (useManaged)
             {

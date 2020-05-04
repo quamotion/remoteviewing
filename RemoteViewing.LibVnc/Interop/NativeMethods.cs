@@ -356,7 +356,7 @@ namespace RemoteViewing.LibVnc.Interop
         /// The server for which to determine whether it is still active.
         /// </param>
         /// <summary>
-        /// <see langword="true"/> if the server is still active; otherwise, <see langword="false"/>
+        /// <see langword="true"/> if the server is still active; otherwise, <see langword="false"/>.
         /// </summary>
         [DllImport(LibraryName, CallingConvention = LibraryCallingConvention, EntryPoint = "rfbIsActive")]
         public static extern byte rfbIsActive(RfbScreenInfoPtr screenInfo);
