@@ -125,6 +125,13 @@ namespace RemoteViewing.LibVnc
 
             this.server = NativeMethods.rfbGetScreen(fb.Width, fb.Height, fb.PixelFormat.BlueBits, 3, fb.PixelFormat.BytesPerPixel);
 
+            var serverFormat = this.server.ServerFormat;
+            serverFormat.RedShift = 16;
+            serverFormat.GreenShift = 8;
+            serverFormat.BlueShift = 0;
+
+            this.server.ServerFormat = serverFormat;
+
             this.server.ListenInterface = MemoryMarshal.Read<int>(endPoint.Address.GetAddressBytes());
             this.server.AutoPort = false;
             this.server.Port = endPoint.Port;
@@ -218,6 +225,11 @@ namespace RemoteViewing.LibVnc
 
                 this.currentFramebuffer = this.memoryPool.Rent(fb.Width * fb.Height * 4);
                 this.currentFramebufferHandle = this.currentFramebuffer.Memory.Pin();
+
+                if (fb.PixelFormat != VncPixelFormat.RGB32)
+                {
+                    this.logger.LogWarning($"The pixel format {fb.PixelFormat} is not supported");
+                }
 
                 fb.GetBuffer().CopyTo(this.currentFramebuffer.Memory);
 

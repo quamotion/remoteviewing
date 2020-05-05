@@ -18,6 +18,10 @@ namespace RemoteViewing.NoVncExample
 
         private VncFramebuffer framebuffer;
 
+        // Override the color of the framebuffer. When set to transparent, an animation will be displayed
+        // instead.
+        private Color color = Color.Transparent;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="DummyFramebufferSource"/> class.
         /// </summary>
@@ -78,7 +82,7 @@ namespace RemoteViewing.NoVncExample
 
             this.colors[colorIndex] = (byte)(this.colors[colorIndex] + this.increments[colorIndex]);
 
-            var color = Color.FromArgb(this.colors[0], this.colors[1], this.colors[2]);
+            var color = this.color == Color.Transparent ? Color.FromArgb(this.colors[0], this.colors[1], this.colors[2]) : this.color;
 
             using (Bitmap image = new Bitmap(this.Width, this.Height))
             using (Graphics gfx = Graphics.FromImage(image))
@@ -128,23 +132,54 @@ namespace RemoteViewing.NoVncExample
         /// <inheritdoc/>
         public void HandleKeyEvent(object sender, KeyChangedEventArgs e)
         {
-            if (e.Keysym == KeySym.Plus && e.Pressed == false)
+            // The following keys influence the framebuffer:
+            // + doubles the size of the framebuffer
+            // - custs the size of the framebuffer in half
+            // r rotates the framebuffer 90 degrees
+            // R sets the framebuffer to a _red_ screen
+            // G sets the framebuffer to a _green_ screen
+            // B sets the framebuffer to a _blue_ screen
+            // A sets the framebuffer to an _animating_ screen
+            //
+            // The R, G, B functions can be useful to make sure the individual color channels come through correctly (e.g. not swapping R/B channels)
+            // The A function can be useful to set the framerate
+            if (e.Keysym == KeySym.Plus && !e.Pressed)
             {
                 this.Width *= 2;
                 this.Height *= 2;
             }
 
-            if (e.Keysym == KeySym.Minus && e.Pressed == false)
+            if (e.Keysym == KeySym.Minus && !e.Pressed)
             {
                 this.Width /= 2;
                 this.Height /= 2;
             }
 
-            if (e.Keysym == KeySym.r && e.Pressed == false)
+            if (e.Keysym == KeySym.r && !e.Pressed)
             {
                 var temp = this.Width;
                 this.Width = this.Height;
                 this.Height = temp;
+            }
+
+            if (e.Keysym == KeySym.R && !e.Pressed)
+            {
+                this.color = Color.Red;
+            }
+
+            if (e.Keysym == KeySym.B && !e.Pressed)
+            {
+                this.color = Color.Blue;
+            }
+
+            if (e.Keysym == KeySym.G && !e.Pressed)
+            {
+                this.color = Color.Green;
+            }
+
+            if (e.Keysym == KeySym.A && !e.Pressed)
+            {
+                this.color = Color.Transparent;
             }
         }
     }
