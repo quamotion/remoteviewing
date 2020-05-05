@@ -156,11 +156,12 @@ namespace RemoteViewing.LibVnc.Interop
         }
 
         /// <summary>
-        /// Gets the pixel format.
+        /// Gets or sets the pixel format.
         /// </summary>
         public RfbPixelFormat ServerFormat
         {
             get { return Marshal.PtrToStructure<RfbPixelFormat>(this.handle + FieldOffsets[(int)RfbScreenInfoPtrField.ServerFormat]); }
+            set { Marshal.StructureToPtr<RfbPixelFormat>(value, this.handle + FieldOffsets[(int)RfbScreenInfoPtrField.ServerFormat], false); }
         }
 
         /// <summary>
