@@ -29,9 +29,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #if !NETSTANDARD2_0
 using Microsoft.Extensions.Logging;
 using System;
-using System.Collections.Generic;
 using System.Runtime.InteropServices;
-using System.Text;
 
 namespace RemoteViewing.LibVnc.Interop
 {
@@ -45,7 +43,7 @@ namespace RemoteViewing.LibVnc.Interop
         /// <summary>
         /// The name of the libvncserver library.
         /// </summary>
-        public const string ServerLibraryName = @"vncserver";
+        public const string ServerLibraryName = NativeMethods.LibraryName;
 
         /// <summary>
         /// The name of the libvnclogger library. This is the compatibility layer.
@@ -106,15 +104,22 @@ namespace RemoteViewing.LibVnc.Interop
         {
             LoggerLibrary = NativeLibrary.Load(LoggerLibraryName, typeof(NativeLogging).Assembly, null);
             LogMessage = NativeLibrary.GetExport(LoggerLibrary, "LogMessage");
-            LogMessage = NativeLibrary.GetExport(LoggerLibrary, "LogError");
+            LogError = NativeLibrary.GetExport(LoggerLibrary, "LogError");
             LogCallback = NativeLibrary.GetExport(LoggerLibrary, "logCallback");
 
             var vncServer = NativeLibrary.Load(ServerLibraryName, typeof(LibVncServer).Assembly, null);
             RfbLog = NativeLibrary.GetExport(vncServer, "rfbLog");
             RfbErr = NativeLibrary.GetExport(vncServer, "rfbErr");
 
-            Marshal.WriteIntPtr(RfbLog, NativeLogging.LogMessage);
-            Marshal.WriteIntPtr(RfbErr, NativeLogging.LogError);
+            if (RfbLog != IntPtr.Zero)
+            {
+                Marshal.WriteIntPtr(RfbLog, NativeLogging.LogMessage);
+            }
+
+            if (RfbErr != IntPtr.Zero)
+            {
+                Marshal.WriteIntPtr(RfbErr, NativeLogging.LogError);
+            }
 
             LogCallbackDelegate = new LogCallbackDelegateDefinition(RfbLogCallback);
             LogCallbackPtr = Marshal.GetFunctionPointerForDelegate(LogCallbackDelegate);
@@ -146,7 +151,7 @@ namespace RemoteViewing.LibVnc.Interop
             // Skip the terminating NULL character, and the terminating newline character
             var text = Marshal.PtrToStringAnsi(message, length - 2);
 
-            if (level == 0)
+            if (level == 1)
             {
                 Logger.LogError(text);
             }
