@@ -56,6 +56,9 @@ namespace RemoteViewing.Vnc.Server
         /// <param name="contents">
         /// The contents of the rectangle, in raw pixel format.
         /// </param>
-        public abstract void Send(Stream stream, VncPixelFormat pixelFormat, VncRectangle region, byte[] contents);
+        /// <returns>
+        /// The total number of bytes written to the wire. Used for bookkeeping.
+        /// </returns>
+        public abstract int Send(Stream stream, VncPixelFormat pixelFormat, VncRectangle region, byte[] contents);
     }
 }
