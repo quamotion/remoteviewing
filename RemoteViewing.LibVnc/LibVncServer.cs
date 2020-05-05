@@ -95,6 +95,10 @@ namespace RemoteViewing.LibVnc
             this.rfbKbdAddEventHookPtr = Marshal.GetFunctionPointerForDelegate(this.rfbKbdAddEventHook);
             this.rfbPtrAddEventProcPtr = Marshal.GetFunctionPointerForDelegate(this.rfbPtrAddEventProc);
             this.rfbPasswordCheckProcPtr = Marshal.GetFunctionPointerForDelegate(this.rfbPasswordCheckProc);
+
+#if !NETSTANDARD2_0
+            NativeLogging.Logger = logger;
+#endif
         }
 
         /// <inheritdoc/>
@@ -187,13 +191,13 @@ namespace RemoteViewing.LibVnc
                 s.Start();
                 this.UpdateFramebuffer(this.server);
                 s.Stop();
-                this.logger.LogInformation($"Updated framebuffer. Took {s.ElapsedMilliseconds} ms.");
+                this.logger.LogDebug($"Updated framebuffer. Took {s.ElapsedMilliseconds} ms.");
 
                 s.Reset();
                 s.Start();
                 NativeMethods.rfbProcessEvents(this.server, usec);
                 s.Stop();
-                this.logger.LogInformation($"Processed server events. Took {s.ElapsedMilliseconds} ms.");
+                this.logger.LogDebug($"Processed server events. Took {s.ElapsedMilliseconds} ms.");
             }
 
             this.currentFramebufferHandle.Dispose();
