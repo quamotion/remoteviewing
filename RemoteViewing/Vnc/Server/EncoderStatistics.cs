@@ -2,7 +2,6 @@
 /*
 RemoteViewing VNC Client/Server Library for .NET
 Copyright (c) 2013 James F. Bellinger <http://www.zer7.com/software/remoteviewing>
-Copyright (c) 2020 Quamotion bvba <http://quamotion.mobi>
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -27,29 +26,29 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 #endregion
 
-using System.IO;
-
 namespace RemoteViewing.Vnc.Server
 {
     /// <summary>
-    /// Represents the raw VNC encoding protocol.
+    /// Tracks the performance of an individual encoder.
     /// </summary>
-    /// <remarks>
-    /// The simplest encoding type is raw pixel data. In this case the data consists of width * height pixel values
-    /// (where width and height are the width and height of the rectangle). The values simply represent each pixel
-    /// in left-to-right scanline order.
-    /// </remarks>
-    /// <seealso href="https://github.com/rfbproto/rfbproto/blob/master/rfbproto.rst#raw-encoding"/>.
-    internal class RawEncoder : VncEncoder
+    public class EncoderStatistics
     {
-        /// <inheritdoc/>
-        public override VncEncoding Encoding => VncEncoding.Raw;
+        /// <summary>
+        /// Gets or sets the total amount of rectangles transferred.
+        /// </summary>
+        public uint Rectangles
+        { get; set; }
 
-        /// <inheritdoc/>
-        public override int Send(Stream stream, VncPixelFormat pixelFormat, VncRectangle region, byte[] contents)
-        {
-            stream.Write(contents, 0, contents.Length);
-            return contents.Length;
-        }
+        /// <summary>
+        /// Gets or sets the total number of bytes transferred, in raw format.
+        /// </summary>
+        public ulong RawBytes
+        { get; set; }
+
+        /// <summary>
+        /// Gets or sets the total number of bytes transferred, in encoded format.
+        /// </summary>
+        public ulong EncodedBytes
+        { get; set; }
     }
 }

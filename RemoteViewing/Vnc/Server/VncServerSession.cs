@@ -31,7 +31,6 @@ using System;
 using System.Buffers.Binary;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -298,6 +297,12 @@ namespace RemoteViewing.Vnc.Server
         /// Gets or sets the encoder which is currently in use.
         /// </summary>
         public VncEncoder Encoder { get; set; } = new RawEncoder();
+
+        /// <summary>
+        /// Gets performance statistics for the various encoders used by this session.
+        /// </summary>
+        public Dictionary<VncEncoding, EncoderStatistics> Statistics
+        { get; private set; } = new Dictionary<VncEncoding, EncoderStatistics>();
 
         /// <summary>
         /// Gets or sets the pixel format currently used by the client.
@@ -844,6 +849,15 @@ namespace RemoteViewing.Vnc.Server
         protected virtual void OnClosed()
         {
             this.Closed?.Invoke(this, EventArgs.Empty);
+
+            this.logger.LogInformation($"Encoder     Rectangles  Raw         Encoded     Ratio");
+
+            foreach (var stat in this.Statistics)
+            {
+                var ratio = 100.0 - (stat.Value.EncodedBytes / (double)stat.Value.RawBytes * 100);
+
+                this.logger.LogInformation($"{stat.Key,-12}{stat.Value.Rectangles,-12}{stat.Value.RawBytes,-12}{stat.Value.EncodedBytes,-12}{ratio:0.#}%");
+            }
         }
 
         /// <summary>
@@ -912,16 +926,31 @@ namespace RemoteViewing.Vnc.Server
                         this.c.SendRectangle(rectangle.Region);
                         this.c.SendUInt32BE((uint)rectangle.Encoding);
                         this.c.Send(rectangle.Contents);
+
+                        this.RecordEncoderTransfer(rectangle.Encoding, rectangle.Contents.Length, rectangle.Contents.Length);
                     }
                     else
                     {
                         this.c.SendRectangle(rectangle.Region);
                         this.c.SendUInt32BE((uint)this.Encoder.Encoding);
 
-                        this.Encoder.Send(this.c.Stream, this.clientPixelFormat, rectangle.Region, rectangle.Contents);
+                        int sent = this.Encoder.Send(this.c.Stream, this.clientPixelFormat, rectangle.Region, rectangle.Contents);
+                        this.RecordEncoderTransfer(this.Encoder.Encoding, rectangle.Contents.Length, sent);
                     }
                 }
             }
+        }
+
+        private void RecordEncoderTransfer(VncEncoding encoding, int rawLength, int encodedLength)
+        {
+            if (!this.Statistics.ContainsKey(encoding))
+            {
+                this.Statistics.Add(encoding, new EncoderStatistics());
+            }
+
+            this.Statistics[encoding].EncodedBytes += (ulong)encodedLength;
+            this.Statistics[encoding].RawBytes += (ulong)rawLength;
+            this.Statistics[encoding].Rectangles++;
         }
 
         private void ThreadMain()

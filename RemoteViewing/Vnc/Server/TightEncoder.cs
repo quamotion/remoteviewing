@@ -135,7 +135,7 @@ namespace RemoteViewing.Vnc.Server
         }
 
         /// <inheritdoc/>
-        public override void Send(Stream stream, VncPixelFormat pixelFormat, VncRectangle region, byte[] contents)
+        public override int Send(Stream stream, VncPixelFormat pixelFormat, VncRectangle region, byte[] contents)
         {
             var jpegQualityLevel = GetQualityLevel(this.VncServerSession);
 
@@ -149,11 +149,11 @@ namespace RemoteViewing.Vnc.Server
                 || contents.Length < 256
                 || jpegQualityLevel == 0)
             {
-                this.SendWithBasicCompression(stream, pixelFormat, region, contents);
+                return this.SendWithBasicCompression(stream, pixelFormat, region, contents);
             }
             else
             {
-                this.SendWithJpegCompression(stream, pixelFormat, region, contents, jpegQualityLevel);
+                return this.SendWithJpegCompression(stream, pixelFormat, region, contents, jpegQualityLevel);
             }
         }
 
@@ -175,7 +175,7 @@ namespace RemoteViewing.Vnc.Server
         /// <param name="jpegQualityLevel">
         /// The JPEG quality level to use.
         /// </param>
-        protected void SendWithJpegCompression(Stream stream, VncPixelFormat pixelFormat, VncRectangle region, byte[] contents, int jpegQualityLevel)
+        protected int SendWithJpegCompression(Stream stream, VncPixelFormat pixelFormat, VncRectangle region, byte[] contents, int jpegQualityLevel)
         {
             var subsamplingOption = TJSubsamplingOption.Chrominance420;
 
@@ -208,6 +208,8 @@ namespace RemoteViewing.Vnc.Server
 
                 stream.Write(buffer, 0, length);
                 stream.Write(buffer, 5, jpeg.Length);
+
+                return jpeg.Length + 5;
             }
             finally
             {
@@ -233,7 +235,7 @@ namespace RemoteViewing.Vnc.Server
         /// <param name="contents">
         /// A buffer holding the raw pixel data for the rectangle.
         /// </param>
-        protected void SendWithBasicCompression(Stream stream, VncPixelFormat pixelFormat, VncRectangle region, byte[] contents)
+        protected int SendWithBasicCompression(Stream stream, VncPixelFormat pixelFormat, VncRectangle region, byte[] contents)
         {
             if (contents.Length < 12)
             {
@@ -246,6 +248,8 @@ namespace RemoteViewing.Vnc.Server
                 stream.Write(encodedBuffer, 0, length);
 
                 stream.Write(contents, 0, contents.Length);
+
+                return 1 + length + contents.Length;
             }
             else
             {
@@ -306,6 +310,8 @@ namespace RemoteViewing.Vnc.Server
 
                     buffer.Position = 0;
                     buffer.CopyTo(stream);
+
+                    return (int)buffer.Length + 1;
                 }
             }
         }
