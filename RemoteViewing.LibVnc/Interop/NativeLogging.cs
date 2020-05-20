@@ -29,6 +29,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #if !NETSTANDARD2_0
 using Microsoft.Extensions.Logging;
 using System;
+using System.Reflection;
 using System.Runtime.InteropServices;
 
 namespace RemoteViewing.LibVnc.Interop
@@ -107,7 +108,11 @@ namespace RemoteViewing.LibVnc.Interop
             LogError = NativeLibrary.GetExport(LoggerLibrary, "LogError");
             LogCallback = NativeLibrary.GetExport(LoggerLibrary, "logCallback");
 
+#if !NETSTANDARD2_0
+            var vncServer = NativeMethods.ResolveDll(ServerLibraryName, typeof(LibVncServer).Assembly, null);
+#else
             var vncServer = NativeLibrary.Load(ServerLibraryName, typeof(LibVncServer).Assembly, null);
+#endif
             RfbLog = NativeLibrary.GetExport(vncServer, "rfbLog");
             RfbErr = NativeLibrary.GetExport(vncServer, "rfbErr");
 
