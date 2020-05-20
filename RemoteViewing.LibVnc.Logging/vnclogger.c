@@ -38,6 +38,7 @@
 #define DllExport   __declspec( dllexport )
 #else
 #define DllExport
+#define _GNU_SOURCE
 #endif
 
 #include <stdlib.h>
@@ -50,6 +51,7 @@ DllExport LogProc logCallback = NULL;
 
 static void Log(int level, const char* format, va_list args)
 {
+#if defined(_MSC_VER)
     int length = vsnprintf(NULL, 0, format, args) + 1;
 
     char* buffer = (char*)malloc(length * sizeof(char));
@@ -58,10 +60,23 @@ static void Log(int level, const char* format, va_list args)
     {
         vsprintf(buffer, format, args);
 
-        logCallback(level, buffer, length);
+        logCallback(level, buffer, length - 1);
 
         free(buffer);
     }
+#else
+   char* buffer = NULL;
+   int length = 0;
+
+   length = vasprintf(&buffer, format, args);
+
+   if (buffer != NULL)
+   {
+       logCallback(level, buffer, length);
+
+       free(buffer);
+   }
+#endif
 }
 
 DllExport void
@@ -71,7 +86,7 @@ LogMessage(const char* format, ...)
     va_start(args, format);
 
     Log(0, format, args);
-    
+
     va_end(args);
 }
 
@@ -82,6 +97,6 @@ LogError(const char* format, ...)
     va_start(args, format);
 
     Log(1, format, args);
-    
+
     va_end(args);
 }
