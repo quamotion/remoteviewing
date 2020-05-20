@@ -42,6 +42,30 @@ namespace RemoteViewing.LibVnc.Interop
         /// </summary>
         public const string LibraryName = @"vncserver";
 
+#if !NETSTANDARD2_0
+        /// <summary>
+        /// Initializes static members of the <see cref="NativeMethods"/> class.
+        /// </summary>
+        static NativeMethods()
+        {
+            var vncServer = NativeLibrary.Load(LibraryName, typeof(NativeMethods).Assembly, null);
+
+            // rfbDefaultSetDesktopSize was introduced in version https://github.com/LibVNC/libvncserver/commit/8e41510f4a9d449dd228e5b3e29732882f7f5df6,
+            // after 0.9.12 was cut.
+            IsVersion_0_9_13_OrNewer = NativeLibrary.TryGetExport(vncServer, "rfbSendExtDesktopSize", out IntPtr _);
+        }
+#endif
+
+        /// <summary>
+        /// Gets a value indicating whether the server is running version 0.9.13 or newer of libvncserver.
+        /// </summary>
+        /// <value>
+        /// <see langword="true"/> if the server is running version 0.9.13 or newer of libvncserver;
+        /// otherwise, <see langword="false"/>.
+        /// </value>
+        public static bool IsVersion_0_9_13_OrNewer
+        { get; private set; }
+
         /// <summary>
         /// The calling convention used by the libvncserver library.
         /// </summary>

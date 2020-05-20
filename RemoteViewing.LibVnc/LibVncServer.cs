@@ -255,7 +255,11 @@ namespace RemoteViewing.LibVnc
             var minor = client.ProtocolMinorVersion;
 
             client.ClientGoneHook = this.clientGoneHookPtr;
-            client.ClientFramebufferUpdateRequestHook = this.clientFramebufferUpdateRequestHookPtr;
+
+            if (NativeMethods.IsVersion_0_9_13_OrNewer)
+            {
+                client.ClientFramebufferUpdateRequestHook = this.clientFramebufferUpdateRequestHookPtr;
+            }
 
             this.Connected?.Invoke(this, EventArgs.Empty);
 

@@ -252,8 +252,25 @@ namespace RemoteViewing.LibVnc.Interop
         /// </summary>
         public IntPtr ClientFramebufferUpdateRequestHook
         {
-            get { return Marshal.ReadIntPtr(this.handle, FieldOffsets[(int)RfbClientRecPtrField.ClientFramebufferUpdateRequestHook]); }
-            set { Marshal.WriteIntPtr(this.handle, FieldOffsets[(int)RfbClientRecPtrField.ClientFramebufferUpdateRequestHook], value); }
+            get
+            {
+                if (!NativeMethods.IsVersion_0_9_13_OrNewer)
+                {
+                    throw new InvalidOperationException("ClientFramebufferUpdateRequestHook is available on libvncserver 0.9.13 or newer only.");
+                }
+
+                return Marshal.ReadIntPtr(this.handle, FieldOffsets[(int)RfbClientRecPtrField.ClientFramebufferUpdateRequestHook]);
+            }
+
+            set
+            {
+                if (!NativeMethods.IsVersion_0_9_13_OrNewer)
+                {
+                    throw new InvalidOperationException("ClientFramebufferUpdateRequestHook is available on libvncserver 0.9.13 or newer only.");
+                }
+
+                Marshal.WriteIntPtr(this.handle, FieldOffsets[(int)RfbClientRecPtrField.ClientFramebufferUpdateRequestHook], value);
+            }
         }
 
         /// <inheritdoc/>
