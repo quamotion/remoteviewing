@@ -148,8 +148,8 @@ namespace RemoteViewing.LibVnc.Interop
                 return;
             }
 
-            // Skip the terminating NULL character, and the terminating newline character
-            var text = Marshal.PtrToStringAnsi(message, length - 2);
+            // Skip the terminating terminating newline character
+            var text = Marshal.PtrToStringAnsi(message, length - 1);
 
             if (level == 1)
             {
