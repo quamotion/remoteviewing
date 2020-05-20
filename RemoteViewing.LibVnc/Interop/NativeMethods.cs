@@ -52,7 +52,7 @@ namespace RemoteViewing.LibVnc.Interop
 
             // rfbDefaultSetDesktopSize was introduced in version https://github.com/LibVNC/libvncserver/commit/8e41510f4a9d449dd228e5b3e29732882f7f5df6,
             // after 0.9.12 was cut.
-            IsVersion_0_9_13_OrNewer = NativeLibrary.GetExport(vncServer, "rfbDefaultSetDesktopSize") != IntPtr.Zero;
+            IsVersion_0_9_13_OrNewer = NativeLibrary.TryGetExport(vncServer, "rfbSendExtDesktopSize", out IntPtr _);
         }
 #endif
 
