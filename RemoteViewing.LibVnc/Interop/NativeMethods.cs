@@ -28,6 +28,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 using RemoteViewing.Vnc;
 using System;
+using System.Reflection;
 using System.Runtime.InteropServices;
 
 namespace RemoteViewing.LibVnc.Interop
@@ -48,11 +49,57 @@ namespace RemoteViewing.LibVnc.Interop
         /// </summary>
         static NativeMethods()
         {
-            var vncServer = NativeLibrary.Load(LibraryName, typeof(NativeMethods).Assembly, null);
+            NativeLibrary.SetDllImportResolver(typeof(NativeMethods).Assembly, ResolveDll);
+            var nativeLibrary = ResolveDll(LibraryName, typeof(NativeMethods).Assembly, null);
 
             // rfbDefaultSetDesktopSize was introduced in version https://github.com/LibVNC/libvncserver/commit/8e41510f4a9d449dd228e5b3e29732882f7f5df6,
             // after 0.9.12 was cut.
-            IsVersion_0_9_13_OrNewer = NativeLibrary.TryGetExport(vncServer, "rfbSendExtDesktopSize", out IntPtr _);
+            IsVersion_0_9_13_OrNewer = NativeLibrary.TryGetExport(nativeLibrary, "rfbSendExtDesktopSize", out IntPtr _);
+        }
+
+        public static IntPtr ResolveDll(string libraryName, Assembly assembly, DllImportSearchPath? searchPath)
+        {
+            IntPtr lib = IntPtr.Zero;
+
+            if (libraryName == LibraryName)
+            {
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+                {
+                    // Various Unix package managers have chosen different names for the "libvncserver" shared library.
+                    if (NativeLibrary.TryLoad("libvncserver.so.1", assembly, default, out lib))
+                    {
+                        return lib;
+                    }
+
+                    if (NativeLibrary.TryLoad("libvncserver.so.0", assembly, default, out lib))
+                    {
+                        return lib;
+                    }
+
+                    if (NativeLibrary.TryLoad("libvncserver.so", assembly, default, out lib))
+                    {
+                        return lib;
+                    }
+                }
+                else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+                {
+                    if (NativeLibrary.TryLoad("libvncserver.dylib", assembly, default, out lib))
+                    {
+                        return lib;
+                    }
+                }
+                else if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                {
+                    if (NativeLibrary.TryLoad("vncserver.dll", assembly, default, out lib))
+                    {
+                        return lib;
+                    }
+                }
+            }
+            
+            // This function may return a null handle. If it does, individual functions loaded from it will throw a DllNotFoundException,
+            // but not until an attempt is made to actually use the function (rather than load it). This matches how PInvokes behave.
+            return lib;
         }
 #endif
 
