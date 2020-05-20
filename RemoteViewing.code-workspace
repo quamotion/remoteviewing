@@ -1,0 +1,20 @@
+{
+	"folders": [
+		{
+			"path": "RemoteViewing"
+		},
+		{
+			"path": "RemoteViewing.LibVnc"
+		},
+		{
+			"path": "RemoteViewing.ServerExample"
+		},
+		{
+			"path": "RemoteViewing.LibVnc.Tests"
+		},
+		{
+			"path": "RemoteViewing.LibVnc.Logging"
+		}
+	],
+	"settings": {}
+}
