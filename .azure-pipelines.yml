@@ -2,7 +2,7 @@ variables:
   # At the moment, we're building from git master.  This version has better support for (cross-)compiling
   # for Windows.
   # When 0.9.13 is released, we can probably start building off released versions.
-  LIBVNC_VERSION: "0.9.12"
+  LIBVNC_VERSION: "0.9.13"
 
 jobs:
 
@@ -63,7 +63,7 @@ jobs:
     vmImage: windows-2019
   steps:
   - script: |
-      git clone --depth 1 https://github.com/LibVNC/libvncserver/
+      git clone --branch LibVNCServer-$(LIBVNC_VERSION) --depth 1 https://github.com/LibVNC/libvncserver/
     displayName: Clone LibVNCServer
   - task: Cache@2
     inputs:
