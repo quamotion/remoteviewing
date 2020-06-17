@@ -59,7 +59,7 @@ namespace RemoteViewing.ServerExample
 
         public static void Main(string[] args)
         {
-            Console.WriteLine($"64-bit: {Environment.Is64BitProcess}");
+            Console.WriteLine($"64-bit: {Environment.Is64BitProcess}. PID {System.Diagnostics.Process.GetCurrentProcess().Id}");
 
             Console.WriteLine("Listening on local port 5900.");
             Console.WriteLine("Try to connect! The password is: {0}", password);
