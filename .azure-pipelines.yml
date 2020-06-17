@@ -84,7 +84,7 @@ jobs:
   - script: |
       mkdir build
       cd build
-      cmake -DCMAKE_TOOLCHAIN_FILE=%VCPKG_INSTALLATION_ROOT%/scripts/buildsystems/vcpkg.cmake -DBUILD_SHARED_LIBS=ON -DCMAKE_INSTALL_PREFIX=$(Build.ArtifactStagingDirectory)/$(rid) ../libvncserver/ -A $(arch)
+      cmake -DCMAKE_TOOLCHAIN_FILE=%VCPKG_INSTALLATION_ROOT%/scripts/buildsystems/vcpkg.cmake -DBUILD_SHARED_LIBS=ON -DWITH_OPENSSL=OFF -DWITH_GCRYPT=OFF -DCMAKE_INSTALL_PREFIX=$(Build.ArtifactStagingDirectory)/$(rid) ../libvncserver/ -A $(arch)
     displayName: Configure LibVNC
   - script: |
       cmake --build . --target vncserver --config Release
