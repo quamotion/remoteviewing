@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFrameworks>net45;netstandard2.0</TargetFrameworks>
     
     <Description>RemoteViewing.LibVnc.NativeBinaries contains the native libvnc binaries, compiled for Windows and macOS.</Description>
     <AssemblyTitle>RemoteViewing.LibVnc - A .NET VNC server library.</AssemblyTitle>

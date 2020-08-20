@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.0;netcoreapp3.0</TargetFrameworks>
+    <TargetFrameworks>net45;netstandard2.0;netcoreapp3.0</TargetFrameworks>
     
     <Description>RemoteViewing.LibVnc is a .NET  VNC server library, which wraps around libvncserver.</Description>
     <AssemblyTitle>RemoteViewing.LibVnc - A .NET VNC server library.</AssemblyTitle>

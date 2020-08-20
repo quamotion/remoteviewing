@@ -43,7 +43,7 @@ namespace RemoteViewing.LibVnc.Interop
         /// </summary>
         public const string LibraryName = @"vncserver";
 
-#if !NETSTANDARD2_0
+#if !NETSTANDARD2_0 && !NET45
         /// <summary>
         /// Initializes static members of the <see cref="NativeMethods"/> class.
         /// </summary>
