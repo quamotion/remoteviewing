@@ -26,7 +26,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 #endregion
 
-#if NET461
+#if NET45
 using RemoteViewing.Vnc;
 using System;
 using System.Collections.Generic;

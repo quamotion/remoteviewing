@@ -578,7 +578,7 @@ namespace RemoteViewing.Vnc.Server
                         }
                         catch (Exception exc)
                         {
-                            this.logger?.LogError(exc, $"Capturing the framebuffer source failed: {exc}.");
+                            this.logger?.LogError(new EventId(2), exc, $"Capturing the framebuffer source failed: {exc}.");
                         }
                     }
 
@@ -983,7 +983,7 @@ namespace RemoteViewing.Vnc.Server
             }
             catch (Exception exception)
             {
-                this.logger?.LogError(exception, $"VNC server session stopped due to: {exception.Message}");
+                this.logger?.LogError(new EventId(1), exception, $"VNC server session stopped due to: {exception.Message}");
             }
 
             this.requester.Stop();

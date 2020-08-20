@@ -160,8 +160,8 @@ namespace RemoteViewing.LibVnc.Interop
         /// </summary>
         public RfbPixelFormat ServerFormat
         {
-            get { return Marshal.PtrToStructure<RfbPixelFormat>(this.handle + FieldOffsets[(int)RfbScreenInfoPtrField.ServerFormat]); }
-            set { Marshal.StructureToPtr<RfbPixelFormat>(value, this.handle + FieldOffsets[(int)RfbScreenInfoPtrField.ServerFormat], false); }
+            get { return (RfbPixelFormat)Marshal.PtrToStructure(this.handle + FieldOffsets[(int)RfbScreenInfoPtrField.ServerFormat], typeof(RfbPixelFormat)); }
+            set { Marshal.StructureToPtr(value, this.handle + FieldOffsets[(int)RfbScreenInfoPtrField.ServerFormat], false); }
         }
 
         /// <summary>
