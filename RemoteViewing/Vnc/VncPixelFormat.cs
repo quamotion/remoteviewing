@@ -74,7 +74,7 @@ namespace RemoteViewing.Vnc
                 throw new ArgumentOutOfRangeException(nameof(bitsPerPixel));
             }
 
-            if (bitDepth != 6 && bitDepth != 24)
+            if (bitDepth != 6 && bitDepth != 24 && bitDepth != 32)
             {
                 throw new ArgumentOutOfRangeException(nameof(bitDepth));
             }
@@ -473,6 +473,12 @@ namespace RemoteViewing.Vnc
             var redShift = buffer[offset + 10];
             var greenShift = buffer[offset + 11];
             var blueShift = buffer[offset + 12];
+
+            // treat 32 bit depth as 24 bits
+            if (depth == 32)
+            {
+                depth = 24;
+            }
 
             return new VncPixelFormat(
                 bitsPerPixel,
