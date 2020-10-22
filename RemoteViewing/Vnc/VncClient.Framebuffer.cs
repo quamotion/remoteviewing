@@ -65,8 +65,10 @@ namespace RemoteViewing.Vnc
             {
                 var r = this.c.ReceiveRectangle();
                 int x = r.X, y = r.Y, w = r.Width, h = r.Height;
-                VncStream.SanityCheck(w > 0 && w < 0x8000);
-                VncStream.SanityCheck(h > 0 && h < 0x8000);
+
+                // we could receive 0,0 on an update rectangle with a "pseudo-encoding"
+                VncStream.SanityCheck(w >= 0 && w < 0x8000);
+                VncStream.SanityCheck(h >= 0 && h < 0x8000);
 
                 int fbW = this.Framebuffer.Width, fbH = this.Framebuffer.Height, bpp = this.Framebuffer.PixelFormat.BytesPerPixel;
                 var inRange = w <= fbW && h <= fbH && x <= fbW - w && y <= fbH - h;
@@ -262,6 +264,10 @@ namespace RemoteViewing.Vnc
                     case VncEncoding.PseudoDesktopSize:
                         this.Framebuffer = new VncFramebuffer(this.Framebuffer.Name, w, h, this.Framebuffer.PixelFormat);
                         continue; // Don't call OnFramebufferChanged for this one.
+
+                    case VncEncoding.PseudoCursor:
+                        // client requesting the Cursor pseudo-encoding
+                        continue;
 
                     default:
                         VncStream.Require(
