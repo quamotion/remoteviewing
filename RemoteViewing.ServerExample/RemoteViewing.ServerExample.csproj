@@ -16,9 +16,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="StyleCop.Analyzers" Version="1.1.118" PrivateAssets="All" />
-    <PackageReference Include="Nerdbank.GitVersioning" Version="3.4.231" PrivateAssets="All" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="2.1.0" />
     <PackageReference Include="Quamotion.RemoteViewing.LibVnc.NativeBinaries" Version="1.1.117" PrivateAssets="All" />
   </ItemGroup>
 
