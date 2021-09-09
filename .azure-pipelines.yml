@@ -13,19 +13,16 @@ jobs:
     vmImage: 'macOS-10.14'
   steps:
   - script: |
-      wget -nv -nc https://github.com/LibVNC/libvncserver/archive/LibVNCServer-$(LIBVNC_VERSION).tar.gz -O LibVNCServer-$(LIBVNC_VERSION).tar.gz
-      tar xzf LibVNCServer-$(LIBVNC_VERSION).tar.gz
-    condition: false
-    displayName: Download LibVNCServer
-  - script: |
       git clone --depth 1 --branch LibVNCServer-$(LIBVNC_VERSION) https://github.com/LibVNC/libvncserver/
+      git show
     displayName: Clone LibVNCServer
   - script: |
       mkdir build
       cd build
-      cmake -DBUILD_SHARED_LIBS=ON -DCMAKE_INSTALL_PREFIX=$(Build.ArtifactStagingDirectory)/$(rid) ../libvncserver/
+      cmake -DBUILD_SHARED_LIBS=ON -DCMAKE_INSTALL_PREFIX=$(Build.ArtifactStagingDirectory)/$(rid) -DWITH_OPENSSL=OFF -DWITH_GCRYPT=OFF ../libvncserver/
     displayName: Configure LibVNC
   - script: |
+      cmake --build .
       make install
     workingDirectory: build
     displayName: Compile LibVNC
@@ -64,6 +61,7 @@ jobs:
   steps:
   - script: |
       git clone --branch LibVNCServer-$(LIBVNC_VERSION) --depth 1 https://github.com/LibVNC/libvncserver/
+      git show
     displayName: Clone LibVNCServer
   - task: Cache@2
     inputs:
@@ -111,7 +109,7 @@ jobs:
 
 - job: native_unix
   pool:
-    vmImage: ubuntu-16.04
+    vmImage: ubuntu-20.04
   variables:
     rid: linux-x64
   container:
@@ -148,6 +146,7 @@ jobs:
   dependsOn:
   - native_windows
   - native_macos
+  - native_unix
   steps:
   - task: DownloadBuildArtifacts@0
     inputs:
