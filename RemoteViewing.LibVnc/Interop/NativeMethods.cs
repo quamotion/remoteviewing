@@ -43,6 +43,11 @@ namespace RemoteViewing.LibVnc.Interop
         /// </summary>
         public const string LibraryName = @"vncserver";
 
+        /// <summary>
+        /// The calling convention used by the libvncserver library.
+        /// </summary>
+        public const CallingConvention LibraryCallingConvention = CallingConvention.Cdecl;
+
 #if !NETSTANDARD2_0 && !NET45
         /// <summary>
         /// Initializes static members of the <see cref="NativeMethods"/> class.
@@ -54,71 +59,11 @@ namespace RemoteViewing.LibVnc.Interop
 
             // rfbDefaultSetDesktopSize was introduced in version https://github.com/LibVNC/libvncserver/commit/8e41510f4a9d449dd228e5b3e29732882f7f5df6,
             // after 0.9.12 was cut.
-            IsVersion_0_9_13_OrNewer = 
+            IsVersion_0_9_13_OrNewer =
                 nativeLibrary != IntPtr.Zero
                 && NativeLibrary.TryGetExport(nativeLibrary, "rfbSendExtDesktopSize", out IntPtr _);
         }
-
-        public static IntPtr ResolveDll(string libraryName, Assembly assembly, DllImportSearchPath? searchPath)
-        {
-            IntPtr lib = IntPtr.Zero;
-
-            if (libraryName == LibraryName)
-            {
-                if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-                {
-                    // Various Unix package managers have chosen different names for the "libvncserver" shared library.
-                    if (NativeLibrary.TryLoad("libvncserver.so.1", assembly, default, out lib))
-                    {
-                        return lib;
-                    }
-
-                    if (NativeLibrary.TryLoad("libvncserver.so.0", assembly, default, out lib))
-                    {
-                        return lib;
-                    }
-
-                    if (NativeLibrary.TryLoad("libvncserver.so", assembly, default, out lib))
-                    {
-                        return lib;
-                    }
-                }
-                else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-                {
-                    if (NativeLibrary.TryLoad("libvncserver.dylib", assembly, default, out lib))
-                    {
-                        return lib;
-                    }
-                }
-                else if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-                {
-                    if (NativeLibrary.TryLoad("vncserver.dll", assembly, default, out lib))
-                    {
-                        return lib;
-                    }
-                }
-            }
-            
-            // This function may return a null handle. If it does, individual functions loaded from it will throw a DllNotFoundException,
-            // but not until an attempt is made to actually use the function (rather than load it). This matches how PInvokes behave.
-            return lib;
-        }
 #endif
-
-        /// <summary>
-        /// Gets a value indicating whether the server is running version 0.9.13 or newer of libvncserver.
-        /// </summary>
-        /// <value>
-        /// <see langword="true"/> if the server is running version 0.9.13 or newer of libvncserver;
-        /// otherwise, <see langword="false"/>.
-        /// </value>
-        public static bool IsVersion_0_9_13_OrNewer
-        { get; private set; }
-
-        /// <summary>
-        /// The calling convention used by the libvncserver library.
-        /// </summary>
-        public const CallingConvention LibraryCallingConvention = CallingConvention.Cdecl;
 
         /// <summary>
         /// A delegate which is invoked when a new client connects to a server.
@@ -255,6 +200,64 @@ namespace RemoteViewing.LibVnc.Interop
         /// <see langword="true"/> if the password is correct; otherwise, <see langword="true"/>.
         /// </returns>
         public delegate bool rfbPasswordCheckProcPtr(IntPtr cl, sbyte* encryptedPassWord, int len);
+
+        /// <summary>
+        /// Gets a value indicating whether the server is running version 0.9.13 or newer of libvncserver.
+        /// </summary>
+        /// <value>
+        /// <see langword="true"/> if the server is running version 0.9.13 or newer of libvncserver;
+        /// otherwise, <see langword="false"/>.
+        /// </value>
+        public static bool IsVersion_0_9_13_OrNewer
+        { get; private set; }
+
+#if !NETSTANDARD2_0 && !NET45
+
+        public static IntPtr ResolveDll(string libraryName, Assembly assembly, DllImportSearchPath? searchPath)
+        {
+            IntPtr lib = IntPtr.Zero;
+
+            if (libraryName == LibraryName)
+            {
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+                {
+                    // Various Unix package managers have chosen different names for the "libvncserver" shared library.
+                    if (NativeLibrary.TryLoad("libvncserver.so.1", assembly, default, out lib))
+                    {
+                        return lib;
+                    }
+
+                    if (NativeLibrary.TryLoad("libvncserver.so.0", assembly, default, out lib))
+                    {
+                        return lib;
+                    }
+
+                    if (NativeLibrary.TryLoad("libvncserver.so", assembly, default, out lib))
+                    {
+                        return lib;
+                    }
+                }
+                else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+                {
+                    if (NativeLibrary.TryLoad("libvncserver.dylib", assembly, default, out lib))
+                    {
+                        return lib;
+                    }
+                }
+                else if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                {
+                    if (NativeLibrary.TryLoad("vncserver.dll", assembly, default, out lib))
+                    {
+                        return lib;
+                    }
+                }
+            }
+
+            // This function may return a null handle. If it does, individual functions loaded from it will throw a DllNotFoundException,
+            // but not until an attempt is made to actually use the function (rather than load it). This matches how PInvokes behave.
+            return lib;
+        }
+#endif
 
         /// <summary>
         /// Initialises a server structure.

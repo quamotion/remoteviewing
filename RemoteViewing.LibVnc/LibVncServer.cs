@@ -211,40 +211,6 @@ namespace RemoteViewing.LibVnc
             this.currentFramebuffer.Dispose();
         }
 
-        private void UpdateFramebuffer(RfbScreenInfoPtr server)
-        {
-            Stopwatch s = new Stopwatch();
-            s.Start();
-            var fb = this.fbSource.Capture();
-
-            if (fb.Width != server.Width || fb.Height != server.Height)
-            {
-                // TODO: This should only be necessary if the current framebuffer is not large enough.
-                var oldFramebufferHandle = this.currentFramebufferHandle;
-                var oldFramebuffer = this.currentFramebuffer;
-
-                this.currentFramebuffer = this.memoryPool.Rent(fb.Width * fb.Height * 4);
-                this.currentFramebufferHandle = this.currentFramebuffer.Memory.Pin();
-
-                if (fb.PixelFormat != VncPixelFormat.RGB32)
-                {
-                    this.logger.LogWarning($"The pixel format {fb.PixelFormat} is not supported");
-                }
-
-                fb.GetBuffer().CopyTo(this.currentFramebuffer.Memory);
-
-                NativeMethods.rfbNewFramebuffer(server, this.currentFramebufferHandle.Pointer, fb.Width, fb.Height, fb.PixelFormat.BlueBits, 3, fb.PixelFormat.BytesPerPixel);
-
-                oldFramebufferHandle.Dispose();
-                oldFramebuffer.Dispose();
-            }
-            else
-            {
-                fb.GetBuffer().CopyTo(this.currentFramebuffer.Memory);
-                NativeMethods.rfbMarkRectAsModified(server, 0, 0, fb.Width, fb.Height);
-            }
-        }
-
         protected virtual RfbNewClientAction RfbNewClientHook(IntPtr cl)
         {
             RfbClientRecPtr client = new RfbClientRecPtr(cl, false);
@@ -318,6 +284,40 @@ namespace RemoteViewing.LibVnc
             this.PasswordProvided?.Invoke(this, e);
 
             return e.IsAuthenticated;
+        }
+
+        private void UpdateFramebuffer(RfbScreenInfoPtr server)
+        {
+            Stopwatch s = new Stopwatch();
+            s.Start();
+            var fb = this.fbSource.Capture();
+
+            if (fb.Width != server.Width || fb.Height != server.Height)
+            {
+                // TODO: This should only be necessary if the current framebuffer is not large enough.
+                var oldFramebufferHandle = this.currentFramebufferHandle;
+                var oldFramebuffer = this.currentFramebuffer;
+
+                this.currentFramebuffer = this.memoryPool.Rent(fb.Width * fb.Height * 4);
+                this.currentFramebufferHandle = this.currentFramebuffer.Memory.Pin();
+
+                if (fb.PixelFormat != VncPixelFormat.RGB32)
+                {
+                    this.logger.LogWarning($"The pixel format {fb.PixelFormat} is not supported");
+                }
+
+                fb.GetBuffer().CopyTo(this.currentFramebuffer.Memory);
+
+                NativeMethods.rfbNewFramebuffer(server, this.currentFramebufferHandle.Pointer, fb.Width, fb.Height, fb.PixelFormat.BlueBits, 3, fb.PixelFormat.BytesPerPixel);
+
+                oldFramebufferHandle.Dispose();
+                oldFramebuffer.Dispose();
+            }
+            else
+            {
+                fb.GetBuffer().CopyTo(this.currentFramebuffer.Memory);
+                NativeMethods.rfbMarkRectAsModified(server, 0, 0, fb.Width, fb.Height);
+            }
         }
     }
 }

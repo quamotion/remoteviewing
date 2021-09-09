@@ -96,8 +96,6 @@ namespace RemoteViewing.LibVnc.Interop
         /// </summary>
         public static readonly IntPtr LogCallbackPtr;
 
-        public static ILogger Logger;
-
         /// <summary>
         /// Initializes static members of the <see cref="NativeLogging"/> class.
         /// </summary>
@@ -145,6 +143,8 @@ namespace RemoteViewing.LibVnc.Interop
         /// </param>
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         public delegate void LogCallbackDelegateDefinition(int level, IntPtr message, int length);
+
+        public static ILogger Logger { get; set; }
 
         private static void RfbLogCallback(int level, IntPtr message, int length)
         {
