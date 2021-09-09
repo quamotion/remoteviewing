@@ -31,6 +31,16 @@
       <Pack>true</Pack>
     </Content>
 
+    <Content Include="$(SYSTEM_ARTIFACTSDIRECTORY)/libvnc/osx-x64/lib/libpng16.16.dylib">
+      <PackagePath>runtimes/osx-64/native/%(Filename)%(Extension)</PackagePath>
+      <Pack>true</Pack>
+    </Content>
+
+    <Content Include="$(SYSTEM_ARTIFACTSDIRECTORY)/libvnc/osx-x64/lib/libjpeg.9.dylib">
+      <PackagePath>runtimes/osx-64/native/%(Filename)%(Extension)</PackagePath>
+      <Pack>true</Pack>
+    </Content>
+
     <Content Include="$(SYSTEM_ARTIFACTSDIRECTORY)/libvnc/win7-x64/*.dll">
       <PackagePath>runtimes/win7-x64/native/%(Filename)%(Extension)</PackagePath>
       <Pack>true</Pack>

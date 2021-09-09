@@ -19,7 +19,7 @@ jobs:
   - script: |
       mkdir build
       cd build
-      cmake -DBUILD_SHARED_LIBS=ON -DCMAKE_INSTALL_PREFIX=$(Build.ArtifactStagingDirectory)/$(rid) -DWITH_OPENSSL=OFF -DWITH_GCRYPT=OFF ../libvncserver/
+      cmake -DBUILD_SHARED_LIBS=ON -DCMAKE_INSTALL_PREFIX=$(Build.ArtifactStagingDirectory)/$(rid) -DWITH_OPENSSL=OFF -DWITH_GCRYPT=OFF -DWITH_GNUTLS=OFF ../libvncserver/
     displayName: Configure LibVNC
   - script: |
       cmake --build .
@@ -38,6 +38,16 @@ jobs:
       cp *.dylib $(Build.ArtifactStagingDirectory)/$(rid)/lib/
     workingDirectory: '$(Build.SourcesDirectory)/RemoteViewing.LibVnc.Logging'
     displayName: Build vnclogger
+  - script : |
+      cp /usr/local/opt/jpeg/lib/libjpeg.9.dylib .
+      cp /usr/local/opt/libpng/lib/libpng16.16.dylib .
+
+      install_name_tool -change /usr/local/opt/jpeg/lib/libjpeg.9.dylib @loader_path/libjpeg.9.dylib libvncserver.dylib
+      install_name_tool -change /usr/local/opt/libpng/lib/libpng16.16.dylib @loader_path/libpng16.16.dylib libvncserver.dylib
+
+      otool -L libvncserver.dylib
+    workingDirectory: '$(Build.ArtifactStagingDirectory)/$(rid)/lib'
+    displayName: Copy additional dependencies
   - task: PublishBuildArtifacts@1
     inputs:
       pathtoPublish: '$(Build.ArtifactStagingDirectory)'
@@ -82,7 +92,7 @@ jobs:
   - script: |
       mkdir build
       cd build
-      cmake -DCMAKE_TOOLCHAIN_FILE=%VCPKG_INSTALLATION_ROOT%/scripts/buildsystems/vcpkg.cmake -DBUILD_SHARED_LIBS=ON -DWITH_OPENSSL=OFF -DWITH_GCRYPT=OFF -DCMAKE_INSTALL_PREFIX=$(Build.ArtifactStagingDirectory)/$(rid) ../libvncserver/ -A $(arch)
+      cmake -DCMAKE_TOOLCHAIN_FILE=%VCPKG_INSTALLATION_ROOT%/scripts/buildsystems/vcpkg.cmake -DBUILD_SHARED_LIBS=ON -DWITH_OPENSSL=OFF -DWITH_GCRYPT=OFF -DWITH_GNUTLS=OFF -DCMAKE_INSTALL_PREFIX=$(Build.ArtifactStagingDirectory)/$(rid) ../libvncserver/ -A $(arch)
     displayName: Configure LibVNC
   - script: |
       cmake --build . --target vncserver --config Release
