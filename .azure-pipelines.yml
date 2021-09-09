@@ -18,7 +18,7 @@ jobs:
     condition: false
     displayName: Download LibVNCServer
   - script: |
-      git clone --depth 1 https://github.com/LibVNC/libvncserver/
+      git clone --depth 1 --branch LibVNCServer-$(LIBVNC_VERSION) https://github.com/LibVNC/libvncserver/
     displayName: Clone LibVNCServer
   - script: |
       mkdir build
