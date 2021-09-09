@@ -1,0 +1,7 @@
+<Project ToolsVersion="15.0">
+  <ItemGroup Condition="!$(MSBuildProjectName.Contains('.Test'))">
+    <PackageReference Include="Nerdbank.GitVersioning" Version="3.4.231" PrivateAssets="all" />
+    <PackageReference Include="StyleCop.Analyzers" Version="1.1.118" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="All" />
+  </ItemGroup>
+</Project>
