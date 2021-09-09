@@ -101,13 +101,13 @@ namespace RemoteViewing.LibVnc.Interop
         /// </summary>
         static NativeLogging()
         {
-            LoggerLibrary = NativeLibrary.Load(LoggerLibraryName, typeof(NativeLogging).Assembly, null);
+            LoggerLibrary = NativeLibraryLoader.ResolveDll(LoggerLibraryName, typeof(NativeLogging).Assembly, null);
             LogMessage = NativeLibrary.GetExport(LoggerLibrary, "LogMessage");
             LogError = NativeLibrary.GetExport(LoggerLibrary, "LogError");
             LogCallback = NativeLibrary.GetExport(LoggerLibrary, "logCallback");
 
 #if !NETSTANDARD2_0
-            var vncServer = NativeMethods.ResolveDll(ServerLibraryName, typeof(LibVncServer).Assembly, null);
+            var vncServer = NativeLibraryLoader.ResolveDll(ServerLibraryName, typeof(LibVncServer).Assembly, null);
 #else
             var vncServer = NativeLibrary.Load(ServerLibraryName, typeof(LibVncServer).Assembly, null);
 #endif
