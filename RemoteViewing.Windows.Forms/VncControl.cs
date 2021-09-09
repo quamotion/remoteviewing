@@ -89,11 +89,11 @@ namespace RemoteViewing.Windows.Forms
         private enum TransformDirection
         {
             FromDevice,
-            ToDevice
+            ToDevice,
         }
 
         /// <summary>
-        /// Gets or sets a value indicating whether the local cursor is shown, when showing the remote cursor is activated. (false by default)
+        /// Gets or sets a value indicating whether the local cursor is shown, when showing the remote cursor is activated. This value is <see langword="false"/>.
         /// </summary>
         public bool HideLocalCursor { get; set; } = true;
 

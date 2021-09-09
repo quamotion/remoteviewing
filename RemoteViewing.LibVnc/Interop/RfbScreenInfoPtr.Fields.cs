@@ -79,6 +79,7 @@ namespace RemoteViewing.LibVnc.Interop
             RfbType.Int, // authPasswdFirstViewOnly,
             RfbType.Int, // maxRectsPerUpdate,
             RfbType.Int, // deferUpdateTime,
+
             // RfbType.Skip, // screen
             RfbType.Bool, // alwaysShared,
             RfbType.Bool, // neverShared,

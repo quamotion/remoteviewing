@@ -42,21 +42,6 @@ namespace RemoteViewing.ServerExample
     {
         private static string password = "test";
 
-        private static void HandleConnected(object sender, EventArgs e)
-        {
-            Console.WriteLine("Connected");
-        }
-
-        private static void HandleClosed(object sender, EventArgs e)
-        {
-            Console.WriteLine("Closed");
-        }
-
-        private static void HandlePasswordProvided(object sender, PasswordProvidedEventArgs e)
-        {
-            e.Accept(password.ToCharArray());
-        }
-
         public static void Main(string[] args)
         {
             Console.WriteLine($"64-bit: {Environment.Is64BitProcess}. PID {System.Diagnostics.Process.GetCurrentProcess().Id}");
@@ -75,6 +60,21 @@ namespace RemoteViewing.ServerExample
                 Console.WriteLine("Hit ENTER to exit");
                 Console.ReadLine();
             }
+        }
+
+        private static void HandleConnected(object sender, EventArgs e)
+        {
+            Console.WriteLine("Connected");
+        }
+
+        private static void HandleClosed(object sender, EventArgs e)
+        {
+            Console.WriteLine("Closed");
+        }
+
+        private static void HandlePasswordProvided(object sender, PasswordProvidedEventArgs e)
+        {
+            e.Accept(password.ToCharArray());
         }
 
         private static IVncServer GetServer(bool useManaged)

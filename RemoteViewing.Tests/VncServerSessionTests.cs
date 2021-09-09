@@ -39,6 +39,33 @@ namespace RemoteViewing.Tests
 {
     public class VncServerSessionTests
     {
+        public static IEnumerable<object[]> NegotiateVersionBoth38TestData()
+        {
+            yield return new object[]
+            {
+                null,
+                AuthenticationMethod.None,
+            };
+
+            yield return new object[]
+            {
+                new VncServerSessionOptions()
+                {
+                    AuthenticationMethod = AuthenticationMethod.Password,
+                },
+                AuthenticationMethod.Password,
+            };
+
+            yield return new object[]
+            {
+                new VncServerSessionOptions()
+                {
+                    AuthenticationMethod = AuthenticationMethod.None,
+                },
+                AuthenticationMethod.None,
+            };
+        }
+
         [Fact]
         public void FramebufferSendChangesTest()
         {
@@ -70,33 +97,6 @@ namespace RemoteViewing.Tests
             session.FramebufferSendChanges();
 
             Assert.Equal(framebuffer, session.Framebuffer);
-        }
-
-        public static IEnumerable<object[]> NegotiateVersionBoth38TestData()
-        {
-            yield return new object[]
-            {
-                null,
-                AuthenticationMethod.None,
-            };
-
-            yield return new object[]
-            {
-                new VncServerSessionOptions()
-                {
-                    AuthenticationMethod = AuthenticationMethod.Password,
-                },
-                AuthenticationMethod.Password,
-            };
-
-            yield return new object[]
-            {
-                new VncServerSessionOptions()
-                {
-                    AuthenticationMethod = AuthenticationMethod.None,
-                },
-                AuthenticationMethod.None,
-            };
         }
 
         [Theory]
