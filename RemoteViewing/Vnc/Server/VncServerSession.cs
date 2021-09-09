@@ -672,6 +672,37 @@ namespace RemoteViewing.Vnc.Server
             }
         }
 
+        public void NegotiateDesktop()
+        {
+            this.logger?.LogInformation("Negotiating desktop settings");
+
+            byte shareDesktopSetting = this.c.ReceiveByte();
+            bool shareDesktop = shareDesktopSetting != 0;
+
+            var e = new CreatingDesktopEventArgs(shareDesktop);
+            this.OnCreatingDesktop(e);
+
+            var fbSource = this.fbSource;
+            this.Framebuffer = fbSource != null ? fbSource.Capture() : null;
+            VncStream.Require(
+                this.Framebuffer != null,
+                "No framebuffer. Make sure you've called SetFramebufferSource. It can be set to a VncFramebuffer.",
+                VncFailureReason.SanityCheckFailed);
+            this.clientPixelFormat = this.Framebuffer.PixelFormat;
+            this.clientWidth = this.Framebuffer.Width;
+            this.clientHeight = this.Framebuffer.Height;
+            this.fbuAutoCache = null;
+
+            this.c.SendUInt16BE((ushort)this.Framebuffer.Width);
+            this.c.SendUInt16BE((ushort)this.Framebuffer.Height);
+            var pixelFormat = new byte[VncPixelFormat.Size];
+            this.Framebuffer.PixelFormat.Encode(pixelFormat, 0);
+            this.c.Send(pixelFormat);
+            this.c.SendString(this.Framebuffer.Name, true);
+
+            this.logger?.LogInformation($"The desktop {this.Framebuffer.Name} has initialized with pixel format {this.clientPixelFormat}; the screen size is {this.clientWidth}x{this.clientHeight}");
+        }
+
         /// <summary>
         /// Negotiates the version of the RFB protocol used by server and client.
         /// </summary>
@@ -998,37 +1029,6 @@ namespace RemoteViewing.Vnc.Server
             {
                 this.OnConnectionFailed();
             }
-        }
-
-        public void NegotiateDesktop()
-        {
-            this.logger?.LogInformation("Negotiating desktop settings");
-
-            byte shareDesktopSetting = this.c.ReceiveByte();
-            bool shareDesktop = shareDesktopSetting != 0;
-
-            var e = new CreatingDesktopEventArgs(shareDesktop);
-            this.OnCreatingDesktop(e);
-
-            var fbSource = this.fbSource;
-            this.Framebuffer = fbSource != null ? fbSource.Capture() : null;
-            VncStream.Require(
-                this.Framebuffer != null,
-                "No framebuffer. Make sure you've called SetFramebufferSource. It can be set to a VncFramebuffer.",
-                VncFailureReason.SanityCheckFailed);
-            this.clientPixelFormat = this.Framebuffer.PixelFormat;
-            this.clientWidth = this.Framebuffer.Width;
-            this.clientHeight = this.Framebuffer.Height;
-            this.fbuAutoCache = null;
-
-            this.c.SendUInt16BE((ushort)this.Framebuffer.Width);
-            this.c.SendUInt16BE((ushort)this.Framebuffer.Height);
-            var pixelFormat = new byte[VncPixelFormat.Size];
-            this.Framebuffer.PixelFormat.Encode(pixelFormat, 0);
-            this.c.Send(pixelFormat);
-            this.c.SendString(this.Framebuffer.Name, true);
-
-            this.logger?.LogInformation($"The desktop {this.Framebuffer.Name} has initialized with pixel format {this.clientPixelFormat}; the screen size is {this.clientWidth}x{this.clientHeight}");
         }
 
         private void HandleSetPixelFormat()

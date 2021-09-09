@@ -205,7 +205,7 @@ namespace RemoteViewing.LibVnc.Interop
         }
 
         /// <summary>
-        /// Gets the maximum width of a CoRRE-encoded rectangle. 
+        /// Gets the maximum width of a CoRRE-encoded rectangle.
         /// </summary>
         public int CorreMaxWidth
         {

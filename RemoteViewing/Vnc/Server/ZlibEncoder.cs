@@ -68,7 +68,7 @@ namespace RemoteViewing.Vnc.Server
 
             this.buffer.CopyTo(stream);
 
-            return (int)buffer.Length + 4;
+            return (int)this.buffer.Length + 4;
         }
     }
 }
