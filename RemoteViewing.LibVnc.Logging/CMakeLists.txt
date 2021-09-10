@@ -24,7 +24,7 @@
 
 cmake_minimum_required (VERSION 3.8)
 
-project ("vnclogger")
+project ("vnclogger" C)
 
 add_library (
 	vnclogger
