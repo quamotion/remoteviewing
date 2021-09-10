@@ -13,6 +13,10 @@ jobs:
     vmImage: 'macOS-10.14'
   steps:
   - script: |
+      dotnet tool install --tool-path . nbgv
+      ./nbgv cloud -a
+    displayName: Set build number
+  - script: |
       git clone --depth 1 --branch LibVNCServer-$(LIBVNC_VERSION) https://github.com/LibVNC/libvncserver/
       git show
     displayName: Clone LibVNCServer
@@ -117,7 +121,7 @@ jobs:
       artifactName: libvnc
     displayName: Publish LibVNC
 
-- job: native_unix
+- job: native_linux_x64
   pool:
     vmImage: ubuntu-20.04
   variables:
@@ -156,7 +160,7 @@ jobs:
   dependsOn:
   - native_windows
   - native_macos
-  - native_unix
+  - native_linux_x64
   steps:
   - task: DownloadBuildArtifacts@0
     inputs:
@@ -164,11 +168,11 @@ jobs:
     # Apparently code coverage isn't really supposed to work, but it should work soon. Sigh.
     # https://github.com/microsoft/azure-pipelines-tasks/issues/11677
     # https://github.com/microsoft/azure-pipelines-tasks/issues/9954
-  - task: DotNetCoreCLI@2
-    inputs:
-      command: test
-      projects: '**/*Tests/*.csproj'
-      arguments: ' --collect "Code coverage"'
+  - script: |
+      mkdir $(Build.ArtifactStagingDirectory)/nuget
+      dotnet test RemoteViewing.Tests
+    workingDirectory: '$(Build.SourcesDirectory)/'
+    displayName: Test
   - script: |
       mkdir $(Build.ArtifactStagingDirectory)/nuget
       dotnet pack -c Release -o $(Build.ArtifactStagingDirectory)/nuget
@@ -176,5 +180,44 @@ jobs:
   - task: PublishBuildArtifacts@1
     inputs:
       pathtoPublish: '$(Build.ArtifactStagingDirectory)/nuget'
-      artifactName: nuget
+      artifactName: remoteviewing-$(Build.BuildNumber)
     condition: true
+
+- job: test_linux_x64
+  pool:
+    vmImage: ubuntu-20.04
+  dependsOn:
+  - native_windows
+  - native_macos
+  - native_linux_x64
+  container:
+    image: mcr.microsoft.com/dotnet/sdk:5.0-focal
+    options: "--name ci-container -v /usr/bin/docker:/tmp/docker:ro"
+  steps:
+  - script: |
+      /tmp/docker exec -t -u 0 ci-container \
+      sh -c "apt-get update && DEBIAN_FRONTEND=noninteractive apt-get -o Dpkg::Options::="--force-confold" -y install sudo"
+    displayName: Set up sudo
+  - script: |
+      sudo DEBIAN_FRONTEND=noninteractive apt-get install -y libvncserver1 libturbojpeg
+  - task: DownloadBuildArtifacts@0
+    inputs:
+      artifactName: libvnc
+  - script: |
+      mkdir $(Build.ArtifactStagingDirectory)/nuget
+      dotnet test RemoteViewing.Tests
+
+- job: test_osx
+  pool:
+    vmImage: 'macOS-10.14'
+  dependsOn:
+  - native_windows
+  - native_macos
+  - native_linux_x64
+  steps:
+  - task: DownloadBuildArtifacts@0
+    inputs:
+      artifactName: libvnc
+  - script: |
+      mkdir $(Build.ArtifactStagingDirectory)/nuget
+      dotnet test RemoteViewing.Tests
