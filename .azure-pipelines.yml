@@ -169,8 +169,10 @@ jobs:
     # https://github.com/microsoft/azure-pipelines-tasks/issues/11677
     # https://github.com/microsoft/azure-pipelines-tasks/issues/9954
   - script: |
+      set PATH=$(System.ArtifactsDirectory)/libvnc/win7-x64/;%PATH%
+      echo %PATH%
       mkdir $(Build.ArtifactStagingDirectory)/nuget
-      dotnet test RemoteViewing.Tests
+      dotnet test RemoteViewing.sln
     workingDirectory: '$(Build.SourcesDirectory)/'
     displayName: Test
   - script: |
@@ -204,8 +206,9 @@ jobs:
     inputs:
       artifactName: libvnc
   - script: |
-      mkdir $(Build.ArtifactStagingDirectory)/nuget
-      dotnet test RemoteViewing.Tests
+      export LD_LIBRARY_PATH=$(System.ArtifactsDirectory)/libvnc/linux-x64/:$LD_LIBRARY_PATH
+      echo $LD_LIBRARY_PATH
+      dotnet test RemoteViewing.sln
 
 - job: test_osx
   pool:
@@ -222,5 +225,7 @@ jobs:
       brew install mono-libgdiplus
     displayName: Install libgdiplus
   - script: |
+      export DYLD_LIBRARY_PATH=$(System.ArtifactsDirectory)/libvnc/osx-x64/lib/:$DYLD_LIBRARY_PATH
+      echo $DYLD_LIBRARY_PATH
       mkdir $(Build.ArtifactStagingDirectory)/nuget
-      dotnet test RemoteViewing.Tests
+      dotnet test RemoteViewing.sln

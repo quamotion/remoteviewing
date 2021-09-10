@@ -67,7 +67,8 @@ namespace RemoteViewing.LibVnc.Tests
                 Assert.Equal(32, pixelFormat.BitsPerPixel);
                 Assert.Equal(32, pixelFormat.Depth);
                 Assert.Equal(0, pixelFormat.BigEndian);
-                Assert.Equal(1, pixelFormat.TrueColour);
+                // The default appears to be false on Windows and true on Unix
+                Assert.True(pixelFormat.TrueColour == 1 || pixelFormat.TrueColour == 255);
                 Assert.Equal(255, pixelFormat.RedMax);
                 Assert.Equal(255, pixelFormat.GreenMax);
                 Assert.Equal(255, pixelFormat.BlueMax);
@@ -76,7 +77,7 @@ namespace RemoteViewing.LibVnc.Tests
                 Assert.Equal(16, pixelFormat.BlueShift);
 
                 Assert.Equal("LibVNCServer", server.DesktopName);
-                Assert.Equal(Environment.MachineName, server.ThisHost);
+                Assert.StartsWith(Environment.MachineName, server.ThisHost);
                 Assert.False(server.AutoPort);
                 Assert.Equal(5900, server.Port);
 
