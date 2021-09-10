@@ -205,7 +205,7 @@ jobs:
       artifactName: libvnc
   - script: |
       mkdir $(Build.ArtifactStagingDirectory)/nuget
-      dotnet test RemoteViewing.Tests
+      dotnet test RemoteViewing.sln
 
 - job: test_osx
   pool:
@@ -223,4 +223,4 @@ jobs:
     displayName: Install libgdiplus
   - script: |
       mkdir $(Build.ArtifactStagingDirectory)/nuget
-      dotnet test RemoteViewing.Tests
+      dotnet test RemoteViewing.sln
