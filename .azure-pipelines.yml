@@ -154,6 +154,36 @@ jobs:
       artifactName: libvnc
     displayName: Publish LibVNC
 
+- job: native_linux_arm64
+  pool:
+    vmImage: ubuntu-20.04
+  variables:
+    rid: linux-arm64
+  container:
+    image: ubuntu:20.04
+    options: "--name ci-container -v /usr/bin/docker:/tmp/docker:ro"
+  steps:
+  - script: |
+      /tmp/docker exec -t -u 0 ci-container \
+      sh -c "apt-get update && DEBIAN_FRONTEND=noninteractive apt-get -o Dpkg::Options::="--force-confold" -y install sudo"
+    displayName: Set up sudo
+  - script: |
+      sudo DEBIAN_FRONTEND=noninteractive apt-get install -y libvncserver-dev gcc-aarch64-linux-gnu cmake
+  - script : |
+      mkdir build
+      cd build
+      cmake  -DCMAKE_TOOLCHAIN_FILE=linux-arm64.cmake ..
+      make
+      mkdir -p $(Build.ArtifactStagingDirectory)/$(rid)
+      cp *.so $(Build.ArtifactStagingDirectory)/$(rid)/
+    workingDirectory: '$(Build.SourcesDirectory)/RemoteViewing.LibVnc.Logging'
+    displayName: Build vnclogger
+  - task: PublishBuildArtifacts@1
+    inputs:
+      pathtoPublish: '$(Build.ArtifactStagingDirectory)'
+      artifactName: libvnc
+    displayName: Publish LibVNC
+
 - job: build
   pool:
     vmImage: 'windows-latest'

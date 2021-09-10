@@ -55,6 +55,11 @@
       <PackagePath>runtimes/linux-x64/native/%(Filename)%(Extension)</PackagePath>
       <Pack>true</Pack>
     </Content>
+
+    <Content Include="$(SYSTEM_ARTIFACTSDIRECTORY)/libvnc/linux-arm64/libvnclogger.so">
+      <PackagePath>runtimes/linux-arm64/native/%(Filename)%(Extension)</PackagePath>
+      <Pack>true</Pack>
+    </Content>
   </ItemGroup>
 
 </Project>
