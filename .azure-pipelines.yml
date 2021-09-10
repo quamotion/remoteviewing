@@ -10,7 +10,7 @@ jobs:
   variables:
     rid: osx-x64
   pool:
-    vmImage: 'macOS-10.14'
+    vmImage: 'macOS-10.15'
   steps:
   - script: |
       dotnet tool install --tool-path . nbgv
@@ -209,7 +209,7 @@ jobs:
 
 - job: test_osx
   pool:
-    vmImage: 'macOS-10.14'
+    vmImage: 'macOS-10.15'
   dependsOn:
   - native_windows
   - native_macos
