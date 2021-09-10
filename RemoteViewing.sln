@@ -17,7 +17,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RemoteViewing.AspNetCore", 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RemoteViewing.Tests", "RemoteViewing.Tests\RemoteViewing.Tests.csproj", "{3B608B91-5360-4536-90B6-D9CC353FCADE}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RemoteViewing.LibVNC.NativeBinaries", "RemoteViewing.LibVnc.NativeBinaries\RemoteViewing.LibVNC.NativeBinaries.csproj", "{F2DF2AC7-B0C1-4CCC-ACA5-919DB4BA106D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RemoteViewing.LibVnc.NativeBinaries", "RemoteViewing.LibVnc.NativeBinaries\RemoteViewing.LibVnc.NativeBinaries.csproj", "{F2DF2AC7-B0C1-4CCC-ACA5-919DB4BA106D}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RemoteViewing.LibVnc", "RemoteViewing.LibVnc\RemoteViewing.LibVnc.csproj", "{475C27D2-7296-4223-B571-1AC9089C425A}"
 EndProject
