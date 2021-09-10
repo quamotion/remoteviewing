@@ -199,7 +199,7 @@ jobs:
       sh -c "apt-get update && DEBIAN_FRONTEND=noninteractive apt-get -o Dpkg::Options::="--force-confold" -y install sudo"
     displayName: Set up sudo
   - script: |
-      sudo DEBIAN_FRONTEND=noninteractive apt-get install -y libvncserver1 libturbojpeg
+      sudo DEBIAN_FRONTEND=noninteractive apt-get install -y libvncserver1 libturbojpeg libgdiplus
   - task: DownloadBuildArtifacts@0
     inputs:
       artifactName: libvnc
@@ -218,6 +218,9 @@ jobs:
   - task: DownloadBuildArtifacts@0
     inputs:
       artifactName: libvnc
+  - script: |
+      brew install mono-libgdiplus
+    displayName: Install libgdiplus
   - script: |
       mkdir $(Build.ArtifactStagingDirectory)/nuget
       dotnet test RemoteViewing.Tests
