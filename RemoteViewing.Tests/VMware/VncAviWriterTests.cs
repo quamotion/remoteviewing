@@ -44,13 +44,13 @@ namespace RemoteViewing.Tests.VMware
         /// <summary>
         /// Test writing the header of an AVI file.
         /// </summary>
-        /// <returns></returns>
+        /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
         [Fact]
         public async Task WriteAviHeaderTest()
         {
             byte[] expected = new byte[0x480c];
 
-            using (Stream stream = File.OpenRead(@"VMware\VS2k5DebugDemo-01.avi"))
+            using (Stream stream = File.OpenRead("VMware/VS2k5DebugDemo-01.avi"))
             {
                 stream.Read(expected, 0, expected.Length);
             }
