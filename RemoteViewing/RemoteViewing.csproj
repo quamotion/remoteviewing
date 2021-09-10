@@ -25,7 +25,7 @@
 
   <ItemGroup>
     <PackageReference Include="sharpcompress" Version="0.24.0" />
-    <PackageReference Include="Quamotion.TurboJpegWrapper" Version="1.5.78" />
+    <PackageReference Include="Quamotion.TurboJpegWrapper" Version="2.0.9" />
     <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies.net45" Version="1.0.0" PrivateAssets="All" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="1.1.2" />
     <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="4.6.0" />
