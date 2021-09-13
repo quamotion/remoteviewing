@@ -67,11 +67,6 @@ namespace RemoteViewing.LibVnc.Interop
         public static readonly IntPtr RfbErr;
 
         /// <summary>
-        /// The address of the <c>vnclogger</c> library.
-        /// </summary>
-        public static readonly IntPtr LoggerLibrary;
-
-        /// <summary>
         /// The address of the <c>LogMessage</c> function in the <c>vnclogger</c> library.
         /// </summary>
         public static readonly IntPtr LogMessage;
@@ -101,16 +96,16 @@ namespace RemoteViewing.LibVnc.Interop
         /// </summary>
         static NativeLogging()
         {
-            LoggerLibrary = NativeLibraryLoader.ResolveDll(LoggerLibraryName, typeof(NativeLogging).Assembly, null);
+            var loggerLibrary = NativeLibraryLoader.ResolveDll(LoggerLibraryName, typeof(NativeLogging).Assembly, null);
 
-            if (LoggerLibrary == IntPtr.Zero)
+            if (loggerLibrary == IntPtr.Zero)
             {
                 throw new DllNotFoundException($"Could not load {LoggerLibraryName}");
             }
 
-            LogMessage = NativeLibrary.GetExport(LoggerLibrary, "LogMessage");
-            LogError = NativeLibrary.GetExport(LoggerLibrary, "LogError");
-            LogCallback = NativeLibrary.GetExport(LoggerLibrary, "logCallback");
+            LogMessage = NativeLibrary.GetExport(loggerLibrary, "LogMessage");
+            LogError = NativeLibrary.GetExport(loggerLibrary, "LogError");
+            LogCallback = NativeLibrary.GetExport(loggerLibrary, "logCallback");
 
             var vncServer = NativeLibraryLoader.ResolveDll(ServerLibraryName, typeof(LibVncServer).Assembly, null);
 
