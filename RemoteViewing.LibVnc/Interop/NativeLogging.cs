@@ -102,15 +102,23 @@ namespace RemoteViewing.LibVnc.Interop
         static NativeLogging()
         {
             LoggerLibrary = NativeLibraryLoader.ResolveDll(LoggerLibraryName, typeof(NativeLogging).Assembly, null);
+
+            if (LoggerLibrary == IntPtr.Zero)
+            {
+                throw new DllNotFoundException($"Could not load {LoggerLibraryName}");
+            }
+
             LogMessage = NativeLibrary.GetExport(LoggerLibrary, "LogMessage");
             LogError = NativeLibrary.GetExport(LoggerLibrary, "LogError");
             LogCallback = NativeLibrary.GetExport(LoggerLibrary, "logCallback");
 
-#if !NETSTANDARD2_0
             var vncServer = NativeLibraryLoader.ResolveDll(ServerLibraryName, typeof(LibVncServer).Assembly, null);
-#else
-            var vncServer = NativeLibrary.Load(ServerLibraryName, typeof(LibVncServer).Assembly, null);
-#endif
+
+            if (vncServer == IntPtr.Zero)
+            {
+                throw new DllNotFoundException($"Could not load {ServerLibraryName}");
+            }
+
             RfbLog = NativeLibrary.GetExport(vncServer, "rfbLog");
             RfbErr = NativeLibrary.GetExport(vncServer, "rfbErr");
 
