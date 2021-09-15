@@ -46,8 +46,18 @@
       <Pack>true</Pack>
     </Content>
 
+    <Content Include="$(WINDIR)/System32/vcruntime140.dll">
+      <PackagePath>runtimes/win7-x64/native/vcruntime140.dll</PackagePath>
+      <Pack>true</Pack>
+    </Content>
+
     <Content Include="$(SYSTEM_ARTIFACTSDIRECTORY)/libvnc/win7-x86/*.dll">
       <PackagePath>runtimes/win7-x86/native/%(Filename)%(Extension)</PackagePath>
+      <Pack>true</Pack>
+    </Content>
+    
+    <Content Include="$(WINDIR)/SysWow64/vcruntime140.dll">
+      <PackagePath>runtimes/win7-x86/native/vcruntime140.dll</PackagePath>
       <Pack>true</Pack>
     </Content>
 
