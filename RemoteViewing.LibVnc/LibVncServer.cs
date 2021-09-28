@@ -124,13 +124,7 @@ namespace RemoteViewing.LibVnc
             var fb = this.fbSource.Capture();
 
             this.server = NativeMethods.rfbGetScreen(fb.Width, fb.Height, fb.PixelFormat.BlueBits, 3, fb.PixelFormat.BytesPerPixel);
-
-            var serverFormat = this.server.ServerFormat;
-            serverFormat.RedShift = 16;
-            serverFormat.GreenShift = 8;
-            serverFormat.BlueShift = 0;
-
-            this.server.ServerFormat = serverFormat;
+            this.UpdateServerFormat(fb.PixelFormat);
 
             this.server.ListenInterface = MemoryMarshal.Read<int>(endPoint.Address.GetAddressBytes());
             this.server.AutoPort = false;
@@ -309,6 +303,7 @@ namespace RemoteViewing.LibVnc
                 fb.GetBuffer().CopyTo(this.currentFramebuffer.Memory);
 
                 NativeMethods.rfbNewFramebuffer(server, this.currentFramebufferHandle.Pointer, fb.Width, fb.Height, fb.PixelFormat.BlueBits, 3, fb.PixelFormat.BytesPerPixel);
+                this.UpdateServerFormat(fb.PixelFormat);
 
                 oldFramebufferHandle.Dispose();
                 oldFramebuffer.Dispose();
@@ -318,6 +313,16 @@ namespace RemoteViewing.LibVnc
                 fb.GetBuffer().CopyTo(this.currentFramebuffer.Memory);
                 NativeMethods.rfbMarkRectAsModified(server, 0, 0, fb.Width, fb.Height);
             }
+        }
+
+        private void UpdateServerFormat(VncPixelFormat pixelFormat)
+        {
+            var serverFormat = this.server.ServerFormat;
+            serverFormat.RedShift = (byte)pixelFormat.RedShift;
+            serverFormat.GreenShift = (byte)pixelFormat.GreenShift;
+            serverFormat.BlueShift = (byte)pixelFormat.BlueShift;
+
+            this.server.ServerFormat = serverFormat;
         }
     }
 }
