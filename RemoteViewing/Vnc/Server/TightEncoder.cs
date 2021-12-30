@@ -197,7 +197,7 @@ namespace RemoteViewing.Vnc.Server
                     0, /* auto-calculate pitch */
                     region.Width,
                     region.Height,
-                    PixelFormat.Format32bppArgb,
+                    TJPixelFormat.BGRA,
                     subsamplingOption,
                     jpegQualityLevel,
                     TJFlags.NoRealloc);
