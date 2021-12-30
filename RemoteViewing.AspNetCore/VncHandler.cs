@@ -26,8 +26,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 #endregion
 
-using Microsoft.AspNetCore.Http;
-using Nito.AsyncEx;
 using RemoteViewing.Vnc;
 using RemoteViewing.Vnc.Server;
 using System;
@@ -46,7 +44,7 @@ namespace RemoteViewing.AspNetCore
         /// This event will be reset when the conection with the client is lost, either because the client logged
         /// of or because of an error.
         /// </summary>
-        private readonly AsyncManualResetEvent closed = new AsyncManualResetEvent(false);
+        private readonly TaskCompletionSource<bool> closed = new TaskCompletionSource<bool>(false);
 
         /// <summary>
         /// Initializes a new instance of the <see cref="VncHandler{T}"/> class.
@@ -146,7 +144,7 @@ namespace RemoteViewing.AspNetCore
 
             this.Vnc.Connect(stream, options);
 
-            await this.closed.WaitAsync().ConfigureAwait(false);
+            await this.closed.Task.ConfigureAwait(false);
 
             this.Socket.Dispose();
         }
@@ -175,7 +173,7 @@ namespace RemoteViewing.AspNetCore
         /// </param>
         protected virtual void OnConnectionFailed(object sender, EventArgs e)
         {
-            this.closed.Set();
+            this.closed.SetResult(false);
         }
 
         /// <summary>
@@ -189,7 +187,7 @@ namespace RemoteViewing.AspNetCore
         /// </param>
         protected virtual void OnClosed(object sender, EventArgs e)
         {
-            this.closed.Set();
+            this.closed.SetResult(false);
         }
 
         /// <param name="sender">
