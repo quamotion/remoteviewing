@@ -9,12 +9,12 @@ namespace RemoteViewing.LibVnc.Interop
     {
         static NativeLibraryLoader()
         {
-#if !NETSTANDARD2_0 && !NET45
+#if !NETSTANDARD2_0 && !NET462
             NativeLibrary.SetDllImportResolver(typeof(NativeMethods).Assembly, ResolveDll);
 #endif
         }
 
-#if !NETSTANDARD2_0 && !NET45
+#if !NETSTANDARD2_0 && !NET462
         public static IntPtr ResolveDll(string libraryName, Assembly assembly, DllImportSearchPath? searchPath)
         {
             IntPtr lib = IntPtr.Zero;

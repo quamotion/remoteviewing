@@ -2,6 +2,6 @@
   "name": "asp.net",
   "private": true,
   "dependencies": {
-    "no-vnc": "1.1.0"
+    "no-vnc": "1.3.0"
   }
 }

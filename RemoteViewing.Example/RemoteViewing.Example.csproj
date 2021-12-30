@@ -12,10 +12,6 @@
     <CodeAnalysisRuleSet>..\RemoteViewing.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
 
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net45' ">
-    <Reference Include="Microsoft.CSharp" />
-  </ItemGroup>
-
   <ItemGroup>
     <ProjectReference Include="..\RemoteViewing\RemoteViewing.csproj" />
     <ProjectReference Include="..\RemoteViewing.Windows.Forms\RemoteViewing.Windows.Forms.csproj" />

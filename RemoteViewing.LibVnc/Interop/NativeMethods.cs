@@ -48,7 +48,7 @@ namespace RemoteViewing.LibVnc.Interop
         /// </summary>
         public const CallingConvention LibraryCallingConvention = CallingConvention.Cdecl;
 
-#if !NETSTANDARD2_0 && !NET45
+#if !NETSTANDARD2_0 && !NET462
         /// <summary>
         /// Initializes static members of the <see cref="NativeMethods"/> class.
         /// </summary>
