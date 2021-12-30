@@ -87,7 +87,8 @@ namespace RemoteViewing.AspNetCore
 
             if (context.WebSockets.IsWebSocketRequest)
             {
-                var socket = await context.WebSockets.AcceptWebSocketAsync("binary").ConfigureAwait(false);
+                var protocol = context.WebSockets.WebSocketRequestedProtocols.Count > 0 ? "binary" : null;
+                var socket = await context.WebSockets.AcceptWebSocketAsync(protocol).ConfigureAwait(false);
 
                 VncHandler<T> sockethandler = new VncHandler<T>(socket, vncContext);
                 await sockethandler.Listen().ConfigureAwait(false);
