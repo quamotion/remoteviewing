@@ -26,7 +26,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 #endregion
 
-#if !NETSTANDARD2_0 && !NET45
+#if !NETSTANDARD2_0 && !NET462
 using Microsoft.Extensions.Logging;
 using System;
 using System.Reflection;

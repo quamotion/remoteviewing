@@ -5,7 +5,7 @@
     <Copyright>Copyright © 2013 James F. Bellinger &lt;http://www.zer7.com/software/remoteviewing&gt;</Copyright>
     <VersionPrefix>1.0.8</VersionPrefix>
     <Authors>James F. Bellinger, Frederik Carlier</Authors>
-    <TargetFrameworks>net45;netstandard2.0;net5.0</TargetFrameworks>
+    <TargetFrameworks>net462;netstandard2.0;net5.0</TargetFrameworks>
     <AssemblyName>RemoteViewing.Windows.Forms</AssemblyName>
     <AssemblyOriginatorKeyFile>RemoteViewing.snk</AssemblyOriginatorKeyFile>
     <SignAssembly>true</SignAssembly>
@@ -22,7 +22,7 @@
     <PackageLicenseExpression>BSD-2-Clause</PackageLicenseExpression>
   </PropertyGroup>
 
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net45' ">
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net462' ">
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Windows.Forms" />
   </ItemGroup>

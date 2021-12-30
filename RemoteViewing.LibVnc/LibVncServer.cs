@@ -96,7 +96,7 @@ namespace RemoteViewing.LibVnc
             this.rfbPtrAddEventProcPtr = Marshal.GetFunctionPointerForDelegate(this.rfbPtrAddEventProc);
             this.rfbPasswordCheckProcPtr = Marshal.GetFunctionPointerForDelegate(this.rfbPasswordCheckProc);
 
-#if !NETSTANDARD2_0 && !NET45
+#if !NETSTANDARD2_0 && !NET462
             NativeLogging.Logger = logger;
 #endif
         }
