@@ -139,8 +139,13 @@ namespace RemoteViewing.LibVnc
             this.server.KbdAddEvent = this.rfbKbdAddEventHookPtr;
             this.server.PtrAddEvent = this.rfbPtrAddEventProcPtr;
             this.server.NewClientHook = this.newClientHookPtr;
-            this.server.AuthPasswdData = new IntPtr(-1);
-            this.server.PasswordCheck = this.rfbPasswordCheckProcPtr;
+            this.server.AuthPasswdData = IntPtr.Zero;
+
+            if (this.PasswordProvided != null)
+            {
+                this.server.AuthPasswdData = new IntPtr(-1);
+                this.server.PasswordCheck = this.rfbPasswordCheckProcPtr;
+            }
 
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
