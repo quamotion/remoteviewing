@@ -387,5 +387,23 @@ namespace RemoteViewing.LibVnc.Interop
         /// </summary>
         [DllImport(LibraryName, CallingConvention = LibraryCallingConvention, EntryPoint = "rfbIsActive")]
         public static extern byte rfbIsActive(RfbScreenInfoPtr screenInfo);
+
+        /// <summary>
+        /// <see cref="rfbReverseConnection"/> is called to make an outward connection to a "listening" RFB client.
+        /// </summary>
+        /// <param name="rfbScreen">
+        /// The VNC screen to connect to the remote client.
+        /// </param>
+        /// <param name="host">
+        /// The hostname of the remote RFB client.
+        /// </param>
+        /// <param name="port">
+        /// The port number on which the remote RFB client is listening.
+        /// </param>
+        /// <returns>
+        /// A <c>rfbClientPtr</c> which represents the remote client.
+        /// </returns>
+        [DllImport(LibraryName, CallingConvention = LibraryCallingConvention, EntryPoint = "rfbReverseConnection")]
+        public static extern void* rfbReverseConnection(RfbScreenInfoPtr rfbScreen, byte* host, int port);
     }
 }

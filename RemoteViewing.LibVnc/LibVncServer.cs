@@ -37,6 +37,7 @@ using System.Diagnostics;
 using System.Net;
 using System.Net.Sockets;
 using System.Runtime.InteropServices;
+using System.Text;
 using System.Threading;
 
 namespace RemoteViewing.LibVnc
@@ -121,43 +122,30 @@ namespace RemoteViewing.LibVnc
                 throw new ArgumentOutOfRangeException(nameof(endPoint));
             }
 
-            var fb = this.fbSource.Capture();
+            this.DoStart(endPoint);
+        }
 
-            this.server = NativeMethods.rfbGetScreen(fb.Width, fb.Height, fb.PixelFormat.BlueBits, 3, fb.PixelFormat.BytesPerPixel);
-            this.UpdateServerFormat(fb.PixelFormat);
-
-            this.server.ListenInterface = MemoryMarshal.Read<int>(endPoint.Address.GetAddressBytes());
-            this.server.AutoPort = false;
-            this.server.Port = endPoint.Port;
-
-            this.currentFramebuffer = this.memoryPool.Rent(fb.Width * fb.Height * 4);
-            this.currentFramebufferHandle = this.currentFramebuffer.Memory.Pin();
-
-            fb.GetBuffer().CopyTo(this.currentFramebuffer.Memory);
-
-            this.server.Framebuffer = new IntPtr(this.currentFramebufferHandle.Pointer);
-            this.server.KbdAddEvent = this.rfbKbdAddEventHookPtr;
-            this.server.PtrAddEvent = this.rfbPtrAddEventProcPtr;
-            this.server.NewClientHook = this.newClientHookPtr;
-            this.server.AuthPasswdData = IntPtr.Zero;
-
-            if (this.PasswordProvided != null)
+        /// <summary>
+        /// Starts a reverse VNC connection.
+        /// </summary>
+        /// <param name="endPoint">
+        /// A <see cref="IPEndPoint"/> which represents the endpoint of the "remote" RFB client.
+        /// </param>
+        public void StartReverse(IPEndPoint endPoint)
+        {
+            if (endPoint == null || endPoint.AddressFamily != AddressFamily.InterNetwork)
             {
-                this.server.AuthPasswdData = new IntPtr(-1);
-                this.server.PasswordCheck = this.rfbPasswordCheckProcPtr;
+                throw new ArgumentOutOfRangeException(nameof(endPoint));
             }
 
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-            {
-                NativeMethods.rfbInitServerWithoutPthreadsButWithZRLE(this.server);
-            }
-            else
-            {
-                NativeMethods.rfbInitServerWithPthreadsAndZRLE(this.server);
-            }
+            this.DoStart(null);
 
-            this.mainLoop = new Thread(new ThreadStart(this.MainLoop));
-            this.mainLoop.Start();
+            var addressBytes = Encoding.UTF8.GetBytes(endPoint.Address.ToString());
+
+            fixed (byte* addressBytePtr = addressBytes)
+            {
+                NativeMethods.rfbReverseConnection(this.server, addressBytePtr, endPoint.Port);
+            }
         }
 
         /// <inheritdoc/>
@@ -328,6 +316,50 @@ namespace RemoteViewing.LibVnc
             serverFormat.BlueShift = (byte)pixelFormat.BlueShift;
 
             this.server.ServerFormat = serverFormat;
+        }
+
+        private void DoStart(IPEndPoint endPoint)
+        {
+            var fb = this.fbSource.Capture();
+
+            this.server = NativeMethods.rfbGetScreen(fb.Width, fb.Height, fb.PixelFormat.BlueBits, 3, fb.PixelFormat.BytesPerPixel);
+            this.UpdateServerFormat(fb.PixelFormat);
+
+            if (endPoint != null)
+            {
+                this.server.ListenInterface = MemoryMarshal.Read<int>(endPoint.Address.GetAddressBytes());
+                this.server.AutoPort = false;
+                this.server.Port = endPoint.Port;
+            }
+
+            this.currentFramebuffer = this.memoryPool.Rent(fb.Width * fb.Height * 4);
+            this.currentFramebufferHandle = this.currentFramebuffer.Memory.Pin();
+
+            fb.GetBuffer().CopyTo(this.currentFramebuffer.Memory);
+
+            this.server.Framebuffer = new IntPtr(this.currentFramebufferHandle.Pointer);
+            this.server.KbdAddEvent = this.rfbKbdAddEventHookPtr;
+            this.server.PtrAddEvent = this.rfbPtrAddEventProcPtr;
+            this.server.NewClientHook = this.newClientHookPtr;
+            this.server.AuthPasswdData = IntPtr.Zero;
+
+            if (this.PasswordProvided != null)
+            {
+                this.server.AuthPasswdData = new IntPtr(-1);
+                this.server.PasswordCheck = this.rfbPasswordCheckProcPtr;
+            }
+
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                NativeMethods.rfbInitServerWithoutPthreadsButWithZRLE(this.server);
+            }
+            else
+            {
+                NativeMethods.rfbInitServerWithPthreadsAndZRLE(this.server);
+            }
+
+            this.mainLoop = new Thread(new ThreadStart(this.MainLoop));
+            this.mainLoop.Start();
         }
     }
 }
