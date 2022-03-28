@@ -26,6 +26,15 @@ cmake_minimum_required (VERSION 3.8)
 
 project ("vnclogger" C)
 
+find_package(ZLIB)
+find_package(JPEG)
+
+include_directories(${ZLIB_INCLUDE_DIR})
+include_directories(${JPEG_INCLUDE_DIR})
+
+include_directories ("../libvncserver/")
+include_directories ("../build/")
+
 add_library (
 	vnclogger
 	SHARED

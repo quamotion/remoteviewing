@@ -70,8 +70,8 @@ namespace RemoteViewing.LibVnc.Interop
         /// </summary>
         public int ScaledScreenRefCount
         {
-            get { return Marshal.ReadInt32(this.handle, FieldOffsets[(int)RfbScreenInfoPtrField.ScaledScreenRefCount]); }
-            set { Marshal.WriteInt32(this.handle, FieldOffsets[(int)RfbScreenInfoPtrField.ScaledScreenRefCount], value); }
+            get { throw new NotImplementedException(); }
+            set { throw new NotImplementedException(); }
         }
 
         /// <summary>
@@ -79,8 +79,8 @@ namespace RemoteViewing.LibVnc.Interop
         /// </summary>
         public int Width
         {
-            get { return Marshal.ReadInt32(this.handle, FieldOffsets[(int)RfbScreenInfoPtrField.Width]); }
-            set { Marshal.WriteInt32(this.handle, FieldOffsets[(int)RfbScreenInfoPtrField.Width], value); }
+            get { return NativeMethods.rfbScreenInfo_get_width(this.handle); }
+            set { NativeMethods.rfbScreenInfo_set_width(this.handle, value); }
         }
 
         /// <summary>
@@ -88,8 +88,8 @@ namespace RemoteViewing.LibVnc.Interop
         /// </summary>
         public int PaddedWidthInBytes
         {
-            get { return Marshal.ReadInt32(this.handle, FieldOffsets[(int)RfbScreenInfoPtrField.PaddedWidthInBytes]); }
-            set { Marshal.WriteInt32(this.handle, FieldOffsets[(int)RfbScreenInfoPtrField.PaddedWidthInBytes], value); }
+            get { throw new NotImplementedException(); }
+            set { throw new NotImplementedException(); }
         }
 
         /// <summary>
@@ -97,8 +97,8 @@ namespace RemoteViewing.LibVnc.Interop
         /// </summary>
         public int Height
         {
-            get { return Marshal.ReadInt32(this.handle, FieldOffsets[(int)RfbScreenInfoPtrField.Height]); }
-            set { Marshal.WriteInt32(this.handle, FieldOffsets[(int)RfbScreenInfoPtrField.Height], value); }
+            get { return NativeMethods.rfbScreenInfo_get_height(this.handle); }
+            set { NativeMethods.rfbScreenInfo_set_height(this.handle, value); }
         }
 
         /// <summary>
@@ -106,8 +106,8 @@ namespace RemoteViewing.LibVnc.Interop
         /// </summary>
         public int Depth
         {
-            get { return Marshal.ReadInt32(this.handle, FieldOffsets[(int)RfbScreenInfoPtrField.Depth]); }
-            set { Marshal.WriteInt32(this.handle, FieldOffsets[(int)RfbScreenInfoPtrField.Depth], value); }
+            get { throw new NotImplementedException(); }
+            set { throw new NotImplementedException(); }
         }
 
         /// <summary>
@@ -115,8 +115,8 @@ namespace RemoteViewing.LibVnc.Interop
         /// </summary>
         public int BitsPerPixel
         {
-            get { return Marshal.ReadInt32(this.handle, FieldOffsets[(int)RfbScreenInfoPtrField.BitsPerPixel]); }
-            set { Marshal.WriteInt32(this.handle, FieldOffsets[(int)RfbScreenInfoPtrField.BitsPerPixel], value); }
+            get { throw new NotImplementedException(); }
+            set { throw new NotImplementedException(); }
         }
 
         /// <summary>
@@ -124,8 +124,8 @@ namespace RemoteViewing.LibVnc.Interop
         /// </summary>
         public int SizeInBytes
         {
-            get { return Marshal.ReadInt32(this.handle, FieldOffsets[(int)RfbScreenInfoPtrField.SizeInBytes]); }
-            set { Marshal.WriteInt32(this.handle, FieldOffsets[(int)RfbScreenInfoPtrField.SizeInBytes], value); }
+            get { throw new NotImplementedException(); }
+            set { throw new NotImplementedException(); }
         }
 
         /// <summary>
@@ -133,8 +133,8 @@ namespace RemoteViewing.LibVnc.Interop
         /// </summary>
         public uint BlackPixel
         {
-            get { return (uint)Marshal.ReadInt32(this.handle, FieldOffsets[(int)RfbScreenInfoPtrField.BlackPixel]); }
-            set { Marshal.WriteInt32(this.handle, FieldOffsets[(int)RfbScreenInfoPtrField.BlackPixel], (int)value); }
+            get { throw new NotImplementedException(); }
+            set { throw new NotImplementedException(); }
         }
 
         /// <summary>
@@ -142,8 +142,8 @@ namespace RemoteViewing.LibVnc.Interop
         /// </summary>
         public uint WhitePixel
         {
-            get { return (uint)Marshal.ReadInt32(this.handle, FieldOffsets[(int)RfbScreenInfoPtrField.WhitePixel]); }
-            set { Marshal.WriteInt32(this.handle, FieldOffsets[(int)RfbScreenInfoPtrField.WhitePixel], (int)value); }
+            get { throw new NotImplementedException(); }
+            set { throw new NotImplementedException(); }
         }
 
         /// <summary>
@@ -151,8 +151,8 @@ namespace RemoteViewing.LibVnc.Interop
         /// </summary>
         public IntPtr ScreenData
         {
-            get { return Marshal.ReadIntPtr(this.handle, FieldOffsets[(int)RfbScreenInfoPtrField.ScreenData]); }
-            set { Marshal.WriteIntPtr(this.handle, FieldOffsets[(int)RfbScreenInfoPtrField.ScreenData], value); }
+            get { return NativeMethods.rfbScreenInfo_get_screenData(this.handle); }
+            set { NativeMethods.rfbScreenInfo_set_screenData(this.handle, value); }
         }
 
         /// <summary>
@@ -160,8 +160,8 @@ namespace RemoteViewing.LibVnc.Interop
         /// </summary>
         public RfbPixelFormat ServerFormat
         {
-            get { return (RfbPixelFormat)Marshal.PtrToStructure(this.handle + FieldOffsets[(int)RfbScreenInfoPtrField.ServerFormat], typeof(RfbPixelFormat)); }
-            set { Marshal.StructureToPtr(value, this.handle + FieldOffsets[(int)RfbScreenInfoPtrField.ServerFormat], false); }
+            get { return NativeMethods.rfbScreenInfo_get_serverFormat(this.handle); }
+            set { NativeMethods.rfbScreenInfo_set_serverFormat(this.handle, value); }
         }
 
         /// <summary>
@@ -169,11 +169,7 @@ namespace RemoteViewing.LibVnc.Interop
         /// </summary>
         public string DesktopName
         {
-            get
-            {
-                var desktopName = (sbyte**)((sbyte*)this.handle.ToPointer() + FieldOffsets[(int)RfbScreenInfoPtrField.DesktopName]);
-                return new string(*desktopName);
-            }
+            get { throw new NotImplementedException(); }
         }
 
         /// <summary>
@@ -181,11 +177,7 @@ namespace RemoteViewing.LibVnc.Interop
         /// </summary>
         public string ThisHost
         {
-            get
-            {
-                sbyte* thisName = (sbyte*)this.handle.ToPointer() + FieldOffsets[(int)RfbScreenInfoPtrField.ThisHost];
-                return new string(thisName);
-            }
+            get { throw new NotImplementedException(); }
         }
 
         /// <summary>
@@ -193,8 +185,8 @@ namespace RemoteViewing.LibVnc.Interop
         /// </summary>
         public bool AutoPort
         {
-            get { return this.GetBool(RfbScreenInfoPtrField.AutoPort); }
-            set { this.SetBool(RfbScreenInfoPtrField.AutoPort, value); }
+            get { return NativeMethods.rfbScreenInfo_get_autoPort(this.handle); }
+            set { NativeMethods.rfbScreenInfo_set_autoPort(this.handle, value); }
         }
 
         /// <summary>
@@ -202,8 +194,8 @@ namespace RemoteViewing.LibVnc.Interop
         /// </summary>
         public int Port
         {
-            get { return Marshal.ReadInt32(this.handle, FieldOffsets[(int)RfbScreenInfoPtrField.Port]); }
-            set { Marshal.WriteInt32(this.handle, FieldOffsets[(int)RfbScreenInfoPtrField.Port], value); }
+            get { return NativeMethods.rfbScreenInfo_get_port(this.handle); }
+            set { NativeMethods.rfbScreenInfo_set_port(this.handle, value); }
         }
 
         /// <summary>
@@ -211,7 +203,7 @@ namespace RemoteViewing.LibVnc.Interop
         /// </summary>
         public RfbSocketState SocketState
         {
-            get { return (RfbSocketState)Marshal.ReadInt32(this.handle, FieldOffsets[(int)RfbScreenInfoPtrField.SocketState]); }
+            get { throw new NotImplementedException(); }
         }
 
         /// <summary>
@@ -220,8 +212,8 @@ namespace RemoteViewing.LibVnc.Interop
         /// </summary>
         public IntPtr PasswordCheck
         {
-            get { return Marshal.ReadIntPtr(this.handle, FieldOffsets[(int)RfbScreenInfoPtrField.PasswordCheck]); }
-            set { Marshal.WriteIntPtr(this.handle, FieldOffsets[(int)RfbScreenInfoPtrField.PasswordCheck], value); }
+            get { return NativeMethods.rfbScreenInfo_get_passwordCheck(this.handle); }
+            set { NativeMethods.rfbScreenInfo_set_passwordCheck(this.handle, value); }
         }
 
         /// <summary>
@@ -230,8 +222,8 @@ namespace RemoteViewing.LibVnc.Interop
         /// </summary>
         public IntPtr AuthPasswdData
         {
-            get { return Marshal.ReadIntPtr(this.handle, FieldOffsets[(int)RfbScreenInfoPtrField.AuthPasswdData]); }
-            set { Marshal.WriteIntPtr(this.handle, FieldOffsets[(int)RfbScreenInfoPtrField.AuthPasswdData], value); }
+            get { return NativeMethods.rfbScreenInfo_get_authPasswdData(this.handle); }
+            set { NativeMethods.rfbScreenInfo_set_authPasswdData(this.handle, value); }
         }
 
         /// <summary>
@@ -240,8 +232,8 @@ namespace RemoteViewing.LibVnc.Interop
         /// </summary>
         public bool AuthPasswdFirstViewOnly
         {
-            get { return this.GetBool(RfbScreenInfoPtrField.AuthPasswdFirstViewOnly); }
-            set { this.SetBool(RfbScreenInfoPtrField.AuthPasswdFirstViewOnly, value); }
+            get { throw new NotImplementedException(); }
+            set { throw new NotImplementedException(); }
         }
 
         /// <summary>
@@ -249,7 +241,8 @@ namespace RemoteViewing.LibVnc.Interop
         /// </summary>
         public int MaxRectsPerUpdate
         {
-            get { return Marshal.ReadInt32(this.handle, FieldOffsets[(int)RfbScreenInfoPtrField.MaxRectsPerUpdate]); }
+            get { throw new NotImplementedException(); }
+            set { throw new NotImplementedException(); }
         }
 
         /// <summary>
@@ -257,7 +250,8 @@ namespace RemoteViewing.LibVnc.Interop
         /// </summary>
         public int DeferUpdateTime
         {
-            get { return Marshal.ReadInt32(this.handle, FieldOffsets[(int)RfbScreenInfoPtrField.DeferUpdateTime]); }
+            get { throw new NotImplementedException(); }
+            set { throw new NotImplementedException(); }
         }
 
         /// <summary>
@@ -265,8 +259,8 @@ namespace RemoteViewing.LibVnc.Interop
         /// </summary>
         public bool AlwaysShared
         {
-            get { return this.GetBool(RfbScreenInfoPtrField.AlwaysShared); }
-            set { this.SetBool(RfbScreenInfoPtrField.AlwaysShared, value); }
+            get { throw new NotImplementedException(); }
+            set { throw new NotImplementedException(); }
         }
 
         /// <summary>
@@ -274,8 +268,8 @@ namespace RemoteViewing.LibVnc.Interop
         /// </summary>
         public bool NeverShared
         {
-            get { return this.GetBool(RfbScreenInfoPtrField.NeverShared); }
-            set { this.SetBool(RfbScreenInfoPtrField.NeverShared, value); }
+            get { throw new NotImplementedException(); }
+            set { throw new NotImplementedException(); }
         }
 
         /// <summary>
@@ -284,8 +278,8 @@ namespace RemoteViewing.LibVnc.Interop
         /// </summary>
         public bool DontDisconnect
         {
-            get { return this.GetBool(RfbScreenInfoPtrField.DontDisconnect); }
-            set { this.SetBool(RfbScreenInfoPtrField.DontDisconnect, value); }
+            get { throw new NotImplementedException(); }
+            set { throw new NotImplementedException(); }
         }
 
         /// <summary>
@@ -293,8 +287,8 @@ namespace RemoteViewing.LibVnc.Interop
         /// </summary>
         public IntPtr Framebuffer
         {
-            get { return Marshal.ReadIntPtr(this.handle, FieldOffsets[(int)RfbScreenInfoPtrField.FrameBuffer]); }
-            set { Marshal.WriteIntPtr(this.handle, FieldOffsets[(int)RfbScreenInfoPtrField.FrameBuffer], value); }
+            get { return NativeMethods.rfbScreenInfo_get_frameBuffer(this.handle); }
+            set { NativeMethods.rfbScreenInfo_set_frameBuffer(this.handle, value); }
         }
 
         /// <summary>
@@ -303,8 +297,8 @@ namespace RemoteViewing.LibVnc.Interop
         /// </summary>
         public IntPtr KbdAddEvent
         {
-            get { return Marshal.ReadIntPtr(this.handle, FieldOffsets[(int)RfbScreenInfoPtrField.KbdAddEvent]); }
-            set { Marshal.WriteIntPtr(this.handle, FieldOffsets[(int)RfbScreenInfoPtrField.KbdAddEvent], value); }
+            get { return NativeMethods.rfbScreenInfo_get_kbdAddEvent(this.handle); }
+            set { NativeMethods.rfbScreenInfo_set_kbdAddEvent(this.handle, value); }
         }
 
         /// <summary>
@@ -312,8 +306,8 @@ namespace RemoteViewing.LibVnc.Interop
         /// </summary>
         public IntPtr KbdReleaseAllKeys
         {
-            get { return Marshal.ReadIntPtr(this.handle, FieldOffsets[(int)RfbScreenInfoPtrField.KbdReleaseAllKeys]); }
-            set { Marshal.WriteIntPtr(this.handle, FieldOffsets[(int)RfbScreenInfoPtrField.KbdReleaseAllKeys], value); }
+            get { throw new NotImplementedException(); }
+            set { throw new NotImplementedException(); }
         }
 
         /// <summary>
@@ -322,8 +316,8 @@ namespace RemoteViewing.LibVnc.Interop
         /// </summary>
         public IntPtr PtrAddEvent
         {
-            get { return Marshal.ReadIntPtr(this.handle, FieldOffsets[(int)RfbScreenInfoPtrField.PtrAddEvent]); }
-            set { Marshal.WriteIntPtr(this.handle, FieldOffsets[(int)RfbScreenInfoPtrField.PtrAddEvent], value); }
+            get { return NativeMethods.rfbScreenInfo_get_ptrAddEvent(this.handle); }
+            set { NativeMethods.rfbScreenInfo_set_ptrAddEvent(this.handle, value); }
         }
 
         // GetCursorPtr. This could be used to make an animated cursor.
@@ -336,8 +330,8 @@ namespace RemoteViewing.LibVnc.Interop
         /// </summary>
         public IntPtr SetServerInput
         {
-            get { return Marshal.ReadIntPtr(this.handle, FieldOffsets[(int)RfbScreenInfoPtrField.SetServerInput]); }
-            set { Marshal.WriteIntPtr(this.handle, FieldOffsets[(int)RfbScreenInfoPtrField.SetServerInput], value); }
+            get { throw new NotImplementedException(); }
+            set { throw new NotImplementedException(); }
         }
 
         /// <summary>
@@ -346,8 +340,8 @@ namespace RemoteViewing.LibVnc.Interop
         /// </summary>
         public IntPtr GetFileTransferPermission
         {
-            get { return Marshal.ReadIntPtr(this.handle, FieldOffsets[(int)RfbScreenInfoPtrField.GetFileTransferPermission]); }
-            set { Marshal.WriteIntPtr(this.handle, FieldOffsets[(int)RfbScreenInfoPtrField.GetFileTransferPermission], value); }
+            get { throw new NotImplementedException(); }
+            set { throw new NotImplementedException(); }
         }
 
         /// <summary>
@@ -356,8 +350,8 @@ namespace RemoteViewing.LibVnc.Interop
         /// </summary>
         public IntPtr SetTextChat
         {
-            get { return Marshal.ReadIntPtr(this.handle, FieldOffsets[(int)RfbScreenInfoPtrField.SetTextChat]); }
-            set { Marshal.WriteIntPtr(this.handle, FieldOffsets[(int)RfbScreenInfoPtrField.SetTextChat], value); }
+            get { throw new NotImplementedException(); }
+            set { throw new NotImplementedException(); }
         }
 
         /// <summary>
@@ -366,8 +360,8 @@ namespace RemoteViewing.LibVnc.Interop
         /// </summary>
         public IntPtr NewClientHook
         {
-            get { return Marshal.ReadIntPtr(this.handle, FieldOffsets[(int)RfbScreenInfoPtrField.NewClientHook]); }
-            set { Marshal.WriteIntPtr(this.handle, FieldOffsets[(int)RfbScreenInfoPtrField.NewClientHook], value); }
+            get { return NativeMethods.rfbScreenInfo_get_newClientHook(this.handle); }
+            set { NativeMethods.rfbScreenInfo_set_newClientHook(this.handle, value); }
         }
 
         /// <summary>
@@ -376,8 +370,8 @@ namespace RemoteViewing.LibVnc.Interop
         /// </summary>
         public IntPtr DisplayHook
         {
-            get { return Marshal.ReadIntPtr(this.handle, FieldOffsets[(int)RfbScreenInfoPtrField.DisplayHook]); }
-            set { Marshal.WriteIntPtr(this.handle, FieldOffsets[(int)RfbScreenInfoPtrField.DisplayHook], value); }
+            get { throw new NotImplementedException(); }
+            set { throw new NotImplementedException(); }
         }
 
         /// <summary>
@@ -386,8 +380,8 @@ namespace RemoteViewing.LibVnc.Interop
         /// </summary>
         public IntPtr GetKeyboardLedStateHook
         {
-            get { return Marshal.ReadIntPtr(this.handle, FieldOffsets[(int)RfbScreenInfoPtrField.GetKeyboardLedStateHook]); }
-            set { Marshal.WriteIntPtr(this.handle, FieldOffsets[(int)RfbScreenInfoPtrField.GetKeyboardLedStateHook], value); }
+            get { throw new NotImplementedException(); }
+            set { throw new NotImplementedException(); }
         }
 
         /// <summary>
@@ -395,8 +389,8 @@ namespace RemoteViewing.LibVnc.Interop
         /// </summary>
         public int ListenInterface
         {
-            get { return Marshal.ReadInt32(this.handle, FieldOffsets[(int)RfbScreenInfoPtrField.ListenInterface]); }
-            set { Marshal.WriteInt32(this.handle, FieldOffsets[(int)RfbScreenInfoPtrField.ListenInterface], value); }
+            get { return NativeMethods.rfbScreenInfo_get_listenInterface(this.handle); }
+            set { NativeMethods.rfbScreenInfo_set_listenInterface(this.handle, value); }
         }
 
         /// <summary>
@@ -404,7 +398,7 @@ namespace RemoteViewing.LibVnc.Interop
         /// </summary>
         public int ProtocolMajorVersion
         {
-            get { return Marshal.ReadInt32(this.handle, FieldOffsets[(int)RfbScreenInfoPtrField.ProtocolMajorVersion]); }
+            get { throw new NotImplementedException(); }
         }
 
         /// <summary>
@@ -412,7 +406,7 @@ namespace RemoteViewing.LibVnc.Interop
         /// </summary>
         public int ProtocolMinorVersion
         {
-            get { return Marshal.ReadInt32(this.handle, FieldOffsets[(int)RfbScreenInfoPtrField.ProtocolMinorVersion]); }
+            get { throw new NotImplementedException(); }
         }
 
         /// <inheritdoc/>
@@ -420,16 +414,6 @@ namespace RemoteViewing.LibVnc.Interop
         {
             NativeMethods.rfbScreenCleanup(this.handle);
             return true;
-        }
-
-        private bool GetBool(RfbScreenInfoPtrField field)
-        {
-            return Marshal.ReadByte(this.handle, FieldOffsets[(int)field]) == 1;
-        }
-
-        private void SetBool(RfbScreenInfoPtrField field, bool value)
-        {
-            Marshal.WriteByte(this.handle, FieldOffsets[(int)field], value ? (byte)1 : (byte)0);
         }
     }
 }

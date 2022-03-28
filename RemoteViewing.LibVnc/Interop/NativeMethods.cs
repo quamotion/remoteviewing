@@ -43,6 +43,8 @@ namespace RemoteViewing.LibVnc.Interop
         /// </summary>
         public const string LibraryName = @"vncserver";
 
+        public const string InteropLibraryName = @"vnclogger";
+
         /// <summary>
         /// The calling convention used by the libvncserver library.
         /// </summary>
@@ -405,5 +407,83 @@ namespace RemoteViewing.LibVnc.Interop
         /// </returns>
         [DllImport(LibraryName, CallingConvention = LibraryCallingConvention, EntryPoint = "rfbReverseConnection")]
         public static extern void* rfbReverseConnection(RfbScreenInfoPtr rfbScreen, byte* host, int port);
+
+        [DllImport(InteropLibraryName, CallingConvention = LibraryCallingConvention)]
+        public static extern int rfbScreenInfo_get_width(IntPtr rfbScreen);
+
+        [DllImport(InteropLibraryName, CallingConvention = LibraryCallingConvention)]
+        public static extern void rfbScreenInfo_set_width(IntPtr rfbScreen, int width);
+
+        [DllImport(InteropLibraryName, CallingConvention = LibraryCallingConvention)]
+        public static extern int rfbScreenInfo_get_height(IntPtr rfbScreen);
+
+        [DllImport(InteropLibraryName, CallingConvention = LibraryCallingConvention)]
+        public static extern void rfbScreenInfo_set_height(IntPtr rfbScreen, int height);
+
+        [DllImport(InteropLibraryName, CallingConvention = LibraryCallingConvention)]
+        public static extern IntPtr rfbScreenInfo_get_screenData(IntPtr rfbScreen);
+
+        [DllImport(InteropLibraryName, CallingConvention = LibraryCallingConvention)]
+        public static extern void rfbScreenInfo_set_screenData(IntPtr rfbScreen, IntPtr screenData);
+
+        [DllImport(InteropLibraryName, CallingConvention = LibraryCallingConvention)]
+        public static extern RfbPixelFormat rfbScreenInfo_get_serverFormat(IntPtr rfbScreen);
+
+        [DllImport(InteropLibraryName, CallingConvention = LibraryCallingConvention)]
+        public static extern void rfbScreenInfo_set_serverFormat(IntPtr rfbScreen, RfbPixelFormat serverFormat);
+
+        [DllImport(InteropLibraryName, CallingConvention = LibraryCallingConvention)]
+        public static extern bool rfbScreenInfo_get_autoPort(IntPtr rfbScreen);
+
+        [DllImport(InteropLibraryName, CallingConvention = LibraryCallingConvention)]
+        public static extern void rfbScreenInfo_set_autoPort(IntPtr rfbScreen, bool autoPort);
+
+        [DllImport(InteropLibraryName, CallingConvention = LibraryCallingConvention)]
+        public static extern int rfbScreenInfo_get_port(IntPtr rfbScreen);
+
+        [DllImport(InteropLibraryName, CallingConvention = LibraryCallingConvention)]
+        public static extern void rfbScreenInfo_set_port(IntPtr rfbScreen, int port);
+
+        [DllImport(InteropLibraryName, CallingConvention = LibraryCallingConvention)]
+        public static extern int rfbScreenInfo_get_listenInterface(IntPtr rfbScreen);
+
+        [DllImport(InteropLibraryName, CallingConvention = LibraryCallingConvention)]
+        public static extern void rfbScreenInfo_set_listenInterface(IntPtr rfbScreen, int listenInterface);
+
+        [DllImport(InteropLibraryName, CallingConvention = LibraryCallingConvention)]
+        public static extern IntPtr rfbScreenInfo_get_frameBuffer(IntPtr rfbScreen);
+
+        [DllImport(InteropLibraryName, CallingConvention = LibraryCallingConvention)]
+        public static extern void rfbScreenInfo_set_frameBuffer(IntPtr rfbScreen, IntPtr frameBuffer);
+
+        [DllImport(InteropLibraryName, CallingConvention = LibraryCallingConvention)]
+        public static extern IntPtr rfbScreenInfo_get_kbdAddEvent(IntPtr rfbScreen);
+
+        [DllImport(InteropLibraryName, CallingConvention = LibraryCallingConvention)]
+        public static extern void rfbScreenInfo_set_kbdAddEvent(IntPtr rfbScreen, IntPtr kbdAddEvent);
+
+        [DllImport(InteropLibraryName, CallingConvention = LibraryCallingConvention)]
+        public static extern IntPtr rfbScreenInfo_get_ptrAddEvent(IntPtr rfbScreen);
+
+        [DllImport(InteropLibraryName, CallingConvention = LibraryCallingConvention)]
+        public static extern void rfbScreenInfo_set_ptrAddEvent(IntPtr rfbScreen, IntPtr ptrAddEvent);
+
+        [DllImport(InteropLibraryName, CallingConvention = LibraryCallingConvention)]
+        public static extern IntPtr rfbScreenInfo_get_newClientHook(IntPtr rfbScreen);
+
+        [DllImport(InteropLibraryName, CallingConvention = LibraryCallingConvention)]
+        public static extern void rfbScreenInfo_set_newClientHook(IntPtr rfbScreen, IntPtr newClientHook);
+
+        [DllImport(InteropLibraryName, CallingConvention = LibraryCallingConvention)]
+        public static extern IntPtr rfbScreenInfo_get_authPasswdData(IntPtr rfbScreen);
+
+        [DllImport(InteropLibraryName, CallingConvention = LibraryCallingConvention)]
+        public static extern void rfbScreenInfo_set_authPasswdData(IntPtr rfbScreen, IntPtr authPasswdData);
+
+        [DllImport(InteropLibraryName, CallingConvention = LibraryCallingConvention)]
+        public static extern IntPtr rfbScreenInfo_get_passwordCheck(IntPtr rfbScreen);
+
+        [DllImport(InteropLibraryName, CallingConvention = LibraryCallingConvention)]
+        public static extern void rfbScreenInfo_set_passwordCheck(IntPtr rfbScreen, IntPtr authPasswdData);
     }
 }
