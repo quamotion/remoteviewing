@@ -55,7 +55,7 @@ jobs:
   - task: PublishBuildArtifacts@1
     inputs:
       pathtoPublish: '$(Build.ArtifactStagingDirectory)'
-      artifactName: libvnc
+      artifactName: libvnc-$(Build.BuildNumber)
     displayName: Publish LibVNC
 
 - job: native_windows
@@ -73,6 +73,10 @@ jobs:
   pool:
     vmImage: windows-2019
   steps:
+  - script: |
+      dotnet tool install --tool-path . nbgv
+      nbgv cloud -a
+    displayName: Set build number
   - script: |
       git clone --branch LibVNCServer-$(LIBVNC_VERSION) --depth 1 https://github.com/LibVNC/libvncserver/
       git show
@@ -118,7 +122,7 @@ jobs:
   - task: PublishBuildArtifacts@1
     inputs:
       pathtoPublish: '$(Build.ArtifactStagingDirectory)/'
-      artifactName: libvnc
+      artifactName: libvnc-$(Build.BuildNumber)
     displayName: Publish LibVNC
 
 - job: native_linux_x64
@@ -130,16 +134,28 @@ jobs:
     image: ubuntu:20.04
     options: "--name ci-container -v /usr/bin/docker:/tmp/docker:ro"
   steps:
+  - task: UseDotNet@2
+    displayName: 'Use .NET Core sdk'
+    inputs:
+      packageType: sdk
+      version: 6.0.x
+      installationPath: $(Agent.ToolsDirectory)/dotnet
   - script: |
       /tmp/docker exec -t -u 0 ci-container \
       sh -c "apt-get update && DEBIAN_FRONTEND=noninteractive apt-get -o Dpkg::Options::="--force-confold" -y install sudo"
     displayName: Set up sudo
   - script: |
-      sudo DEBIAN_FRONTEND=noninteractive apt-get install -y libvncserver-dev gcc clang cmake
-      
+      sudo DEBIAN_FRONTEND=noninteractive apt-get install -y libvncserver-dev gcc clang cmake libssl1.1
+  - script: |
+      export DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=1
+      dotnet tool install --tool-path . nbgv
+      ./nbgv cloud -a
+    displayName: Set build number
+  - script: |
       mkdir -p $(Build.ArtifactStagingDirectory)/$(rid)
       gcc -o $(Build.ArtifactStagingDirectory)/$(rid)/get_offsets -I . -I .. $(Build.SourcesDirectory)/RemoteViewing.LibVnc/get_offsets.c
       $(Build.ArtifactStagingDirectory)/$(rid)/get_offsets > $(Build.ArtifactStagingDirectory)/$(rid)/get_offsets.txt
+    displayName: Get offsets
   - script : |
       mkdir build
       cd build
@@ -151,7 +167,7 @@ jobs:
   - task: PublishBuildArtifacts@1
     inputs:
       pathtoPublish: '$(Build.ArtifactStagingDirectory)'
-      artifactName: libvnc
+      artifactName: libvnc-$(Build.BuildNumber)
     displayName: Publish LibVNC
 
 - job: native_linux_arm64
@@ -163,12 +179,23 @@ jobs:
     image: ubuntu:20.04
     options: "--name ci-container -v /usr/bin/docker:/tmp/docker:ro"
   steps:
+  - task: UseDotNet@2
+    displayName: 'Use .NET Core sdk'
+    inputs:
+      packageType: sdk
+      version: 6.0.x
+      installationPath: $(Agent.ToolsDirectory)/dotnet
   - script: |
       /tmp/docker exec -t -u 0 ci-container \
       sh -c "apt-get update && DEBIAN_FRONTEND=noninteractive apt-get -o Dpkg::Options::="--force-confold" -y install sudo"
     displayName: Set up sudo
   - script: |
-      sudo DEBIAN_FRONTEND=noninteractive apt-get install -y libvncserver-dev gcc-aarch64-linux-gnu cmake
+      sudo DEBIAN_FRONTEND=noninteractive apt-get install -y libvncserver-dev gcc-aarch64-linux-gnu cmake libssl1.1
+  - script: |
+      export DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=1
+      dotnet tool install --tool-path . nbgv
+      ./nbgv cloud -a
+    displayName: Set build number
   - script : |
       mkdir build
       cd build
@@ -181,7 +208,7 @@ jobs:
   - task: PublishBuildArtifacts@1
     inputs:
       pathtoPublish: '$(Build.ArtifactStagingDirectory)'
-      artifactName: libvnc
+      artifactName: libvnc-$(Build.BuildNumber)
     displayName: Publish LibVNC
 
 - job: build
@@ -194,12 +221,12 @@ jobs:
   steps:
   - task: DownloadBuildArtifacts@0
     inputs:
-      artifactName: libvnc
+      artifactName: libvnc-$(Build.BuildNumber)
     # Apparently code coverage isn't really supposed to work, but it should work soon. Sigh.
     # https://github.com/microsoft/azure-pipelines-tasks/issues/11677
     # https://github.com/microsoft/azure-pipelines-tasks/issues/9954
   - script: |
-      set PATH=$(System.ArtifactsDirectory)/libvnc/win7-x64/;%PATH%
+      set PATH=$(System.ArtifactsDirectory)/libvnc-$(Build.BuildNumber)/win7-x64/;%PATH%
       echo %PATH%
       mkdir $(Build.ArtifactStagingDirectory)/nuget
       dotnet test RemoteViewing.sln
@@ -213,6 +240,16 @@ jobs:
     inputs:
       pathtoPublish: '$(Build.ArtifactStagingDirectory)/nuget'
       artifactName: remoteviewing-$(Build.BuildNumber)
+    condition: true
+  - task: NuGetAuthenticate@0
+    displayName: NuGet Authenticate
+    condition: true
+  - task: NuGetCommand@2
+    displayName: NuGet push
+    inputs:
+      command: push
+      publishVstsFeed: 'RemoteViewing/ci'
+      packagesToPush: '$(Build.ArtifactStagingDirectory)/nuget/*.nupkg'
     condition: true
 
 - job: test_linux_x64
@@ -234,9 +271,9 @@ jobs:
       sudo DEBIAN_FRONTEND=noninteractive apt-get install -y libvncserver1 libturbojpeg libgdiplus
   - task: DownloadBuildArtifacts@0
     inputs:
-      artifactName: libvnc
+      artifactName: libvnc-$(Build.BuildNumber)
   - script: |
-      export LD_LIBRARY_PATH=$(System.ArtifactsDirectory)/libvnc/linux-x64/:$LD_LIBRARY_PATH
+      export LD_LIBRARY_PATH=$(System.ArtifactsDirectory)/libvnc-$(Build.BuildNumber)/linux-x64/:$LD_LIBRARY_PATH
       echo $LD_LIBRARY_PATH
       dotnet test RemoteViewing.sln
 
@@ -250,12 +287,12 @@ jobs:
   steps:
   - task: DownloadBuildArtifacts@0
     inputs:
-      artifactName: libvnc
+      artifactName: libvnc-$(Build.BuildNumber)
   - script: |
       brew install mono-libgdiplus
     displayName: Install libgdiplus
   - script: |
-      export DYLD_LIBRARY_PATH=$(System.ArtifactsDirectory)/libvnc/osx-x64/lib/:$DYLD_LIBRARY_PATH
+      export DYLD_LIBRARY_PATH=$(System.ArtifactsDirectory)/libvnc-$(Build.BuildNumber)/osx-x64/lib/:$DYLD_LIBRARY_PATH
       echo $DYLD_LIBRARY_PATH
       mkdir $(Build.ArtifactStagingDirectory)/nuget
       dotnet test RemoteViewing.sln
