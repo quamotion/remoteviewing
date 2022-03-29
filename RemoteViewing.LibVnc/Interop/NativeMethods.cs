@@ -75,6 +75,7 @@ namespace RemoteViewing.LibVnc.Interop
         /// <returns>
         /// A <see cref="RfbNewClientAction"/> which determines how to proceed.
         /// </returns>
+        [UnmanagedFunctionPointer(LibraryCallingConvention)]
         public delegate RfbNewClientAction RfbNewClientHookPtr(IntPtr cl);
 
         /// <summary>
@@ -89,6 +90,7 @@ namespace RemoteViewing.LibVnc.Interop
         /// <param name="cl">
         /// The server structure.
         /// </param>
+        [UnmanagedFunctionPointer(LibraryCallingConvention)]
         public delegate void RfbKbdAddEventProcPtr(byte down, KeySym keySym, IntPtr cl);
 
         /// <summary>
@@ -106,6 +108,7 @@ namespace RemoteViewing.LibVnc.Interop
         /// <param name="cl">
         /// The server structure.
         /// </param>
+        [UnmanagedFunctionPointer(LibraryCallingConvention)]
         public delegate void RfbPtrAddEventProcPtr(int buttonMask, int x, int y, IntPtr cl);
 
         /// <summary>
@@ -114,6 +117,7 @@ namespace RemoteViewing.LibVnc.Interop
         /// <param name="cl">
         /// The server structure.
         /// </param>
+        [UnmanagedFunctionPointer(LibraryCallingConvention)]
         public delegate void ClientGoneHookPtr(IntPtr cl);
 
         /// <summary>
@@ -125,6 +129,7 @@ namespace RemoteViewing.LibVnc.Interop
         /// <param name="furMsg">
         /// The framebuffer update request message.
         /// </param>
+        [UnmanagedFunctionPointer(LibraryCallingConvention)]
         public delegate void ClientFramebufferUpdateRequestHookPtr(IntPtr cl, IntPtr /*rfbFramebufferUpdateRequestMsg*/ furMsg);
 
         /// <summary>
@@ -138,6 +143,7 @@ namespace RemoteViewing.LibVnc.Interop
         /// <c>0</c> when the X11 user does not permit input from the local user; otherwise,
         /// <c>1</c>.
         /// </param>
+        [UnmanagedFunctionPointer(LibraryCallingConvention)]
         public delegate void rfbSetServerInputProcPtr(IntPtr cl, int status);
 
         /// <summary>
@@ -150,6 +156,7 @@ namespace RemoteViewing.LibVnc.Interop
         /// <returns>
         /// <c>0</c> when file transfers are denied; otherwise, <c>1</c>.
         /// </returns>
+        [UnmanagedFunctionPointer(LibraryCallingConvention)]
         public delegate int rfbFileTransferPermitted(IntPtr cl);
 
         /// <summary>
@@ -164,6 +171,7 @@ namespace RemoteViewing.LibVnc.Interop
         /// <param name="message">
         /// The textchat message.
         /// </param>
+        [UnmanagedFunctionPointer(LibraryCallingConvention)]
         public delegate void rfbSetTextChat(IntPtr cl, int length, char* message);
 
         /// <summary>
@@ -172,6 +180,7 @@ namespace RemoteViewing.LibVnc.Interop
         /// <param name="cl">
         /// The server structure.
         /// </param>
+        [UnmanagedFunctionPointer(LibraryCallingConvention)]
         public delegate void rfbDisplayHookPtr(IntPtr cl);
 
         /// <summary>
@@ -183,6 +192,7 @@ namespace RemoteViewing.LibVnc.Interop
         /// <returns>
         /// The caps/num/scroll states of the X server.
         /// </returns>
+        [UnmanagedFunctionPointer(LibraryCallingConvention)]
         public delegate int rfbGetKeyboardLedStateHookPtr(IntPtr screen);
 
         /// <summary>
@@ -200,6 +210,7 @@ namespace RemoteViewing.LibVnc.Interop
         /// <returns>
         /// <see langword="true"/> if the password is correct; otherwise, <see langword="true"/>.
         /// </returns>
+        [UnmanagedFunctionPointer(LibraryCallingConvention)]
         public delegate bool rfbPasswordCheckProcPtr(IntPtr cl, sbyte* encryptedPassWord, int len);
 
         /// <summary>
