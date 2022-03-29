@@ -104,6 +104,7 @@ jobs:
     displayName: Configure LibVNC
   - script: |
       cmake --build . --target vncserver --config Release
+      dir .
     workingDirectory: build
     displayName: Compile LibVNC
   - script: |
@@ -114,10 +115,19 @@ jobs:
   - script : |
       mkdir build
       cd build
-      cmake -G "Visual Studio 16 2019" -A $(arch) ..
+      cmake -DCMAKE_TOOLCHAIN_FILE=%VCPKG_INSTALLATION_ROOT%/scripts/buildsystems/vcpkg.cmake -A $(arch) ..
       cmake --build . --config Release
       copy Release\*.* $(Build.ArtifactStagingDirectory)\$(rid)\
     workingDirectory: '$(Build.SourcesDirectory)/RemoteViewing.LibVnc.Logging'
+    displayName: Build vnclogger
+  - script : |
+      mkdir build
+      cd build
+      cmake -DCMAKE_TOOLCHAIN_FILE=%VCPKG_INSTALLATION_ROOT%/scripts/buildsystems/vcpkg.cmake -A $(arch) ..
+      cmake --build . --config Release
+      copy Release\*.* $(Build.ArtifactStagingDirectory)\$(rid)\
+      Release\vncoffsets.exe
+    workingDirectory: '$(Build.SourcesDirectory)/RemoteViewing.LibVnc'
     displayName: Build vnclogger
   - task: PublishBuildArtifacts@1
     inputs:

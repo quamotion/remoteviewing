@@ -44,6 +44,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdarg.h>
+#include "rfb/rfb.h"
 
 typedef void (*LogProc)(int level, char* message, int length);
 
@@ -99,4 +100,222 @@ LogError(const char* format, ...)
     Log(1, format, args);
 
     va_end(args);
+}
+
+DllExport int
+rfbScreenInfo_get_width(rfbScreenInfoPtr rfbScreen)
+{
+    return rfbScreen->width;
+}
+
+DllExport void
+rfbScreenInfo_set_width(rfbScreenInfoPtr rfbScreen, int width)
+{
+    rfbScreen->width = width;
+}
+
+DllExport int
+rfbScreenInfo_get_height(rfbScreenInfoPtr rfbScreen)
+{
+    return rfbScreen->height;
+}
+
+DllExport void
+rfbScreenInfo_set_height(rfbScreenInfoPtr rfbScreen, int height)
+{
+    rfbScreen->height = height;
+}
+
+DllExport void*
+rfbScreenInfo_get_screenData(rfbScreenInfoPtr rfbScreen)
+{
+    return rfbScreen->screenData;
+}
+
+DllExport void
+rfbScreenInfo_set_screenData(rfbScreenInfoPtr rfbScreen, void* screenData)
+{
+    rfbScreen->screenData = screenData;
+}
+
+DllExport rfbPixelFormat
+rfbScreenInfo_get_serverFormat(rfbScreenInfoPtr rfbScreen)
+{
+    return rfbScreen->serverFormat;
+}
+
+DllExport void
+rfbScreenInfo_set_serverFormat(rfbScreenInfoPtr rfbScreen, rfbPixelFormat serverFormat)
+{
+    rfbScreen->serverFormat = serverFormat;
+}
+
+DllExport rfbBool
+rfbScreenInfo_get_autoPort(rfbScreenInfoPtr rfbScreen)
+{
+    return rfbScreen->autoPort;
+}
+
+DllExport void
+rfbScreenInfo_set_autoPort(rfbScreenInfoPtr rfbScreen, rfbBool autoPort)
+{
+    rfbScreen->autoPort = autoPort;
+}
+
+DllExport int
+rfbScreenInfo_get_port(rfbScreenInfoPtr rfbScreen)
+{
+    return rfbScreen->port;
+}
+
+DllExport void
+rfbScreenInfo_set_port(rfbScreenInfoPtr rfbScreen, int port)
+{
+    rfbScreen->port = port;
+}
+
+DllExport in_addr_t
+rfbScreenInfo_get_listenInterface(rfbScreenInfoPtr rfbScreen)
+{
+    return rfbScreen->listenInterface;
+}
+
+DllExport void
+rfbScreenInfo_set_listenInterface(rfbScreenInfoPtr rfbScreen, in_addr_t listenInterface)
+{
+    rfbScreen->listenInterface = listenInterface;
+}
+
+DllExport char*
+rfbScreenInfo_get_frameBuffer(rfbScreenInfoPtr rfbScreen)
+{
+    return rfbScreen->frameBuffer;
+}
+
+DllExport void
+rfbScreenInfo_set_frameBuffer(rfbScreenInfoPtr rfbScreen, char* frameBuffer)
+{
+    rfbScreen->frameBuffer = frameBuffer;
+}
+
+DllExport rfbKbdAddEventProcPtr
+rfbScreenInfo_get_kbdAddEvent(rfbScreenInfoPtr rfbScreen)
+{
+    return rfbScreen->kbdAddEvent;
+}
+
+DllExport void
+rfbScreenInfo_set_kbdAddEvent(rfbScreenInfoPtr rfbScreen, rfbKbdAddEventProcPtr kbdAddEvent)
+{
+    rfbScreen->kbdAddEvent = kbdAddEvent;
+}
+
+DllExport rfbPtrAddEventProcPtr
+rfbScreenInfo_get_ptrAddEvent(rfbScreenInfoPtr rfbScreen)
+{
+    return rfbScreen->ptrAddEvent;
+}
+
+DllExport void
+rfbScreenInfo_set_ptrAddEvent(rfbScreenInfoPtr rfbScreen, rfbPtrAddEventProcPtr ptrAddEvent)
+{
+    rfbScreen->ptrAddEvent = ptrAddEvent;
+}
+
+DllExport rfbNewClientHookPtr
+rfbScreenInfo_get_newClientHook(rfbScreenInfoPtr rfbScreen)
+{
+    return rfbScreen->newClientHook;
+}
+
+DllExport void
+rfbScreenInfo_set_newClientHook(rfbScreenInfoPtr rfbScreen, rfbNewClientHookPtr newClientHook)
+{
+    rfbScreen->newClientHook = newClientHook;
+}
+
+DllExport void*
+rfbScreenInfo_get_authPasswdData(rfbScreenInfoPtr rfbScreen)
+{
+    return rfbScreen->authPasswdData;
+}
+
+DllExport void
+rfbScreenInfo_set_authPasswdData(rfbScreenInfoPtr rfbScreen, void* authPasswdData)
+{
+    rfbScreen->authPasswdData = authPasswdData;
+}
+
+DllExport rfbPasswordCheckProcPtr
+rfbScreenInfo_get_passwordCheck(rfbScreenInfoPtr rfbScreen)
+{
+    return rfbScreen->passwordCheck;
+}
+
+DllExport void
+rfbScreenInfo_set_passwordCheck(rfbScreenInfoPtr rfbScreen, rfbPasswordCheckProcPtr passwordCheck)
+{
+    rfbScreen->passwordCheck = passwordCheck;
+}
+
+DllExport char*
+rfbClient_get_host(rfbClientPtr rfbClient)
+{
+    return rfbClient->host;
+}
+
+DllExport int
+rfbClient_get_protocolMajorVersion(rfbClientPtr rfbClient)
+{
+    return rfbClient->protocolMajorVersion;
+}
+
+DllExport int
+rfbClient_get_protocolMinorVersion(rfbClientPtr rfbClient)
+{
+    return rfbClient->protocolMinorVersion;
+}
+
+DllExport ClientGoneHookPtr
+rfbClient_get_clientGoneHook(rfbClientPtr rfbClient)
+{
+    return rfbClient->clientGoneHook;
+}
+
+DllExport void
+rfbClient_set_clientGoneHook(rfbClientPtr rfbClient, ClientGoneHookPtr clientGoneHook)
+{
+    rfbClient->clientGoneHook = clientGoneHook;
+}
+
+// clientFramebufferUpdateRequestHook was added in libvncserver 0.9.13
+#if RFBCLIENTPTR_HAS_CLIENTFRAMEBUFFERUPDATEREQUESTHOOK
+DllExport ClientFramebufferUpdateRequestHookPtr
+rfbClient_get_clientFramebufferUpdateRequestHook(rfbClientPtr rfbClient)
+{
+    return rfbClient->clientFramebufferUpdateRequestHook;
+}
+
+DllExport void
+rfbClient_set_clientFramebufferUpdateRequestHook(rfbClientPtr rfbClient, ClientFramebufferUpdateRequestHookPtr clientFramebufferUpdateRequestHook)
+{
+    rfbClient->clientFramebufferUpdateRequestHook = clientFramebufferUpdateRequestHook;
+}
+#else
+DllExport void*
+rfbClient_get_clientFramebufferUpdateRequestHook(rfbClientPtr rfbClient)
+{
+    return NULL;
+}
+
+DllExport void
+rfbClient_set_clientFramebufferUpdateRequestHook(rfbClientPtr rfbClient, void* clientFramebufferUpdateRequestHook)
+{
+}
+#endif
+
+DllExport void
+rfbClient_get_authChallenge(rfbClientPtr rfbClient, uint8_t* authChallenge)
+{
+    memcpy(authChallenge, rfbClient->authChallenge, CHALLENGESIZE);
 }

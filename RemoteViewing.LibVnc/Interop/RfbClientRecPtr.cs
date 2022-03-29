@@ -82,11 +82,7 @@ namespace RemoteViewing.LibVnc.Interop
         /// </summary>
         public RfbScreenInfoPtr Screen
         {
-            get
-            {
-                var ptr = Marshal.ReadIntPtr(this.handle, FieldOffsets[(int)RfbClientRecPtrField.Screen]);
-                return new RfbScreenInfoPtr(ptr, false);
-            }
+            get { throw new NotImplementedException(); }
         }
 
         /// <summary>
@@ -94,11 +90,7 @@ namespace RemoteViewing.LibVnc.Interop
         /// </summary>
         public RfbScreenInfoPtr ScaledScreen
         {
-            get
-            {
-                var ptr = Marshal.ReadIntPtr(this.handle, FieldOffsets[(int)RfbClientRecPtrField.ScaledScreen]);
-                return new RfbScreenInfoPtr(ptr, false);
-            }
+            get { throw new NotImplementedException(); }
         }
 
         /// <summary>
@@ -106,7 +98,7 @@ namespace RemoteViewing.LibVnc.Interop
         /// </summary>
         public bool PalmVNC
         {
-            get { return this.GetBool(RfbClientRecPtrField.PalmVNC); }
+            get { throw new NotImplementedException(); }
         }
 
         /// <summary>
@@ -114,8 +106,8 @@ namespace RemoteViewing.LibVnc.Interop
         /// </summary>
         public IntPtr ClientData
         {
-            get { return Marshal.ReadIntPtr(this.handle, FieldOffsets[(int)RfbClientRecPtrField.ClientData]); }
-            set { Marshal.WriteIntPtr(this.handle, FieldOffsets[(int)RfbClientRecPtrField.ClientData], value); }
+            get { throw new NotImplementedException(); }
+            set { throw new NotImplementedException(); }
         }
 
         /// <summary>
@@ -124,8 +116,8 @@ namespace RemoteViewing.LibVnc.Interop
         /// </summary>
         public IntPtr ClientGoneHook
         {
-            get { return Marshal.ReadIntPtr(this.handle, FieldOffsets[(int)RfbClientRecPtrField.ClientGoneHook]); }
-            set { Marshal.WriteIntPtr(this.handle, FieldOffsets[(int)RfbClientRecPtrField.ClientGoneHook], value); }
+            get { return NativeMethods.rfbClient_get_clientGoneHook(this.handle); }
+            set { NativeMethods.rfbClient_set_clientGoneHook(this.handle, value); }
         }
 
         /// <summary>
@@ -133,11 +125,7 @@ namespace RemoteViewing.LibVnc.Interop
         /// </summary>
         public unsafe string Host
         {
-            get
-            {
-                var host = (sbyte**)((sbyte*)this.handle.ToPointer() + FieldOffsets[(int)RfbClientRecPtrField.Host]);
-                return new string(*host);
-            }
+            get { return new string((sbyte*)NativeMethods.rfbClient_get_host(this.handle)); }
         }
 
         /// <summary>
@@ -145,7 +133,7 @@ namespace RemoteViewing.LibVnc.Interop
         /// </summary>
         public int ProtocolMajorVersion
         {
-            get { return Marshal.ReadInt32(this.handle, FieldOffsets[(int)RfbClientRecPtrField.ProtocolMajorVersion]); }
+            get { return NativeMethods.rfbClient_get_protocolMajorVersion(this.handle); }
         }
 
         /// <summary>
@@ -153,7 +141,7 @@ namespace RemoteViewing.LibVnc.Interop
         /// </summary>
         public int ProtocolMinorVersion
         {
-            get { return Marshal.ReadInt32(this.handle, FieldOffsets[(int)RfbClientRecPtrField.ProtocolMinorVersion]); }
+            get { return NativeMethods.rfbClient_get_protocolMinorVersion(this.handle); }
         }
 
         /// <summary>
@@ -161,7 +149,7 @@ namespace RemoteViewing.LibVnc.Interop
         /// </summary>
         public RfbClientRecState State
         {
-            get { return (RfbClientRecState)Marshal.ReadInt32(this.handle, FieldOffsets[(int)RfbClientRecPtrField.State]); }
+            get { throw new NotImplementedException(); }
         }
 
         /// <summary>
@@ -169,7 +157,7 @@ namespace RemoteViewing.LibVnc.Interop
         /// </summary>
         public bool ReverseConnection
         {
-            get { return this.GetBool(RfbClientRecPtrField.ReverseConnection); }
+            get { throw new NotImplementedException(); }
         }
 
         /// <summary>
@@ -177,7 +165,7 @@ namespace RemoteViewing.LibVnc.Interop
         /// </summary>
         public bool OnHold
         {
-            get { return this.GetBool(RfbClientRecPtrField.OnHold); }
+            get { throw new NotImplementedException(); }
         }
 
         /// <summary>
@@ -185,7 +173,7 @@ namespace RemoteViewing.LibVnc.Interop
         /// </summary>
         public bool ReadyForSetColourMapEntries
         {
-            get { return this.GetBool(RfbClientRecPtrField.ReadyForSetColourMapEntries); }
+            get { throw new NotImplementedException(); }
         }
 
         /// <summary>
@@ -193,7 +181,7 @@ namespace RemoteViewing.LibVnc.Interop
         /// </summary>
         public bool UseCopyRect
         {
-            get { return this.GetBool(RfbClientRecPtrField.UseCopyRect); }
+            get { throw new NotImplementedException(); }
         }
 
         /// <summary>
@@ -201,7 +189,7 @@ namespace RemoteViewing.LibVnc.Interop
         /// </summary>
         public VncEncoding PreferredEncoding
         {
-            get { return (VncEncoding)Marshal.ReadInt32(this.handle, FieldOffsets[(int)RfbClientRecPtrField.PreferredEncoding]); }
+            get { throw new NotImplementedException(); }
         }
 
         /// <summary>
@@ -209,7 +197,7 @@ namespace RemoteViewing.LibVnc.Interop
         /// </summary>
         public int CorreMaxWidth
         {
-            get { return Marshal.ReadInt32(this.handle, FieldOffsets[(int)RfbClientRecPtrField.CorreMaxWidth]); }
+            get { throw new NotImplementedException(); }
         }
 
         /// <summary>
@@ -217,7 +205,7 @@ namespace RemoteViewing.LibVnc.Interop
         /// </summary>
         public int CorreMaxHeight
         {
-            get { return Marshal.ReadInt32(this.handle, FieldOffsets[(int)RfbClientRecPtrField.CorreMaxHeight]); }
+            get { throw new NotImplementedException(); }
         }
 
         /// <summary>
@@ -225,7 +213,7 @@ namespace RemoteViewing.LibVnc.Interop
         /// </summary>
         public bool ViewOnly
         {
-            get { return this.GetBool(RfbClientRecPtrField.ViewOnly); }
+            get { throw new NotImplementedException(); }
         }
 
         /// <summary>
@@ -238,11 +226,14 @@ namespace RemoteViewing.LibVnc.Interop
         {
             get
             {
-                const int CHALLENGESIZE = 16;
+                var authChallenge = new byte[16];
 
-                return new Span<byte>(
-                    (this.handle + FieldOffsets[(int)RfbClientRecPtrField.AuthChallenge]).ToPointer(),
-                    CHALLENGESIZE);
+                fixed (byte* authChallengePtr = authChallenge)
+                {
+                    NativeMethods.rfbClient_get_authChallenge(this.handle, authChallengePtr);
+                }
+
+                return authChallenge;
             }
         }
 
@@ -259,7 +250,7 @@ namespace RemoteViewing.LibVnc.Interop
                     throw new InvalidOperationException("ClientFramebufferUpdateRequestHook is available on libvncserver 0.9.13 or newer only.");
                 }
 
-                return Marshal.ReadIntPtr(this.handle, FieldOffsets[(int)RfbClientRecPtrField.ClientFramebufferUpdateRequestHook]);
+                return NativeMethods.rfbClient_get_clientFramebufferUpdateRequestHook(this.handle);
             }
 
             set
@@ -269,7 +260,7 @@ namespace RemoteViewing.LibVnc.Interop
                     throw new InvalidOperationException("ClientFramebufferUpdateRequestHook is available on libvncserver 0.9.13 or newer only.");
                 }
 
-                Marshal.WriteIntPtr(this.handle, FieldOffsets[(int)RfbClientRecPtrField.ClientFramebufferUpdateRequestHook], value);
+                NativeMethods.rfbClient_set_clientFramebufferUpdateRequestHook(this.handle, value);
             }
         }
 
@@ -278,16 +269,6 @@ namespace RemoteViewing.LibVnc.Interop
         {
             NativeMethods.rfbScreenCleanup(this.handle);
             return true;
-        }
-
-        private bool GetBool(RfbClientRecPtrField field)
-        {
-            return Marshal.ReadByte(this.handle, FieldOffsets[(int)field]) == 1;
-        }
-
-        private void SetBool(RfbClientRecPtrField field, bool value)
-        {
-            Marshal.WriteByte(this.handle, FieldOffsets[(int)field], value ? (byte)1 : (byte)0);
         }
     }
 }

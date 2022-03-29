@@ -2,10 +2,36 @@
 // This data can then feed into the P/Invoke code, to ensure the correct offsets are used.
 #include <stddef.h>
 #include <stdio.h>
-#include "rfb/rfb.h"
+#include <rfb/rfb.h>
 
 int main()
 {
+	printf("Defines\n");
+	printf("-------\n");
+
+#ifdef LIBVNCSERVER_HAVE_LIBZ
+	printf("LIBVNCSERVER_HAVE_LIBZ\n");
+#endif
+#ifdef LIBVNCSERVER_HAVE_LIBJPEG
+	printf("LIBVNCSERVER_HAVE_LIBJPEG\n");
+#endif
+#ifdef LIBVNCSERVER_HAVE_LIBPNG
+	printf("LIBVNCSERVER_HAVE_LIBPNG\n");
+#endif
+#ifdef LIBVNCSERVER_HAVE_LIBPTHREAD
+	printf("LIBVNCSERVER_HAVE_LIBPTHREAD\n");
+#endif
+#ifdef LIBVNCSERVER_HAVE_WIN32THREADS
+	printf("LIBVNCSERVER_HAVE_WIN32THREADS\n");
+#endif
+#ifdef TODELETE
+	printf("TODELETE");
+#endif
+
+	printf("\n");
+	printf("Sizes\n");
+	printf("-----\n");
+
 	printf("sizeof(void*): %zu\n", sizeof(void*));
 	printf("sizeof(int): %zu\n", sizeof(int));
 	printf("sizeof(rfbPixel ): %zu\n", sizeof(rfbPixel));
@@ -45,13 +71,17 @@ int main()
 #endif
 
 	printf("sizeof(rfbFileTransferData): %zu\n", sizeof(rfbFileTransferData));
-	printf("sizeof(pthread_cond_t): %zu\n", sizeof(pthread_cond_t));
-
+	
 #ifdef LIBVNCSERVER_HAVE_LIBPTHREAD
+	printf("sizeof(pthread_cond_t): %zu\n", sizeof(pthread_cond_t));
 	printf("sizeof(pthread_t): %zu\n", sizeof(pthread_t));
 #endif
 
 	printf("sizeof(rfbScreenInfo): %zu\n", sizeof(rfbScreenInfo));
+	
+	printf("\n");
+	printf("Offsets\n");
+	printf("-------\n");
 
 	printf("offsetof(rfbScreenInfo, scaledScreenNext) : %zu\n", offsetof(rfbScreenInfo, scaledScreenNext));
 	printf("offsetof(rfbScreenInfo, scaledScreenRefCount) : %zu\n", offsetof(rfbScreenInfo, scaledScreenRefCount));

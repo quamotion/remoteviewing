@@ -24,9 +24,7 @@
 
 cmake_minimum_required (VERSION 3.8)
 
-include (CheckStructHasMember)
-
-project ("vnclogger" C)
+project ("vncoffsets" C)
 
 find_package(ZLIB)
 find_package(JPEG)
@@ -37,10 +35,6 @@ include_directories(${JPEG_INCLUDE_DIR})
 include_directories ("../libvncserver/")
 include_directories ("../build/")
 
-CHECK_STRUCT_HAS_MEMBER("rfbClientPtr" clientFramebufferUpdateRequestHook rfb/rfb.h
-                        RFBCLIENTPTR_HAS_CLIENTFRAMEBUFFERUPDATEREQUESTHOOK LANGUAGE C)
-
-add_library (
-	vnclogger
-	SHARED
-	"vnclogger.c")
+add_executable (
+	vncoffsets
+	"get_offsets.c")
