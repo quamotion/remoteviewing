@@ -484,6 +484,30 @@ namespace RemoteViewing.LibVnc.Interop
         public static extern IntPtr rfbScreenInfo_get_passwordCheck(IntPtr rfbScreen);
 
         [DllImport(InteropLibraryName, CallingConvention = LibraryCallingConvention)]
-        public static extern void rfbScreenInfo_set_passwordCheck(IntPtr rfbScreen, IntPtr authPasswdData);
+        public static extern void rfbScreenInfo_set_passwordCheck(IntPtr rfbScreen, IntPtr passwordCheck);
+
+        [DllImport(InteropLibraryName, CallingConvention = LibraryCallingConvention)]
+        public static extern char* rfbClient_get_host(IntPtr rfbClient);
+
+        [DllImport(InteropLibraryName, CallingConvention = LibraryCallingConvention)]
+        public static extern int rfbClient_get_protocolMajorVersion(IntPtr rfbClient);
+
+        [DllImport(InteropLibraryName, CallingConvention = LibraryCallingConvention)]
+        public static extern int rfbClient_get_protocolMinorVersion(IntPtr rfbClient);
+
+        [DllImport(InteropLibraryName, CallingConvention = LibraryCallingConvention)]
+        public static extern IntPtr rfbClient_get_clientGoneHook(IntPtr rfbClient);
+
+        [DllImport(InteropLibraryName, CallingConvention = LibraryCallingConvention)]
+        public static extern void rfbClient_set_clientGoneHook(IntPtr rfbClient, IntPtr clientGoneHook);
+
+        [DllImport(InteropLibraryName, CallingConvention = LibraryCallingConvention)]
+        public static extern IntPtr rfbClient_get_clientFramebufferUpdateRequestHook(IntPtr rfbClient);
+
+        [DllImport(InteropLibraryName, CallingConvention = LibraryCallingConvention)]
+        public static extern void rfbClient_set_clientFramebufferUpdateRequestHook(IntPtr rfbClient, IntPtr clientFramebufferUpdateRequestHook);
+
+        [DllImport(InteropLibraryName, CallingConvention = LibraryCallingConvention)]
+        public static extern void rfbClient_get_authChallenge(IntPtr rfbClient, void* authChallenge);
     }
 }

@@ -257,3 +257,65 @@ rfbScreenInfo_set_passwordCheck(rfbScreenInfoPtr rfbScreen, rfbPasswordCheckProc
 {
     rfbScreen->passwordCheck = passwordCheck;
 }
+
+DllExport char*
+rfbClient_get_host(rfbClientPtr rfbClient)
+{
+    return rfbClient->host;
+}
+
+DllExport int
+rfbClient_get_protocolMajorVersion(rfbClientPtr rfbClient)
+{
+    return rfbClient->protocolMajorVersion;
+}
+
+DllExport int
+rfbClient_get_protocolMinorVersion(rfbClientPtr rfbClient)
+{
+    return rfbClient->protocolMinorVersion;
+}
+
+DllExport ClientGoneHookPtr
+rfbClient_get_clientGoneHook(rfbClientPtr rfbClient)
+{
+    return rfbClient->clientGoneHook;
+}
+
+DllExport void
+rfbClient_set_clientGoneHook(rfbClientPtr rfbClient, ClientGoneHookPtr clientGoneHook)
+{
+    rfbClient->clientGoneHook = clientGoneHook;
+}
+
+// clientFramebufferUpdateRequestHook was added in libvncserver 0.9.13
+#if RFBCLIENTPTR_HAS_CLIENTFRAMEBUFFERUPDATEREQUESTHOOK
+DllExport ClientFramebufferUpdateRequestHookPtr
+rfbClient_get_clientFramebufferUpdateRequestHook(rfbClientPtr rfbClient)
+{
+    return rfbClient->clientFramebufferUpdateRequestHook;
+}
+
+DllExport void
+rfbClient_set_clientFramebufferUpdateRequestHook(rfbClientPtr rfbClient, ClientFramebufferUpdateRequestHookPtr clientFramebufferUpdateRequestHook)
+{
+    rfbClient->clientFramebufferUpdateRequestHook = clientFramebufferUpdateRequestHook;
+}
+#else
+DllExport void*
+rfbClient_get_clientFramebufferUpdateRequestHook(rfbClientPtr rfbClient)
+{
+    return NULL;
+}
+
+DllExport void
+rfbClient_set_clientFramebufferUpdateRequestHook(rfbClientPtr rfbClient, void* clientFramebufferUpdateRequestHook)
+{
+}
+#endif
+
+DllExport void
+rfbClient_get_authChallenge(rfbClientPtr rfbClient, uint8_t* authChallenge)
+{
+    memcpy(authChallenge, rfbClient->authChallenge, CHALLENGESIZE);
+}
