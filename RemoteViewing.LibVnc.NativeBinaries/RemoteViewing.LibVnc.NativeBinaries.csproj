@@ -21,27 +21,27 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Content Include="$(SYSTEM_ARTIFACTSDIRECTORY)/libvnc-$(BUILD_BUILDNUMBER)/osx-x64/lib/libvncserver.dylib">
+    <Content Include="$(GITHUB_WORKSPACE)/libvnc/osx-x64/libvncserver.dylib">
       <PackagePath>runtimes/osx-x64/native/%(Filename)%(Extension)</PackagePath>
       <Pack>true</Pack>
     </Content>
 
-    <Content Include="$(SYSTEM_ARTIFACTSDIRECTORY)/libvnc-$(BUILD_BUILDNUMBER)/osx-x64/lib/libvnclogger.dylib">
+    <Content Include="$(GITHUB_WORKSPACE)/libvnc/osx-x64/libvnclogger.dylib">
       <PackagePath>runtimes/osx-x64/native/%(Filename)%(Extension)</PackagePath>
       <Pack>true</Pack>
     </Content>
 
-    <Content Include="$(SYSTEM_ARTIFACTSDIRECTORY)/libvnc-$(BUILD_BUILDNUMBER)/osx-x64/lib/libpng16.16.dylib">
+    <Content Include="$(GITHUB_WORKSPACE)/libvnc/osx-x64/libpng16.16.dylib">
       <PackagePath>runtimes/osx-x64/native/%(Filename)%(Extension)</PackagePath>
       <Pack>true</Pack>
     </Content>
 
-    <Content Include="$(SYSTEM_ARTIFACTSDIRECTORY)/libvnc-$(BUILD_BUILDNUMBER)/osx-x64/lib/libjpeg.9.dylib">
+    <Content Include="$(GITHUB_WORKSPACE)/libvnc/osx-x64/libjpeg.9.dylib">
       <PackagePath>runtimes/osx-x64/native/%(Filename)%(Extension)</PackagePath>
       <Pack>true</Pack>
     </Content>
 
-    <Content Include="$(SYSTEM_ARTIFACTSDIRECTORY)/libvnc-$(BUILD_BUILDNUMBER)/win7-x64/*.dll">
+    <Content Include="$(GITHUB_WORKSPACE)/libvnc/win7-x64/*.dll">
       <PackagePath>runtimes/win7-x64/native/%(Filename)%(Extension)</PackagePath>
       <Pack>true</Pack>
     </Content>
@@ -51,7 +51,7 @@
       <Pack>true</Pack>
     </Content>
 
-    <Content Include="$(SYSTEM_ARTIFACTSDIRECTORY)/libvnc-$(BUILD_BUILDNUMBER)/win7-x86/*.dll">
+    <Content Include="$(GITHUB_WORKSPACE)/libvnc/win7-x86/*.dll">
       <PackagePath>runtimes/win7-x86/native/%(Filename)%(Extension)</PackagePath>
       <Pack>true</Pack>
     </Content>
@@ -61,12 +61,12 @@
       <Pack>true</Pack>
     </Content>
 
-    <Content Include="$(SYSTEM_ARTIFACTSDIRECTORY)/libvnc-$(BUILD_BUILDNUMBER)/linux-x64/libvnclogger.so">
+    <Content Include="$(GITHUB_WORKSPACE)/libvnc/linux-x64/libvnclogger.so">
       <PackagePath>runtimes/linux-x64/native/%(Filename)%(Extension)</PackagePath>
       <Pack>true</Pack>
     </Content>
 
-    <Content Include="$(SYSTEM_ARTIFACTSDIRECTORY)/libvnc-$(BUILD_BUILDNUMBER)/linux-arm64/libvnclogger.so">
+    <Content Include="$(GITHUB_WORKSPACE)/libvnc/linux-arm64/libvnclogger.so">
       <PackagePath>runtimes/linux-arm64/native/%(Filename)%(Extension)</PackagePath>
       <Pack>true</Pack>
     </Content>
