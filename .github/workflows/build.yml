@@ -1,0 +1,291 @@
+name: build
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+env:
+  LIBVNC_VERSION: "0.9.13"
+
+jobs:
+  native-osx-x64:
+    runs-on: macOS-10.15
+    env:
+      RID: osx-x64
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - uses: dotnet/nbgv@v0.4.0
+        id: nbgv
+        with:
+          path: src
+      - name: Clone LibVNCServer
+        run: |
+          git clone --depth 1 --branch LibVNCServer-${LIBVNC_VERSION} https://github.com/LibVNC/libvncserver/
+          git show
+      - name: Configure LibVNC
+        run: |
+          mkdir build
+          cd build
+          cmake -DBUILD_SHARED_LIBS=ON -DCMAKE_INSTALL_PREFIX=${{ github.workspace }}/native/ -DWITH_OPENSSL=OFF -DWITH_GCRYPT=OFF -DWITH_GNUTLS=OFF ../libvncserver/
+      - name: Compile LibVNC
+        run: |
+          cmake --build .
+          make install
+          mkdir -p ${{ github.workspace }}/libvnc/${{ env.RID }}/
+          cp ${{ github.workspace }}/native/lib/libvncserver.${{ env.LIBVNC_VERSION }}.dylib ${{ github.workspace }}/libvnc/${{ env.RID }}/libvncserver.dylib
+        working-directory: build
+      - name: Build vnclogger
+        run : |
+          mkdir build
+          cd build
+          cmake ..
+          make
+          cp *.dylib ${{ github.workspace }}/libvnc/${{ env.RID }}/
+        working-directory: '${{ github.workspace }}/RemoteViewing.LibVnc.Logging'
+      - name: Copy additional dependencies
+        run : |
+          cp /usr/local/opt/jpeg/lib/libjpeg.9.dylib .
+          cp /usr/local/opt/libpng/lib/libpng16.16.dylib .
+
+          install_name_tool -change /usr/local/opt/jpeg/lib/libjpeg.9.dylib @loader_path/libjpeg.9.dylib libvncserver.dylib
+          install_name_tool -change /usr/local/opt/libpng/lib/libpng16.16.dylib @loader_path/libpng16.16.dylib libvncserver.dylib
+
+          otool -L libvncserver.dylib
+        working-directory: ${{ github.workspace }}/libvnc/${{ env.RID }}
+      - name: Upload libvnc artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: libvnc-${{ github.run_id }}
+          path: |
+            ${{ github.workspace }}/libvnc/
+
+  native-windows:
+    strategy:
+      matrix:
+        include:
+        - arch: Win32
+          rid: win7-x86
+          triplet: x86-windows
+        - arch: x64
+          rid: win7-x64
+          triplet: x64-windows
+    runs-on: windows-2019
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - uses: dotnet/nbgv@v0.4.0
+        id: nbgv
+        with:
+          path: src
+      - name: Clone LibVNCServer
+        run: |
+          git clone --branch LibVNCServer-${{ env.LIBVNC_VERSION }} --depth 1 https://github.com/LibVNC/libvncserver/
+          git show
+      - name: Cache vcpkg downloads
+        uses: actions/cache@v2
+        with:
+          path: C:/vcpkg/downloads
+          key: vcpkg_downloads | ${{ matrix.triplet }}
+      - name: Cache vcpkg installed
+        uses: actions/cache@v2
+        with:
+          path: C:/vcpkg/installed
+          key: vcpkg_downloads | ${{ matrix.triplet }}
+      - name: Install dependencies
+        run: |
+          C:\vcpkg\vcpkg.exe version
+          C:\vcpkg\vcpkg.exe install libpng:${{ matrix.triplet }}
+          C:\vcpkg\vcpkg.exe install zlib:${{ matrix.triplet }}
+          C:\vcpkg\vcpkg.exe install libjpeg-turbo:${{ matrix.triplet }}
+      - name: Configure LibVNC
+        run: |
+          mkdir build
+          cd build
+          cmake -DCMAKE_TOOLCHAIN_FILE=C:\vcpkg/scripts/buildsystems/vcpkg.cmake -DBUILD_SHARED_LIBS=ON -DWITH_OPENSSL=OFF -DWITH_GCRYPT=OFF -DWITH_GNUTLS=OFF -DCMAKE_INSTALL_PREFIX=${{ github.workspace }}/${{ matrix.rid }} ../libvncserver/ -A ${{ matrix.arch }}
+      - name: Compile LibVNC
+        run: |
+          cmake --build . --target vncserver --config Release
+          dir .
+        working-directory: build
+      - name: Install LibVNC
+        run: |
+          New-Item ${{ github.workspace }}\libvnc\${{ matrix.rid }}\ -ItemType Directory -Force
+          copy Release\*.* ${{ github.workspace }}\libvnc\${{ matrix.rid }}\
+        working-directory: build
+      - name: Build vnclogger
+        run : |
+          mkdir build
+          cd build
+          cmake -DCMAKE_TOOLCHAIN_FILE=C:\vcpkg/scripts/buildsystems/vcpkg.cmake -A ${{ matrix.arch }} ..
+          cmake --build . --config Release
+          New-Item ${{ github.workspace }}\libvnc\${{ matrix.rid }} -ItemType Directory -Force
+          copy Release\*.* ${{ github.workspace }}\libvnc\${{ matrix.rid }}
+        working-directory: '${{ github.workspace }}/RemoteViewing.LibVnc.Logging'
+      - name: Upload libvnc artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: libvnc-${{ github.run_id }}
+          path: |
+            ${{ github.workspace }}\libvnc\
+
+  native-linux-x64:
+    runs-on: ubuntu-20.04
+    env:
+      rid: linux-x64
+    container: ubuntu:20.04
+    steps:
+      - run: |
+          apt-get update
+          DEBIAN_FRONTEND=noninteractive apt-get install -y libvncserver-dev gcc clang cmake libssl1.1 curl git
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-dotnet@v2
+        with:
+          dotnet-version: '6.0.x'
+      - uses: dotnet/nbgv@v0.4.0
+        id: nbgv
+      - name: Build vnclogger
+        run : |
+          mkdir build
+          cd build
+          cmake ../RemoteViewing.LibVnc.Logging
+          make
+          mkdir -p ../libvnc/${{ env.rid }}/
+          cp *.so ../libvnc/${{ env.rid }}/
+      - name: Upload libvnc artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: libvnc-${{ github.run_id }}
+          path: |
+            libvnc/
+
+  native-linux-arm64:
+    runs-on: ubuntu-20.04
+    env:
+      rid: linux-arm64
+    container: ubuntu:20.04
+    steps:
+      - run: |
+          apt-get update
+          DEBIAN_FRONTEND=noninteractive apt-get install -y libvncserver-dev gcc-aarch64-linux-gnu cmake libssl1.1 curl git
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-dotnet@v2
+        with:
+          dotnet-version: '6.0.x'
+      - uses: dotnet/nbgv@v0.4.0
+        id: nbgv
+      - name: Build vnclogger
+        run: |
+          mkdir build
+          cd build
+          cmake -DCMAKE_TOOLCHAIN_FILE=linux-arm64.cmake ../RemoteViewing.LibVnc.Logging
+          make
+          mkdir -p ../libvnc/${{ env.rid }}/
+          cp *.so ../libvnc/${{ env.rid }}/
+      - name: Upload libvnc artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: libvnc-${{ github.run_id }}
+          path: |
+            libvnc/
+
+  build:
+    needs:
+    - native-osx-x64
+    - native-windows
+    - native-linux-x64
+    - native-linux-arm64
+    runs-on: windows-2019
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - uses: actions/download-artifact@v3
+        with:
+          name: libvnc-${{ github.run_id }}
+          path: ${{ github.workspace }}/libvnc/
+      - uses: actions/setup-dotnet@v2
+        with:
+          dotnet-version: '6.0.x'
+      - name: Test
+        run: |
+          $env:PATH="${{ github.workspace }}/libvnc/win7-x64/;$env:PATH"
+          dotnet test RemoteViewing.sln
+        working-directory: ${{ github.workspace }}
+      - name: Pack
+        run: |
+          mkdir ${{ github.workspace }}/nuget
+          dotnet pack RemoteViewing.sln -c Release -o ${{ github.workspace }}/nuget
+        working-directory: ${{ github.workspace }}
+      - name: Upload libvnc artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: remoteviewing-${{ github.run_id }}
+          path: |
+            ${{ github.workspace }}/nuget/
+
+  test-linux-x64:
+    needs: native-linux-x64
+    runs-on: ubuntu-20.04
+    container: mcr.microsoft.com/dotnet/sdk:6.0-focal
+    steps:
+      - run: |
+          apt-get update
+          DEBIAN_FRONTEND=noninteractive apt-get install -y libvncserver1 libturbojpeg libgdiplus
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - uses: actions/download-artifact@v3
+        with:
+          name: libvnc-${{ github.run_id }}
+          path: libvnc/
+      - name: Test
+        run: |
+          export LD_LIBRARY_PATH="$(pwd)/libvnc/linux-x64/:$LD_LIBRARY_PATH"
+          dotnet test RemoteViewing.sln
+
+  test-osx-x64:
+    needs: native-osx-x64
+    runs-on: macOS-10.15
+    steps:
+      - uses: actions/setup-dotnet@v2
+        with:
+          dotnet-version: '6.0.x'
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - uses: actions/download-artifact@v3
+        with:
+          name: libvnc-${{ github.run_id }}
+          path: ${{ github.workspace }}/libvnc/
+      - name: Install libgdiplus
+        run: brew install mono-libgdiplus
+      - name: Test
+        run: |
+          export DYLD_LIBRARY_PATH="${{ github.workspace }}/libvnc/osx-x64/:$DYLD_LIBRARY_PATH"
+          dotnet test RemoteViewing.sln
+
+  publish:
+    needs:
+    - build
+    - test-linux-x64
+    - test-osx-x64
+    runs-on: ubuntu-20.04
+    container: mcr.microsoft.com/dotnet/sdk:6.0-focal
+    if: github.ref == 'refs/heads/master'
+    steps:
+      - uses: actions/download-artifact@v3
+        with:
+          name: remoteviewing-${{ github.run_id }}
+          path: remoteviewing/
+      - name: Publish to NuGet
+        run: |
+          dotnet nuget push "remoteviewing/*.nupkg" --api-key $NUGET_TOKEN --source https://api.nuget.org/v3/index.json
+          dotnet nuget push "remoteviewing/*.snupkg" --api-key $NUGET_TOKEN --source https://api.nuget.org/v3/index.json

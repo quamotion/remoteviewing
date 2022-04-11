@@ -5,11 +5,12 @@
     <Copyright>Copyright © 2013 James F. Bellinger &lt;http://www.zer7.com/software/remoteviewing&gt;</Copyright>
     <VersionPrefix>1.0.8</VersionPrefix>
     <Authors>James F. Bellinger, Frederik Carlier</Authors>
-    <TargetFrameworks>net5.0</TargetFrameworks>
+    <TargetFrameworks>net6.0</TargetFrameworks>
     <AssemblyName>RemoteViewing.ServerExample</AssemblyName>
     <OutputType>Exe</OutputType>
     <DocumentationFile>bin\$(Configuration)\$(TargetFramework)\$(AssemblyName).xml</DocumentationFile>
     <CodeAnalysisRuleSet>..\RemoteViewing.ruleset</CodeAnalysisRuleSet>
+    <IsPackable>false</IsPackable>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="..\RemoteViewing.NoVncExample\DummyFramebufferSource.cs" Link="DummyFramebufferSource.cs" />
