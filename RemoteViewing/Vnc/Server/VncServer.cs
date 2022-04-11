@@ -64,6 +64,26 @@ namespace RemoteViewing.Vnc.Server
         /// <param name="logger">
         /// The logger to use.
         /// </param>
+        public VncServer(IVncFramebufferSource framebufferSource, IVncRemoteKeyboard keyboard, IVncRemoteController controller, ILogger<VncServer> logger)
+            : this(framebufferSource, keyboard, controller, (ILogger)logger)
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="VncServer"/> class.
+        /// </summary>
+        /// <param name="framebufferSource">
+        /// The framebuffer source for all sessions which connect to this server.
+        /// </param>
+        /// <param name="keyboard">
+        /// The keyboard for all sessions which connect to this server.
+        /// </param>
+        /// <param name="controller">
+        /// The controller for all sessions which connect to this server.
+        /// </param>
+        /// <param name="logger">
+        /// The logger to use.
+        /// </param>
         public VncServer(IVncFramebufferSource framebufferSource, IVncRemoteKeyboard keyboard, IVncRemoteController controller, ILogger logger)
         {
             this.framebufferSource = framebufferSource ?? throw new ArgumentNullException(nameof(framebufferSource));

@@ -17,12 +17,12 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="2.1.0" />
-  </ItemGroup>
+    <PackageReference Include="System.CommandLine" Version="2.0.0-beta3.22114.1" />
 
-  <ItemGroup>
+    <PackageReference Include="Quamotion.RemoteViewing.LibVnc.NativeBinaries" Version="1.1.197" />
+    <PackageReference Include="Microsoft.Extensions.Logging" Version="6.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="6.0.0" />
     <ProjectReference Include="..\RemoteViewing.LibVnc\RemoteViewing.LibVnc.csproj" />
-    <ProjectReference Include="..\RemoteViewing.LibVnc.NativeBinaries\RemoteViewing.LibVnc.NativeBinaries.csproj" />
     <ProjectReference Include="..\RemoteViewing\RemoteViewing.csproj" />
     <ProjectReference Include="..\RemoteViewing.Windows.Forms\RemoteViewing.Windows.Forms.csproj" />
   </ItemGroup>

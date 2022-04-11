@@ -74,6 +74,11 @@ namespace RemoteViewing.LibVnc
 
         private RfbScreenInfoPtr server;
 
+        public LibVncServer(IVncFramebufferSource framebufferSource, IVncRemoteKeyboard keyboard, IVncRemoteController controller, ILogger<LibVncServer> logger)
+            : this(framebufferSource, keyboard, controller, (ILogger)logger)
+        {
+        }
+
         public LibVncServer(IVncFramebufferSource framebufferSource, IVncRemoteKeyboard keyboard, IVncRemoteController controller, ILogger logger)
         {
             this.fbSource = framebufferSource ?? throw new ArgumentNullException(nameof(framebufferSource));

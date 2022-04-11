@@ -26,78 +26,54 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 #endregion
 
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Console;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using RemoteViewing.Hosting;
 using RemoteViewing.LibVnc;
 using RemoteViewing.NoVncExample;
 using RemoteViewing.Vnc;
-using RemoteViewing.Vnc.Server;
-using System;
-using System.Net;
-using System.Net.Sockets;
+using System.CommandLine;
+using System.CommandLine.Builder;
+using System.CommandLine.Parsing;
+using System.Threading.Tasks;
 
 namespace RemoteViewing.ServerExample
 {
     internal class Program
     {
         private static string password = "test";
+        private static int port = 5900;
 
-        public static void Main(string[] args)
+        public static Task<int> Main(string[] args)
         {
-            Console.WriteLine($"64-bit: {Environment.Is64BitProcess}. PID {System.Diagnostics.Process.GetCurrentProcess().Id}");
+            var rootCommand = new RootCommand();
 
-            Console.WriteLine("Listening on local port 5900.");
-            Console.WriteLine("Try to connect! The password is: {0}", password);
+            rootCommand.Description = "Remote Viewing VNC Server Sample";
 
-            using (var server = GetServer(useManaged: false))
-            {
-                server.Closed += HandleClosed;
-                server.Connected += HandleConnected;
-                server.PasswordProvided += HandlePasswordProvided;
+            rootCommand.SetHandler(() => CreateHostBuilder(args).Build().Run());
 
-                server.Start(new IPEndPoint(IPAddress.Loopback, 5900));
-
-                Console.WriteLine("Hit ENTER to exit");
-                Console.ReadLine();
-            }
+            var builder = new CommandLineBuilder(rootCommand);
+            builder.UseDefaults();
+            return builder.Build().InvokeAsync(args);
         }
 
-        private static void HandleConnected(object sender, EventArgs e)
-        {
-            Console.WriteLine("Connected");
-        }
+        public static IHostBuilder CreateHostBuilder(string[] args) =>
+            Host.CreateDefaultBuilder(args)
+                .ConfigureServices((hostContext, services) =>
+                {
+                    var framebufferSource = new DummyFramebufferSource();
+                    services.AddSingleton<IVncFramebufferSource>(framebufferSource);
+                    services.AddSingleton<IVncRemoteController>(framebufferSource);
+                    services.AddSingleton<IVncRemoteKeyboard>(framebufferSource);
 
-        private static void HandleClosed(object sender, EventArgs e)
-        {
-            Console.WriteLine("Closed");
-        }
-
-        private static void HandlePasswordProvided(object sender, PasswordProvidedEventArgs e)
-        {
-            e.Accept(password.ToCharArray());
-        }
-
-        private static IVncServer GetServer(bool useManaged)
-        {
-            var framebufferSource = new DummyFramebufferSource();
-            var logger = new ConsoleLogger("VNC", (s, l) => l > LogLevel.Debug, true);
-
-            if (useManaged)
-            {
-                return new VncServer(
-                    framebufferSource,
-                    framebufferSource,
-                    framebufferSource,
-                    logger);
-            }
-            else
-            {
-                return new LibVncServer(
-                    framebufferSource,
-                    framebufferSource,
-                    framebufferSource,
-                    logger);
-            }
-        }
+                    services.AddLogging();
+                    services.AddVncServer<LibVncServer>(
+                        new VncServerOptions()
+                        {
+                            Port = port,
+                            Password = password,
+                            Address = "127.0.0.1",
+                        });
+                });
     }
 }
