@@ -287,5 +287,5 @@ jobs:
           path: remoteviewing/
       - name: Publish to NuGet
         run: |
-          dotnet nuget push "remoteviewing/*.nupkg" --api-key $NUGET_TOKEN --source https://api.nuget.org/v3/index.json
-          dotnet nuget push "remoteviewing/*.snupkg" --api-key $NUGET_TOKEN --source https://api.nuget.org/v3/index.json
+          dotnet nuget push "remoteviewing/*.nupkg" --source https://api.nuget.org/v3/index.json --api-key "${{ secrets.NUGET_TOKEN }}"
+          dotnet nuget push "remoteviewing/*.snupkg" --source https://api.nuget.org/v3/index.json --api-key "${{ secrets.NUGET_TOKEN }}"
