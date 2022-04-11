@@ -20,6 +20,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\RemoteViewing\RemoteViewing.csproj" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="6.0.0" />
   </ItemGroup>
 
   <ItemGroup>
