@@ -68,6 +68,14 @@ namespace RemoteViewing.Vnc.Server
         void Start(IPEndPoint endPoint);
 
         /// <summary>
+        /// Starts a VNC server using reverse VNC connectivity.
+        /// </summary>
+        /// <param name="endPoint">
+        /// A <see cref="IPEndPoint"/> which represents the port of the VNC client to which the server should connect.
+        /// </param>
+        void StartReverse(IPEndPoint endPoint);
+
+        /// <summary>
         /// Stops the VNC server.
         /// </summary>
         void Stop();

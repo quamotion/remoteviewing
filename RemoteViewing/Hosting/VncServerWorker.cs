@@ -33,10 +33,19 @@ namespace RemoteViewing.Hosting
         /// <inheritdoc/>
         public Task StartAsync(CancellationToken cancellationToken)
         {
-            this.server.Start(
+            var endPoint =
                 new IPEndPoint(
                     IPAddress.Parse(this.options.Address),
-                    this.options.Port));
+                    this.options.Port);
+
+            if (!this.options.Reverse)
+            {
+                this.server.Start(endPoint);
+            }
+            else
+            {
+                this.server.StartReverse(endPoint);
+            }
 
             if (this.options.Password != null)
             {

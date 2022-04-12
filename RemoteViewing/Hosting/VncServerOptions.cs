@@ -19,5 +19,10 @@
         /// Gets or sets the port at which the VNC server should listen.
         /// </summary>
         public int Port { get; set; } = 5900;
+
+        /// <summary>
+        /// Gets or sets a value indicating whether to initiate a reverse VNC connection.
+        /// </summary>
+        public bool Reverse { get; set; } = false;
     }
 }

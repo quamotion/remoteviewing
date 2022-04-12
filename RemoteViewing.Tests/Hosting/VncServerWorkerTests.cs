@@ -34,5 +34,22 @@ namespace RemoteViewing.Tests.Hosting
             await worker.StopAsync(default).ConfigureAwait(false);
             server.Verify();
         }
+
+        [Fact]
+        public async Task StartStopReverse_Works()
+        {
+            var server = new Mock<IVncServer>(MockBehavior.Strict);
+            var options = new VncServerOptions() { Address = "10.0.0.0", Port = 1234, Reverse = true };
+
+            var worker = new VncServerWorker(server.Object, options);
+
+            server.Setup(s => s.StartReverse(new IPEndPoint(IPAddress.Parse("10.0.0.0"), 1234))).Verifiable();
+            await worker.StartAsync(default).ConfigureAwait(false);
+            server.Verify();
+
+            server.Setup(s => s.Stop()).Verifiable();
+            await worker.StopAsync(default).ConfigureAwait(false);
+            server.Verify();
+        }
     }
 }
