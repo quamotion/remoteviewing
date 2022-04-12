@@ -119,6 +119,12 @@ namespace RemoteViewing.Vnc.Server
         }
 
         /// <inheritdoc/>
+        public void StartReverse(IPEndPoint endPoint)
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <inheritdoc/>
         public void Stop()
         {
             this.Dispose();
