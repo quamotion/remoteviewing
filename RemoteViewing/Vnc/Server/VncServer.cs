@@ -130,12 +130,11 @@ namespace RemoteViewing.Vnc.Server
         /// <inheritdoc/>
         public Task StopAsync(CancellationToken cancellationToken)
         {
-            this.Dispose();
-            return Task.CompletedTask;
+            return this.DisposeAsync().AsTask();
         }
 
         /// <inheritdoc/>
-        public void Dispose()
+        public ValueTask DisposeAsync()
         {
             this.listener?.Stop();
             this.listener = null;
@@ -144,6 +143,12 @@ namespace RemoteViewing.Vnc.Server
             {
                 session.Close();
             }
+
+#if NET462
+            return new ValueTask(Task.CompletedTask);
+#else
+            return ValueTask.CompletedTask;
+#endif
         }
 
         /// <summary>

@@ -38,7 +38,7 @@ namespace RemoteViewing.Vnc.Server
     /// <summary>
     /// A shared interface for VNC servers which can host one or more VNC sessions.
     /// </summary>
-    public interface IVncServer : IDisposable
+    public interface IVncServer : IAsyncDisposable
     {
         /// <summary>
         /// Occurs when the VNC client has successfully connected to the server.
