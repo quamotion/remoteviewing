@@ -26,11 +26,11 @@ namespace RemoteViewing.Tests.Hosting
 
             var worker = new VncServerWorker(server.Object, options);
 
-            server.Setup(s => s.Start(new IPEndPoint(IPAddress.Loopback, 5900))).Verifiable();
+            server.Setup(s => s.StartAsync(new IPEndPoint(IPAddress.Loopback, 5900), default)).Returns(Task.CompletedTask).Verifiable();
             await worker.StartAsync(default).ConfigureAwait(false);
             server.Verify();
 
-            server.Setup(s => s.Stop()).Verifiable();
+            server.Setup(s => s.StopAsync(default)).Returns(Task.CompletedTask).Verifiable();
             await worker.StopAsync(default).ConfigureAwait(false);
             server.Verify();
         }
@@ -43,11 +43,11 @@ namespace RemoteViewing.Tests.Hosting
 
             var worker = new VncServerWorker(server.Object, options);
 
-            server.Setup(s => s.StartReverse(new IPEndPoint(IPAddress.Parse("10.0.0.0"), 1234))).Verifiable();
+            server.Setup(s => s.StartReverseAsync(new IPEndPoint(IPAddress.Parse("10.0.0.0"), 1234), default)).Returns(Task.CompletedTask).Verifiable();
             await worker.StartAsync(default).ConfigureAwait(false);
             server.Verify();
 
-            server.Setup(s => s.Stop()).Verifiable();
+            server.Setup(s => s.StopAsync(default)).Returns(Task.CompletedTask).Verifiable();
             await worker.StopAsync(default).ConfigureAwait(false);
             server.Verify();
         }

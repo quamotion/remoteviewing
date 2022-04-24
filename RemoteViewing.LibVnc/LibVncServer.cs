@@ -39,6 +39,7 @@ using System.Net.Sockets;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace RemoteViewing.LibVnc
 {
@@ -120,7 +121,7 @@ namespace RemoteViewing.LibVnc
         public IReadOnlyList<IVncServerSession> Sessions => throw new NotImplementedException();
 
         /// <inheritdoc/>
-        public void Start(IPEndPoint endPoint)
+        public Task StartAsync(IPEndPoint endPoint, CancellationToken cancellationToken)
         {
             if (endPoint == null || endPoint.AddressFamily != AddressFamily.InterNetwork)
             {
@@ -128,6 +129,8 @@ namespace RemoteViewing.LibVnc
             }
 
             this.DoStart(endPoint);
+
+            return Task.CompletedTask;
         }
 
         /// <summary>
@@ -136,7 +139,7 @@ namespace RemoteViewing.LibVnc
         /// <param name="endPoint">
         /// A <see cref="IPEndPoint"/> which represents the endpoint of the "remote" RFB client.
         /// </param>
-        public void StartReverse(IPEndPoint endPoint)
+        public Task StartReverseAsync(IPEndPoint endPoint, CancellationToken cancellationToken)
         {
             if (endPoint == null || endPoint.AddressFamily != AddressFamily.InterNetwork)
             {
@@ -151,10 +154,16 @@ namespace RemoteViewing.LibVnc
             {
                 NativeMethods.rfbReverseConnection(this.server, addressBytePtr, endPoint.Port);
             }
+
+            return Task.CompletedTask;
         }
 
         /// <inheritdoc/>
-        public void Stop() => this.Dispose();
+        public Task StopAsync(CancellationToken cancellationToken)
+        {
+            this.Dispose();
+            return Task.CompletedTask;
+        }
 
         /// <inheritdoc/>
         public void Dispose()

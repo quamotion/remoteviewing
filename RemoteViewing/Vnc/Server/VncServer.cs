@@ -32,6 +32,7 @@ using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace RemoteViewing.Vnc.Server
@@ -105,7 +106,7 @@ namespace RemoteViewing.Vnc.Server
         public IReadOnlyList<IVncServerSession> Sessions => this.sessions;
 
         /// <inheritdoc/>
-        public void Start(IPEndPoint endPoint)
+        public Task StartAsync(IPEndPoint endPoint, CancellationToken cancellationToken)
         {
             if (endPoint == null)
             {
@@ -116,18 +117,21 @@ namespace RemoteViewing.Vnc.Server
             this.listener.Start();
 
             this.runLoop = this.Run();
+
+            return Task.CompletedTask;
         }
 
         /// <inheritdoc/>
-        public void StartReverse(IPEndPoint endPoint)
+        public Task StartReverseAsync(IPEndPoint endPoint, CancellationToken cancellationToken)
         {
             throw new NotImplementedException();
         }
 
         /// <inheritdoc/>
-        public void Stop()
+        public Task StopAsync(CancellationToken cancellationToken)
         {
             this.Dispose();
+            return Task.CompletedTask;
         }
 
         /// <inheritdoc/>
