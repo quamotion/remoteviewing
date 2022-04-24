@@ -161,12 +161,11 @@ namespace RemoteViewing.LibVnc
         /// <inheritdoc/>
         public Task StopAsync(CancellationToken cancellationToken)
         {
-            this.Dispose();
-            return Task.CompletedTask;
+            return this.DisposeAsync().AsTask();
         }
 
         /// <inheritdoc/>
-        public void Dispose()
+        public ValueTask DisposeAsync()
         {
             if (this.mainLoop != null)
             {
@@ -180,6 +179,12 @@ namespace RemoteViewing.LibVnc
                 this.server.Dispose();
                 this.server = null;
             }
+
+#if NET462
+            return new ValueTask(Task.CompletedTask);
+#else
+            return ValueTask.CompletedTask;
+#endif
         }
 
         protected void MainLoop()
