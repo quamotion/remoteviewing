@@ -31,7 +31,7 @@ namespace RemoteViewing.Hosting
         }
 
         /// <inheritdoc/>
-        public Task StartAsync(CancellationToken cancellationToken)
+        public async Task StartAsync(CancellationToken cancellationToken)
         {
             var endPoint =
                 new IPEndPoint(
@@ -40,27 +40,23 @@ namespace RemoteViewing.Hosting
 
             if (!this.options.Reverse)
             {
-                this.server.Start(endPoint);
+                await this.server.StartAsync(endPoint, cancellationToken);
             }
             else
             {
-                this.server.StartReverse(endPoint);
+                await this.server.StartReverseAsync(endPoint, cancellationToken);
             }
 
             if (this.options.Password != null)
             {
                 this.server.PasswordProvided += this.HandlePasswordProvided;
             }
-
-            return Task.CompletedTask;
         }
 
         /// <inheritdoc/>
         public Task StopAsync(CancellationToken cancellationToken)
         {
-            this.server.Stop();
-
-            return Task.CompletedTask;
+            return this.server.StopAsync(cancellationToken);
         }
 
         private void HandlePasswordProvided(object sender, PasswordProvidedEventArgs e)

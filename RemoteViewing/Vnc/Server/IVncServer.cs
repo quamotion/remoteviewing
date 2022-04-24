@@ -30,6 +30,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 using System;
 using System.Collections.Generic;
 using System.Net;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace RemoteViewing.Vnc.Server
 {
@@ -60,24 +62,33 @@ namespace RemoteViewing.Vnc.Server
         IReadOnlyList<IVncServerSession> Sessions { get; }
 
         /// <summary>
-        /// Starts the VNC server.
+        /// Asynchronously starts the VNC server.
         /// </summary>
         /// <param name="endPoint">
         /// A <see cref="IPEndPoint"/> which represents the port at which the VNC server should listen.
         /// </param>
-        void Start(IPEndPoint endPoint);
+        /// <param name="cancellationToken">
+        /// A <see cref="CancellationToken"/> which can be used to cancel the asynchronous operation.
+        /// </param>
+        Task StartAsync(IPEndPoint endPoint, CancellationToken cancellationToken);
 
         /// <summary>
-        /// Starts a VNC server using reverse VNC connectivity.
+        /// Asynchronously starts a VNC server using reverse VNC connectivity.
         /// </summary>
         /// <param name="endPoint">
         /// A <see cref="IPEndPoint"/> which represents the port of the VNC client to which the server should connect.
         /// </param>
-        void StartReverse(IPEndPoint endPoint);
+        /// <param name="cancellationToken">
+        /// A <see cref="CancellationToken"/> which can be used to cancel the asynchronous operation.
+        /// </param>
+        Task StartReverseAsync(IPEndPoint endPoint, CancellationToken cancellationToken);
 
         /// <summary>
-        /// Stops the VNC server.
+        /// Asynchronously stops the VNC server.
         /// </summary>
-        void Stop();
+        /// <param name="cancellationToken">
+        /// A <see cref="CancellationToken"/> which can be used to cancel the asynchronous operation.
+        /// </param>
+        Task StopAsync(CancellationToken cancellationToken);
     }
 }
