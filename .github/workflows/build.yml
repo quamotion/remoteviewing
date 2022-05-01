@@ -231,14 +231,18 @@ jobs:
           path: |
             ${{ github.workspace }}/nuget/
 
-  test-linux-x64:
+  test-redhat-x64:
+    strategy:
+      matrix:
+        container: [ "centos:7", "rockylinux:8" ]
     needs: native-linux-x64
     runs-on: ubuntu-20.04
-    container: mcr.microsoft.com/dotnet/sdk:6.0-focal
+    container: ${{ matrix.container }}
+    env:
+      DOTNET_SYSTEM_GLOBALIZATION_INVARIANT: 1
     steps:
       - run: |
-          apt-get update
-          DEBIAN_FRONTEND=noninteractive apt-get install -y libvncserver1 libturbojpeg libgdiplus
+          yum install -y libvncserver turbojpeg findutils
       - uses: actions/checkout@v2
         with:
           fetch-depth: 0
@@ -246,6 +250,35 @@ jobs:
         with:
           name: libvnc-${{ github.run_id }}
           path: libvnc/
+      - uses: actions/setup-dotnet@v2
+        with:
+          dotnet-version: '6.0.x'
+      - name: Test
+        run: |
+          export LD_LIBRARY_PATH="$(pwd)/libvnc/linux-x64/:$LD_LIBRARY_PATH"
+          dotnet test RemoteViewing.sln
+
+  test-debian-x64:
+    strategy:
+      matrix:
+        container: [ "ubuntu:xenial", "ubuntu:focal", "ubuntu:jammy" ]
+    needs: native-linux-x64
+    runs-on: ubuntu-20.04
+    container: ${{ matrix.container }}
+    steps:
+      - run: |
+          apt-get update
+          DEBIAN_FRONTEND=noninteractive apt-get install -y libvncserver1 libturbojpeg libgdiplus curl
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - uses: actions/download-artifact@v3
+        with:
+          name: libvnc-${{ github.run_id }}
+          path: libvnc/
+      - uses: actions/setup-dotnet@v2
+        with:
+          dotnet-version: '6.0.x'
       - name: Test
         run: |
           export LD_LIBRARY_PATH="$(pwd)/libvnc/linux-x64/:$LD_LIBRARY_PATH"
@@ -275,7 +308,8 @@ jobs:
   publish:
     needs:
     - build
-    - test-linux-x64
+    - test-debian-x64
+    - test-redhat-x64
     - test-osx-x64
     runs-on: ubuntu-20.04
     container: mcr.microsoft.com/dotnet/sdk:6.0-focal
