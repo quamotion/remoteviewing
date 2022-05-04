@@ -183,20 +183,19 @@ namespace RemoteViewing.LibVnc
 
             this.isRunning = true;
 
+            Stopwatch s = new Stopwatch();
+
             while (NativeMethods.rfbIsActive(this.server) != 0 && this.isRunning)
             {
-                Stopwatch s = new Stopwatch();
-                s.Reset();
-                s.Start();
+                s.Restart();
                 this.UpdateFramebuffer(this.server);
                 s.Stop();
-                this.logger.LogDebug($"Updated framebuffer. Took {s.ElapsedMilliseconds} ms.");
+                LibVncServerEventSource.Instance.AddFramebufferUpdateDuration(s.ElapsedMilliseconds);
 
-                s.Reset();
-                s.Start();
+                s.Restart();
                 NativeMethods.rfbProcessEvents(this.server, usec);
                 s.Stop();
-                this.logger.LogDebug($"Processed server events. Took {s.ElapsedMilliseconds} ms.");
+                LibVncServerEventSource.Instance.AddProcessServerEventsDuration(s.ElapsedMilliseconds);
             }
 
             this.currentFramebufferHandle.Dispose();
