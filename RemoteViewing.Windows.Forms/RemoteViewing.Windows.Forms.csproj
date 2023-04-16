@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <Description>RemoteViewing is a .NET-native VNC client and server library. It supports Raw, Hextile, Copyrect, and Zlib encodings.</Description>
     <AssemblyTitle>RemoteViewing.Windows.Forms</AssemblyTitle>
@@ -32,7 +32,7 @@
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'net5.0'">
-    <PackageReference Include="System.Drawing.Common" Version="5.0.0" />
+    <PackageReference Include="System.Drawing.Common" Version="5.0.3" />
   </ItemGroup>
 
   <ItemGroup>
