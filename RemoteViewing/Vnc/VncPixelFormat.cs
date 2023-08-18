@@ -40,7 +40,7 @@ namespace RemoteViewing.Vnc
         /// with 8 bits each of red, green, and blue channels.
         /// </summary>
         public VncPixelFormat()
-            : this(32, 24, 8, 16, 8, 8, 8, 0)
+            : this(16, 16, 5, 11, 6, 5, 5, 0)
         {
         }
 
@@ -74,7 +74,7 @@ namespace RemoteViewing.Vnc
                 throw new ArgumentOutOfRangeException(nameof(bitsPerPixel));
             }
 
-            if (bitDepth != 6 && bitDepth != 24)
+            if (bitDepth != 6 && bitDepth != 16)
             {
                 throw new ArgumentOutOfRangeException(nameof(bitDepth));
             }
@@ -248,7 +248,7 @@ namespace RemoteViewing.Vnc
             {
                 throw new ArgumentNullException(nameof(source));
             }
-
+                
             if (target == null)
             {
                 throw new ArgumentNullException(nameof(target));
@@ -412,7 +412,7 @@ namespace RemoteViewing.Vnc
                     sourceRectangle,
                     scan0,
                     stride,
-                    new VncPixelFormat());
+                    source.PixelFormat);
             }
         }
 

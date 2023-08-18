@@ -327,7 +327,7 @@ namespace RemoteViewing.Windows.Forms
 
             if (this.bitmap == null || this.bitmap.Width != w || this.bitmap.Height != h || force)
             {
-                this.bitmap = new Bitmap(w, h, PixelFormat.Format32bppRgb);
+                this.bitmap = new Bitmap(w, h, PixelFormat.Format16bppRgb565);
                 VncBitmap.CopyFromFramebuffer(framebuffer, new VncRectangle(0, 0, w, h), this.bitmap, 0, 0);
 
                 this.ScaleFactor = this.GetScaleFactor(framebuffer);
