@@ -183,7 +183,7 @@ namespace RemoteViewing.Tests.Vnc.Server
             using (MemoryStream output = new MemoryStream())
             {
                 var contents = new byte[] { 0x01, 0x02, 0x03, 0x04 };
-                encoder.Send(output, new VncPixelFormat(), default, contents);
+                encoder.Send(output, VncPixelFormat.RGB32, default, contents);
                 raw = output.ToArray();
             }
 

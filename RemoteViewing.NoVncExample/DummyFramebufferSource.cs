@@ -106,7 +106,7 @@ namespace RemoteViewing.NoVncExample
                     || this.framebuffer.Width != image.Width
                     || this.framebuffer.Height != image.Height)
                 {
-                    this.framebuffer = new VncFramebuffer("Quamotion", image.Width, image.Height, new VncPixelFormat());
+                    this.framebuffer = new VncFramebuffer("Quamotion", image.Width, image.Height, VncPixelFormat.RGB32);
                 }
 
                 lock (this.framebuffer.SyncRoot)

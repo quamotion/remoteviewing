@@ -45,7 +45,7 @@ namespace RemoteViewing.Tests.Vnc
         public void ConstructorTest()
         {
             // Default pixel format should be RGB32.
-            var pixelFormat = new VncPixelFormat();
+            var pixelFormat = VncPixelFormat.RGB32;
             Assert.Equal(24, pixelFormat.BitDepth);
             Assert.Equal(32, pixelFormat.BitsPerPixel);
             Assert.Equal(4, pixelFormat.BytesPerPixel);
@@ -76,9 +76,9 @@ namespace RemoteViewing.Tests.Vnc
             Assert.Throws<ArgumentOutOfRangeException>(() => new VncPixelFormat(4, 1, 1, 0, 1, 0, 1, 0));
             Assert.Throws<ArgumentOutOfRangeException>(() => new VncPixelFormat(24, 1, 1, 0, 1, 0, 1, 0));
 
-            // Only bit depth of 8 or 24
+            // Only bit depth of 8 or 16 or 24
             Assert.Throws<ArgumentOutOfRangeException>(() => new VncPixelFormat(8, 2, 1, 0, 1, 0, 1, 0));
-            Assert.Throws<ArgumentOutOfRangeException>(() => new VncPixelFormat(16, 16, 1, 0, 1, 0, 1, 0));
+            Assert.Throws<ArgumentOutOfRangeException>(() => new VncPixelFormat(16, 14, 1, 0, 1, 0, 1, 0));
 
             // Red: negative bits or shift, or bits or shift > bit depth
             Assert.Throws<ArgumentOutOfRangeException>(() => new VncPixelFormat(8, 24, -1, 0, 8, 0, 8, 0));
@@ -105,7 +105,7 @@ namespace RemoteViewing.Tests.Vnc
         [Fact]
         public void EncodeTest()
         {
-            var pixelFormat = new VncPixelFormat();
+            var pixelFormat = VncPixelFormat.RGB32;
             var buffer = new byte[VncPixelFormat.Size];
             pixelFormat.Encode(buffer, 0);
 
