@@ -36,15 +36,6 @@ namespace RemoteViewing.Vnc
     public sealed class VncPixelFormat
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="VncPixelFormat"/> class,
-        /// with 8 bits each of red, green, and blue channels.
-        /// </summary>
-        public VncPixelFormat()
-            : this(16, 16, 5, 11, 6, 5, 5, 0)
-        {
-        }
-
-        /// <summary>
         /// Initializes a new instance of the <see cref="VncPixelFormat"/> class.
         /// </summary>
         /// <param name="bitsPerPixel">The number of bits used to store a pixel. Currently, this must be 8, 16, or 32.</param>
@@ -74,7 +65,7 @@ namespace RemoteViewing.Vnc
                 throw new ArgumentOutOfRangeException(nameof(bitsPerPixel));
             }
 
-            if (bitDepth != 6 && bitDepth != 16)
+            if (bitDepth != 6 && bitDepth != 16 && bitDepth != 24)
             {
                 throw new ArgumentOutOfRangeException(nameof(bitDepth));
             }
@@ -108,10 +99,14 @@ namespace RemoteViewing.Vnc
         }
 
         /// <summary>
-        /// Gets a <see cref="VncPixelFormat"/> with 8 bits of red, green and blue channels.
+        /// Gets a <see cref="VncPixelFormat"/> with 32bits per pixel, 8 bits of red, green and blue channels.
         /// </summary>
-        public static VncPixelFormat RGB32 { get; } = new VncPixelFormat();
+        public static VncPixelFormat RGB32 { get; } = new VncPixelFormat(32, 24, 8, 16, 8, 8, 8, 0);
 
+        /// <summary>
+        /// Gets a <see cref="VncPixelFormat"/> with 16 bits per pixel with 5 bits of red, 6 bits of green and 5 bits of blue channels.
+        /// </summary>
+        public static VncPixelFormat RGB16 { get; } = new VncPixelFormat(16, 16, 5, 11, 6, 5, 5, 0);
         /// <summary>
         /// Gets the number of bits used to store a pixel.
         /// </summary>

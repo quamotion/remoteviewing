@@ -77,7 +77,7 @@ namespace RemoteViewing.Windows.Forms
                     VncPixelFormat.Copy(
                         data.Scan0,
                         data.Stride,
-                        new VncPixelFormat(),
+                        VncPixelFormat.RGB32,
                         sourceRectangle,
                         (IntPtr)framebufferData,
                         target.Stride,
